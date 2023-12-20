@@ -1,6 +1,7 @@
 package userservice
 
 import (
+	"errors"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 )
@@ -11,8 +12,6 @@ type Service struct {
 
 type Repository interface {
 	Register(uf UserForm) (entity.User, error)
-	Login()
-	Update()
 }
 
 type UserForm struct {
@@ -26,8 +25,12 @@ func New(repo Repository) Service {
 	return Service{repo: repo}
 }
 
-func (s Service) Register(uf UserForm) entity.User {
+func (s Service) Register(uf UserForm) (*entity.User, error) {
 	// TODO: validate form
+	if len(uf.Name) < 3 {
+
+		return nil, errors.New("Name is required!")
+	}
 
 	// TODO: uniqueness
 
@@ -37,7 +40,7 @@ func (s Service) Register(uf UserForm) entity.User {
 		log.Println("Repo error: ", err)
 	}
 
-	return user
+	return &user, nil
 }
 
 func (s Service) Login() {

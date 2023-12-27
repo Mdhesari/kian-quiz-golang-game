@@ -1,6 +1,7 @@
 package userservice
 
 import (
+	"context"
 	"errors"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
@@ -12,9 +13,9 @@ type Service struct {
 }
 
 type Repository interface {
-	Register(u *entity.User) error
-	GetAll() ([]entity.User, error)
-	FindByEmail(email string) (*entity.User, error)
+	Register(ctx context.Context, u *entity.User) error
+	GetAll(ctx context.Context) ([]entity.User, error)
+	FindByEmail(ctx context.Context, email string) (*entity.User, error)
 }
 
 type UserForm struct {
@@ -43,7 +44,7 @@ func (s Service) Register(uf UserForm) (*entity.User, error) {
 	}
 
 	// TODO: uniqueness
-	_, err := s.repo.FindByEmail(uf.Email)
+	_, err := s.repo.FindByEmail(context.Background(), uf.Email)
 	if err == nil {
 		// does exists
 		return nil, errors.New("User with this email exists")
@@ -58,7 +59,7 @@ func (s Service) Register(uf UserForm) (*entity.User, error) {
 	}
 
 	// repo store
-	err = s.repo.Register(user)
+	err = s.repo.Register(context.Background(), user)
 	if err != nil {
 		log.Println("Repo error: ", err)
 	}
@@ -67,7 +68,7 @@ func (s Service) Register(uf UserForm) (*entity.User, error) {
 }
 
 func (s Service) List() ([]entity.User, error) {
-	users, err := s.repo.GetAll()
+	users, err := s.repo.GetAll(context.Background())
 	if err != nil {
 		return nil, err
 	}

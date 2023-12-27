@@ -1,25 +1,24 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
+	"time"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 )
 
 func main() {
-	url := "mongodb://michael:secret@localhost:27017/"
-	clientOptions := options.Client().ApplyURI(url)
+	cli, err := mongorepo.New(mongorepo.Config{
+		Username: "michael",
+		Password: "secret",
+		Host:     "localhost",
+		Port:     27017,
+	}, 30*time.Second, encrypt.Hash{})
 
-	cli, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		panic(err)
-	}
-
-	repo, err := mongorepo.New(cli.Database("freedom").Collection("users"))
+	repo := mongouser.New(cli)
 
 	uf := userservice.UserForm{
 		Name:     "Mahsa",

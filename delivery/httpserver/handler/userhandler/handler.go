@@ -1,7 +1,13 @@
 package userhandler
 
-type Handler struct{}
+import "mdhesari/kian-quiz-golang-game/service/userservice"
 
-func New() Handler {
-	return Handler{}
+type Handler struct{
+	userSrv userservice.Service
+}
+
+func New(userSrv userservice.Service) Handler {
+	return Handler{
+		userSrv: userSrv,
+	}
 }

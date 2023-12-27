@@ -2,89 +2,52 @@ package mongorepo
 
 import (
 	"context"
-	"errors"
-	"mdhesari/kian-quiz-golang-game/entity"
+	"fmt"
 	"time"
 
 	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+type Config struct {
+	Username string `koanf:"username"`
+	Password string `koanf:"password"`
+	Port     int    `koanf:"port"`
+	Host     string `koanf:"host"`
+	DBName   string `koanf:"db_name"`
+}
 
 const (
 	mongoQueryTimeout = 10 * time.Second
 )
 
-type Repository struct {
-	collection *mongo.Collection
-	hash       encrypt.Hash
+type MongoDB struct {
+	config       Config
+	conn         *mongo.Database
+	hash         encrypt.Hash
+	QueryTimeout time.Duration
+	Hash         encrypt.Hash `koanf:"hash"`
 }
 
-func New(c *mongo.Collection) (Repository, error) {
-	return Repository{
-		collection: c,
-		hash:       encrypt.Hash{},
-	}, nil
-}
+func New(c Config, du time.Duration, h encrypt.Hash) (*MongoDB, error) {
+	url := fmt.Sprintf("mongodb://%s:%s@%s:%d/", c.Username, c.Password, c.Host, c.Port)
+	clientOptions := options.Client().ApplyURI(url)
 
-func (r Repository) GetAll() ([]entity.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), mongoQueryTimeout)
-	defer cancel()
-
-	var users []entity.User
-	cur, err := r.collection.Find(ctx, bson.D{}, options.Find())
+	cli, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
+
 		return nil, err
 	}
 
-	for cur.Next(context.Background()) {
-		var u entity.User
-
-		if err := cur.Decode(&u); err != nil {
-			panic(err)
-		}
-
-		users = append(users, u)
-	}
-
-	return users, nil
+	return &MongoDB{
+		conn:         cli.Database(c.DBName),
+		Hash:         h,
+		QueryTimeout: du,
+		config:       c,
+	}, nil
 }
 
-func (r Repository) FindByEmail(email string) (*entity.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), mongoQueryTimeout)
-	defer cancel()
-
-	var user entity.User
-	filter := bson.D{{"email", email}}
-	res := r.collection.FindOne(ctx, filter)
-	if res.Err() != nil {
-		return nil, res.Err()
-	}
-
-	res.Decode(&user)
-
-	return &user, nil
-}
-
-func (r Repository) Register(u *entity.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), mongoQueryTimeout)
-	defer cancel()
-
-	hash, err := r.hash.Generate(u.Password)
-	if err != nil {
-		return err
-	}
-	u.Password = hash
-
-	result, err := r.collection.InsertOne(ctx, u)
-	if err != nil {
-		return err
-	}
-
-	if result.InsertedID == nil {
-		return errors.New("Could not create a new user")
-	}
-
-	return nil
+func (m *MongoDB) Conn() *mongo.Database {
+	return m.conn
 }

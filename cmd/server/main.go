@@ -5,7 +5,12 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
+	"mdhesari/kian-quiz-golang-game/service/userservice"
+	"time"
 
+	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,8 +24,20 @@ func init() {
 }
 
 func main() {
+	cli, err := mongorepo.New(mongorepo.Config{
+			
+	}, 30*time.Second, encrypt.Hash{})
+	if err != nil {
+
+		panic("could not connect to mongodb.")
+	}
+
+	repo := mongouser.New(cli)
+
+	userSrv := userservice.New(repo)
+
 	handlers := []httpserver.Handler{
-		userhandler.New(),
+		userhandler.New(userSrv),
 		pinghandler.New(),
 	}
 

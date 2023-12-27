@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h Handler) Login(c echo.Context) error {
+func (h Handler) Register(c echo.Context) error {
 	req := param.LoginRequest{}
 
 	c.Bind(&req)

@@ -1,57 +1,36 @@
 package main
 
-// import (
-// 	"encoding/json"
-// 	"fmt"
-// 	"io"
-// 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
-// 	"mdhesari/kian-quiz-golang-game/service/userservice"
-// 	"net/http"
-// )
+import (
+	"flag"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
 
-// func main() {
-// 	mux := http.NewServeMux()
+	"github.com/labstack/echo/v4"
+)
 
-// 	mux.HandleFunc("/health-check", func(w http.ResponseWriter, r *http.Request) {
-// 		w.Write([]byte("Everything is fine!"))
-// 	})
+var (
+	port   int = *flag.Int("port", 8080, "Which port to run.")
+	server httpserver.Server
+)
 
-// 	mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-// 		if r.Method != http.MethodPost {
-// 			w.Write([]byte(`{"errors": ["Not supported method."]}`))
+func init() {
+	flag.Parse()
+}
 
-// 			return
-// 		}
+func main() {
+	handlers := []httpserver.Handler{
+		userhandler.New(),
+		pinghandler.New(),
+	}
 
-// 		repo, err := mongorepo.New("mongodb://michael:secret@db:27017")
+	config := httpserver.Config{
+		HTTPServer: httpserver.HTTPServer{
+			Port: port,
+		},
+	}
 
-// 		usersrv := userservice.New(repo)
+	server = httpserver.New(config, echo.New(), handlers)
 
-// 		body, err := io.ReadAll(r.Body)
-// 		if err != nil {
-// 			fmt.Printf("Request body read error: %w", err)
-
-// 			w.Write([]byte("{}"))
-
-// 			return
-// 		}
-
-// 		uf := userservice.UserForm{}
-// 		json.Unmarshal(body, &uf)
-
-// 		user, err := usersrv.Register(uf)
-// 		if err != nil {
-// 			w.Write([]byte(fmt.Sprintf(`{"errors": ["%s"]}`, err.Error())))
-
-// 			return
-// 		}
-
-// 		w.Write([]byte(fmt.Sprintf(`{"message" : "User %s is created."}`, user.Name)))
-// 	})
-
-// 	server := http.Server{Addr: ":2001", Handler: mux}
-
-// 	if err := server.ListenAndServe(); err != nil {
-// 		panic(err)
-// 	}
-// }
+	server.Serve()
+}

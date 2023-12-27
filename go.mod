@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/knadh/koanf/v2 v2.0.1 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
@@ -20,12 +21,16 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
+	github.com/knadh/koanf/parsers/yaml v0.1.0
+	github.com/knadh/koanf/providers/confmap v0.1.0
+	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect

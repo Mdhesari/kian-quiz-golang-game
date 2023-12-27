@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
@@ -24,9 +26,10 @@ func init() {
 }
 
 func main() {
-	cli, err := mongorepo.New(mongorepo.Config{
-			
-	}, 30*time.Second, encrypt.Hash{})
+	cfg := config.Load("config.yml")
+	fmt.Println(cfg)
+
+	cli, err := mongorepo.New(cfg.Database.MongoDB, 30*time.Second, encrypt.Hash{})
 	if err != nil {
 
 		panic("could not connect to mongodb.")

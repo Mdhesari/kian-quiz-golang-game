@@ -1,0 +1,12 @@
+type: yml
+
+http_server:
+  port: 8080
+
+database:
+  mongodb:
+    port: 3308
+    host: localhost
+    db_name: db
+    username: michael
+    password: secret

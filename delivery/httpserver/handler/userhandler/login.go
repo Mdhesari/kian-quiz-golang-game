@@ -1,6 +1,7 @@
 package userhandler
 
 import (
+	"fmt"
 	"mdhesari/kian-quiz-golang-game/param"
 	"net/http"
 
@@ -12,5 +13,9 @@ func (h Handler) Login(c echo.Context) error {
 
 	c.Bind(&req)
 
-	return c.JSON(http.StatusOK, param.LoginResponse{})
+	res := h.userSrv.Login(req)
+
+	fmt.Println(res)
+
+	return c.JSON(http.StatusOK, res)
 }

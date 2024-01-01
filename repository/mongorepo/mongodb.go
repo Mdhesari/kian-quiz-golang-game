@@ -40,6 +40,12 @@ func New(c Config, du time.Duration, h encrypt.Hash) (*MongoDB, error) {
 		return nil, err
 	}
 
+	err = cli.Ping(context.Background(), nil)
+	if err != nil {
+
+		return nil, err
+	}
+
 	return &MongoDB{
 		conn:         cli.Database(c.DBName),
 		Hash:         h,

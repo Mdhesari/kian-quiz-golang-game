@@ -3,9 +3,12 @@ type: yml
 http_server:
   port: 8080
 
+jwt:
+  secret: "secret"
+
 database:
   mongodb:
-    port: 3308
+    port: 27017
     host: localhost
     db_name: db
     username: michael

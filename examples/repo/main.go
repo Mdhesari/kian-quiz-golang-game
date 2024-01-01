@@ -26,7 +26,8 @@ func main() {
 		Mobile:   "+989122222222",
 		Password: "123@123@123",
 	}
-	usersrv := userservice.New(repo)
+	// TODO: token should not be there!
+	usersrv := userservice.New(repo, "secret")
 
 	user, err := usersrv.Register(uf)
 	if err != nil {

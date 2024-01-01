@@ -3,13 +3,25 @@ package userservice
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/validation"
+
+	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
 
+type Claims struct {
+	Foo string `json:"foo"`
+	jwt.RegisteredClaims
+}
+
 type Service struct {
-	repo Repository
+	repo  Repository
+	token string
 }
 
 type Repository interface {
@@ -25,8 +37,8 @@ type UserForm struct {
 	Password string
 }
 
-func New(repo Repository) Service {
-	return Service{repo: repo}
+func New(repo Repository, token string) Service {
+	return Service{repo: repo, token: token}
 }
 
 func (s Service) Register(uf UserForm) (*entity.User, error) {
@@ -43,7 +55,6 @@ func (s Service) Register(uf UserForm) (*entity.User, error) {
 		return nil, errors.New("Emai is not valid.")
 	}
 
-	// TODO: uniqueness
 	_, err := s.repo.FindByEmail(context.Background(), uf.Email)
 	if err == nil {
 		// does exists
@@ -76,8 +87,60 @@ func (s Service) List() ([]entity.User, error) {
 	return users, nil
 }
 
-func (s Service) Login() {
-	// TODO
+func (s Service) Login(req param.LoginRequest) *param.LoginResponse {
+	user, err := s.repo.FindByEmail(context.Background(), req.Email)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+
+			return &param.LoginResponse{
+				Token:  "",
+				Errors: []string{"Credentials do not match."},
+			}
+		}
+
+		log.Println("Error on finding email: ", err)
+
+		return &param.LoginResponse{
+			Token:  "",
+			Errors: []string{err.Error()},
+		}
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		log.Println("Error on hashing password: ", err)
+
+		return &param.LoginResponse{
+			Token:  "",
+			Errors: []string{err.Error()},
+		}
+	}
+
+	token, err := jwt.ParseWithClaims(s.token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte("AllYourBase"), nil
+	})
+	if err != nil {
+		log.Println("Error on hashing password: ", err)
+
+		return &param.LoginResponse{
+			Token:  "",
+			Errors: []string{err.Error()},
+		}
+	} else if claims, ok := token.Claims.(*Claims); ok {
+		fmt.Println(claims.Foo, claims.RegisteredClaims.Issuer)
+	} else {
+		msg := "unknown claims type, cannot proceed"
+		log.Println(msg)
+
+		return &param.LoginResponse{
+			Token:  "",
+			Errors: []string{msg},
+		}
+	}
+
+	return &param.LoginResponse{
+		Token:  "YOUR_TOKEN",
+		Errors: []string{},
+	}
 }
 
 func (s Service) Update() {

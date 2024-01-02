@@ -8,4 +8,5 @@ func (h Handler) SetRoutes(r *echo.Echo) {
 	group := r.Group("/users")
 
 	group.POST("/login", h.Login)
+	group.POST("/register", h.Register)
 }

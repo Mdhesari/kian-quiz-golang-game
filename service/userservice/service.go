@@ -2,20 +2,20 @@ package userservice
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/validation"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Claims struct {
-	Foo string `json:"foo"`
+	UserID primitive.ObjectID `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
@@ -25,7 +25,7 @@ type Service struct {
 }
 
 type Repository interface {
-	Register(ctx context.Context, u *entity.User) error
+	Register(ctx context.Context, u entity.User) (entity.User, error)
 	GetAll(ctx context.Context) ([]entity.User, error)
 	FindByEmail(ctx context.Context, email string) (*entity.User, error)
 }
@@ -41,28 +41,35 @@ func New(repo Repository, token string) Service {
 	return Service{repo: repo, token: token}
 }
 
-func (s Service) Register(uf UserForm) (*entity.User, error) {
+func (s Service) Register(uf UserForm) *param.RegisterResponse {
+	res := param.RegisterResponse{
+		User:   nil,
+		Errors: []string{},
+	}
+
 	// TODO: validate form
 	if !validation.Name(uf.Name) {
-		return nil, errors.New("Name is required!")
+		res.Errors = append(res.Errors, "Name is required!")
 	}
 
 	if !validation.Password(uf.Password) {
-		return nil, errors.New("Password must be greater than 6 characters.")
+		res.Errors = append(res.Errors, "Password must be greater than 6 characters.")
 	}
 
 	if !validation.Email(uf.Email) {
-		return nil, errors.New("Emai is not valid.")
+		res.Errors = append(res.Errors, "Email is not valid.")
 	}
 
-	_, err := s.repo.FindByEmail(context.Background(), uf.Email)
-	if err == nil {
-		// does exists
-		return nil, errors.New("User with this email exists")
+	if _, err := s.repo.FindByEmail(context.Background(), uf.Email); err == nil {
+		res.Errors = append(res.Errors, "User with this email exists")
+	}
+
+	if len(res.Errors) > 0 {
+		return &res
 	}
 
 	// create user entity
-	user := &entity.User{
+	user := entity.User{
 		Name:     uf.Name,
 		Email:    uf.Email,
 		Mobile:   uf.Mobile,
@@ -70,12 +77,16 @@ func (s Service) Register(uf UserForm) (*entity.User, error) {
 	}
 
 	// repo store
-	err = s.repo.Register(context.Background(), user)
+	user, err := s.repo.Register(context.Background(), user)
 	if err != nil {
 		log.Println("Repo error: ", err)
+
+		res.Errors = append(res.Errors, "Something went wrong!")
+		return &res
 	}
 
-	return user, nil
+	res.User = &user
+	return &res
 }
 
 func (s Service) List() ([]entity.User, error) {
@@ -107,38 +118,34 @@ func (s Service) Login(req param.LoginRequest) *param.LoginResponse {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		log.Println("Error on hashing password: ", err)
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			log.Println("Error on hashing password: ", err)
+		}
 
 		return &param.LoginResponse{
 			Token:  "",
-			Errors: []string{err.Error()},
+			Errors: []string{"Credentials do not match."},
 		}
 	}
 
-	token, err := jwt.ParseWithClaims(s.token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte("AllYourBase"), nil
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodEdDSA, *&Claims{
+		UserID: user.ID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		},
 	})
+
+	token, err := jwtToken.SignedString(s.token)
 	if err != nil {
-		log.Println("Error on hashing password: ", err)
 
 		return &param.LoginResponse{
 			Token:  "",
 			Errors: []string{err.Error()},
-		}
-	} else if claims, ok := token.Claims.(*Claims); ok {
-		fmt.Println(claims.Foo, claims.RegisteredClaims.Issuer)
-	} else {
-		msg := "unknown claims type, cannot proceed"
-		log.Println(msg)
-
-		return &param.LoginResponse{
-			Token:  "",
-			Errors: []string{msg},
 		}
 	}
 
 	return &param.LoginResponse{
-		Token:  "YOUR_TOKEN",
+		Token:  token,
 		Errors: []string{},
 	}
 }

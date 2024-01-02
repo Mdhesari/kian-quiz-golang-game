@@ -2,6 +2,7 @@ package userhandler
 
 import (
 	"fmt"
+	"log"
 	"mdhesari/kian-quiz-golang-game/param"
 	"net/http"
 
@@ -9,9 +10,11 @@ import (
 )
 
 func (h Handler) Login(c echo.Context) error {
-	req := param.LoginRequest{}
+	var req param.LoginRequest
 
 	c.Bind(&req)
+
+	log.Println(req)
 
 	res := h.userSrv.Login(req)
 

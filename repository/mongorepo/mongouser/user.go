@@ -6,6 +6,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/entity"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -48,24 +49,31 @@ func (d DB) FindByEmail(ctx context.Context, email string) (*entity.User, error)
 	return &user, nil
 }
 
-func (d DB) Register(ctx context.Context, u *entity.User) error {
+func (d DB) Register(ctx context.Context, u entity.User) (entity.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
 	hash, err := d.cli.Hash.Generate(u.Password)
 	if err != nil {
-		return err
+		return entity.User{}, err
 	}
 	u.Password = hash
 
 	result, err := d.cli.Conn().Collection("users").InsertOne(ctx, u)
 	if err != nil {
-		return err
+		return entity.User{}, err
 	}
 
 	if result.InsertedID == nil {
-		return errors.New("Could not create a new user")
+		return entity.User{}, errors.New("Could not create a new user")
 	}
 
-	return nil
+	uid, ok := result.InsertedID.(primitive.ObjectID)
+	if ok {
+		u.ID = uid
+	} else {
+		return entity.User{}, errors.New("Could not assert object id.")
+	}
+
+	return u, nil
 }

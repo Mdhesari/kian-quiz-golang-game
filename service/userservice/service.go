@@ -128,19 +128,13 @@ func (s Service) Login(req param.LoginRequest) *param.LoginResponse {
 		}
 	}
 
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodEdDSA, *&Claims{
-		UserID: user.ID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
-		},
-	})
-
-	token, err := jwtToken.SignedString(s.token)
+	token, err := createToken(user)
 	if err != nil {
+		log.Println(err)
 
 		return &param.LoginResponse{
 			Token:  "",
-			Errors: []string{err.Error()},
+			Errors: []string{"Something went wrong!."},
 		}
 	}
 
@@ -152,4 +146,25 @@ func (s Service) Login(req param.LoginRequest) *param.LoginResponse {
 
 func (s Service) Update() {
 	// TODO
+}
+
+func createToken(user *entity.User) (string, error) {
+	mySigningKey := []byte("AllYourBase")
+
+	// Create the Claims
+	claims := Claims{
+		user.ID,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+			Issuer:    "test",
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString(mySigningKey)
+	if err != nil {
+		return "", err
+	}
+
+	return ss, nil
 }

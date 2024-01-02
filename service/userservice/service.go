@@ -6,28 +6,23 @@ import (
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/validation"
-	"time"
+	"mdhesari/kian-quiz-golang-game/service/authservice"
 
-	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Claims struct {
-	UserID primitive.ObjectID `json:"user_id"`
-	jwt.RegisteredClaims
-}
-
 type Service struct {
-	repo  Repository
-	token string
+	authSrv *authservice.Service
+	repo    Repository
 }
 
 type Repository interface {
 	Register(ctx context.Context, u entity.User) (entity.User, error)
 	GetAll(ctx context.Context) ([]entity.User, error)
 	FindByEmail(ctx context.Context, email string) (*entity.User, error)
+	FindByID(id primitive.ObjectID) (*entity.User, error)
 }
 
 type UserForm struct {
@@ -37,8 +32,8 @@ type UserForm struct {
 	Password string
 }
 
-func New(repo Repository, token string) Service {
-	return Service{repo: repo, token: token}
+func New(authSrv *authservice.Service, repo Repository) Service {
+	return Service{authSrv: authSrv, repo: repo}
 }
 
 func (s Service) Register(uf UserForm) *param.RegisterResponse {
@@ -128,7 +123,7 @@ func (s Service) Login(req param.LoginRequest) *param.LoginResponse {
 		}
 	}
 
-	token, err := createToken(user)
+	token, err := s.authSrv.GenerateToken(user, "token")
 	if err != nil {
 		log.Println(err)
 
@@ -148,23 +143,14 @@ func (s Service) Update() {
 	// TODO
 }
 
-func createToken(user *entity.User) (string, error) {
-	mySigningKey := []byte("AllYourBase")
-
-	// Create the Claims
-	claims := Claims{
-		user.ID,
-		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
-			Issuer:    "test",
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString(mySigningKey)
+func (s Service) GetByID(id primitive.ObjectID) (param.ProfileResponse, error) {
+	user, err := s.repo.FindByID(id)
 	if err != nil {
-		return "", err
+
+		return param.ProfileResponse{}, err
 	}
 
-	return ss, nil
+	return param.ProfileResponse{
+		User: user,
+	}, nil
 }

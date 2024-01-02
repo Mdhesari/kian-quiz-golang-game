@@ -38,7 +38,23 @@ func (d DB) FindByEmail(ctx context.Context, email string) (*entity.User, error)
 	defer cancel()
 
 	var user entity.User
-	filter := bson.D{{"email", email}}
+	filter := bson.M{"email": email}
+	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+
+	res.Decode(&user)
+
+	return &user, nil
+}
+
+func (d DB) FindByID(id primitive.ObjectID) (*entity.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), d.cli.QueryTimeout)
+	defer cancel()
+
+	var user entity.User
+	filter := bson.M{"_id": id}
 	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
 	if res.Err() != nil {
 		return nil, res.Err()

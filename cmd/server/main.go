@@ -8,6 +8,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
+	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 	"time"
 
@@ -35,10 +36,12 @@ func main() {
 
 	repo := mongouser.New(cli)
 
-	userSrv := userservice.New(repo, cfg.JWT.Secret)
+	authSrv := authservice.New(cfg.JWT.Secret)
+
+	userSrv := userservice.New(&authSrv, repo)
 
 	handlers := []httpserver.Handler{
-		userhandler.New(userSrv),
+		userhandler.New(userSrv, authSrv),
 		pinghandler.New(),
 	}
 

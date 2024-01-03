@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Handler interface {
@@ -11,7 +12,7 @@ type Handler interface {
 }
 
 type HTTPServer struct {
-	Port    int    `koanf:"port"`
+	Port int `koanf:"port"`
 }
 
 type Config struct {
@@ -21,21 +22,24 @@ type Config struct {
 type Server struct {
 	config   Config
 	handlers []Handler
-	Router   *echo.Echo
 }
 
-func New(c Config, r *echo.Echo, h []Handler) Server {
+func New(c Config, h []Handler) Server {
 	return Server{
 		handlers: h,
-		config: c,
-		Router: r,
+		config:   c,
 	}
 }
 
 func (s Server) Serve() {
+	echo := echo.New()
+
+	echo.Use(middleware.Logger())
+	echo.Use(middleware.Recover())
+
 	// config handlers
 	for _, h := range s.handlers {
-		h.SetRoutes(s.Router)
+		h.SetRoutes(echo)
 	}
 
 	// Start server
@@ -43,7 +47,7 @@ func (s Server) Serve() {
 
 	fmt.Printf("start echo server on %s\n", address)
 
-	if err := s.Router.Start(address); err != nil {
+	if err := echo.Start(address); err != nil {
 		fmt.Println("router start error", err)
 	}
 }

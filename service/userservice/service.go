@@ -2,6 +2,7 @@ package userservice
 
 import (
 	"context"
+	"errors"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -12,6 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var ErrNotFound = errors.New("Could not find the entity.")
 
 type Service struct {
 	authSrv *authservice.Service
@@ -146,6 +149,10 @@ func (s Service) Update() {
 func (s Service) GetByID(id primitive.ObjectID) (param.ProfileResponse, error) {
 	user, err := s.repo.FindByID(id)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+
+			return param.ProfileResponse{}, ErrNotFound
+		}
 
 		return param.ProfileResponse{}, err
 	}

@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
-	"github.com/labstack/echo/v4"
 )
 
 var (
@@ -51,7 +50,7 @@ func main() {
 		},
 	}
 
-	server = httpserver.New(config, echo.New(), handlers)
+	server = httpserver.New(config, handlers)
 
 	server.Serve()
 }

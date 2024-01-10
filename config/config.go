@@ -1,6 +1,9 @@
 package config
 
-import "mdhesari/kian-quiz-golang-game/repository/mongorepo"
+import (
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
+)
 
 type Database struct {
 	MongoDB mongorepo.Config `koanf:"mongodb"`
@@ -11,6 +14,7 @@ type JWT struct {
 }
 
 type Config struct {
-	Database Database `koanf:"database"`
-	JWT      JWT      `koanf:"jwt"`
+	Database Database          `koanf:"database"`
+	JWT      JWT               `koanf:"jwt"`
+	Server   httpserver.Config `koanf:"server"`
 }

@@ -16,17 +16,17 @@ import (
 )
 
 var (
-	port   int = *flag.Int("port", 8080, "Which port to run.")
+	cfg    config.Config
 	server httpserver.Server
 )
 
 func init() {
+	cfg = config.Load("config.yml")
 	flag.Parse()
 }
 
 func main() {
-	cfg := config.Load("config.yml")
-
+	// Todo: duration should be in config
 	cli, err := mongorepo.New(cfg.Database.MongoDB, 5*time.Second, encrypt.Hash{})
 	if err != nil {
 
@@ -45,9 +45,7 @@ func main() {
 	}
 
 	config := httpserver.Config{
-		HTTPServer: httpserver.HTTPServer{
-			Port: port,
-		},
+		HTTPServer: cfg.Server.HTTPServer,
 	}
 
 	server = httpserver.New(config, handlers)

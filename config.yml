@@ -1,7 +1,8 @@
 type: yml
 
-http_server:
-  port: 8080
+server:
+  http_server:
+    port: 8080
 
 jwt:
   secret: "secret"

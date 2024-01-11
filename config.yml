@@ -14,3 +14,4 @@ database:
     db_name: db
     username: michael
     password: secret
+    migrations: migrations

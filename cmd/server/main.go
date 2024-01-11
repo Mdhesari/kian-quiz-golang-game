@@ -6,13 +6,16 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
+	"mdhesari/kian-quiz-golang-game/repository/migrator"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 var (
@@ -32,6 +35,17 @@ func main() {
 
 		panic("could not connect to mongodb.")
 	}
+
+	migrator, err := migrator.New(cli.Conn().Client(), &mongodb.Config{
+		DatabaseName:         cfg.Database.MongoDB.DBName,
+		MigrationsCollection: cfg.Database.MongoDB.Migrations,
+		TransactionMode:      false,
+		Locking:              mongodb.Locking{},
+	})
+	if err != nil {
+		panic(err)
+	}
+	migrator.Up()
 
 	repo := mongouser.New(cli)
 

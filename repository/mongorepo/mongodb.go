@@ -11,11 +11,12 @@ import (
 )
 
 type Config struct {
-	Username string `koanf:"username"`
-	Password string `koanf:"password"`
-	Port     int    `koanf:"port"`
-	Host     string `koanf:"host"`
-	DBName   string `koanf:"db_name"`
+	Username   string `koanf:"username"`
+	Password   string `koanf:"password"`
+	Port       int    `koanf:"port"`
+	Host       string `koanf:"host"`
+	DBName     string `koanf:"db_name"`
+	Migrations string `koanf:"migrations"`
 }
 
 const (

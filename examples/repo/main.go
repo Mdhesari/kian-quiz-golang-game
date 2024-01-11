@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
+	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 	"time"
 
@@ -27,14 +28,15 @@ func main() {
 		Password: "123@123@123",
 	}
 	// TODO: token should not be there!
-	usersrv := userservice.New(repo, "secret")
+	authSrv := authservice.New("test")
+	usersrv := userservice.New(&authSrv, repo)
 
-	user, err := usersrv.Register(uf)
-	if err != nil {
-		panic(err)
+	res := usersrv.Register(uf)
+	if len(res.Errors) > 0 {
+		panic(res.Errors)
 	}
 
-	fmt.Println(user)
+	fmt.Println(res)
 
 	users, err := usersrv.List()
 	if err != nil {

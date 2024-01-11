@@ -15,3 +15,4 @@ database:
     username: michael
     password: secret
     migrations: migrations
+    duration_seconds: 5

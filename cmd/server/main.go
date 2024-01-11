@@ -11,7 +11,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
-	"time"
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
@@ -30,7 +29,7 @@ func init() {
 
 func main() {
 	// Todo: duration should be in config
-	cli, err := mongorepo.New(cfg.Database.MongoDB, 5*time.Second, encrypt.Hash{})
+	cli, err := mongorepo.New(cfg.Database.MongoDB, encrypt.Hash{})
 	if err != nil {
 
 		panic("could not connect to mongodb.")

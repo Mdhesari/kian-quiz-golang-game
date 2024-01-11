@@ -11,17 +11,14 @@ import (
 )
 
 type Config struct {
-	Username   string `koanf:"username"`
-	Password   string `koanf:"password"`
-	Port       int    `koanf:"port"`
-	Host       string `koanf:"host"`
-	DBName     string `koanf:"db_name"`
-	Migrations string `koanf:"migrations"`
+	Username        string `koanf:"username"`
+	Password        string `koanf:"password"`
+	Port            int    `koanf:"port"`
+	Host            string `koanf:"host"`
+	DBName          string `koanf:"db_name"`
+	Migrations      string `koanf:"migrations"`
+	DurationSeconds int    `koanf:"duration_seconds"`
 }
-
-const (
-	mongoQueryTimeout = 10 * time.Second
-)
 
 type MongoDB struct {
 	config       Config
@@ -31,7 +28,7 @@ type MongoDB struct {
 	Hash         encrypt.Hash `koanf:"hash"`
 }
 
-func New(c Config, du time.Duration, h encrypt.Hash) (*MongoDB, error) {
+func New(c Config, h encrypt.Hash) (*MongoDB, error) {
 	url := fmt.Sprintf("mongodb://%s:%s@%s:%d/", c.Username, c.Password, c.Host, c.Port)
 	clientOptions := options.Client().ApplyURI(url)
 
@@ -50,7 +47,7 @@ func New(c Config, du time.Duration, h encrypt.Hash) (*MongoDB, error) {
 	return &MongoDB{
 		conn:         cli.Database(c.DBName),
 		Hash:         h,
-		QueryTimeout: du,
+		QueryTimeout: time.Duration(c.DurationSeconds * int(time.Second)),
 		config:       c,
 	}, nil
 }

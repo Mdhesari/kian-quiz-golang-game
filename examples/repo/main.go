@@ -6,18 +6,20 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
-	"time"
 
 	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 )
 
 func main() {
 	cli, err := mongorepo.New(mongorepo.Config{
-		Username: "michael",
-		Password: "secret",
-		Host:     "localhost",
-		Port:     27017,
-	}, 30*time.Second, encrypt.Hash{})
+		Username:        "michael",
+		Password:        "secret",
+		Port:            27017,
+		Host:            "localhost",
+		DBName:          "mongo",
+		Migrations:      "migrations",
+		DurationSeconds: 5,
+	}, encrypt.Hash{})
 
 	repo := mongouser.New(cli)
 

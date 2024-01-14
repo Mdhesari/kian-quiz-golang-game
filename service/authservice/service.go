@@ -1,8 +1,9 @@
 package authservice
 
 import (
-	"errors"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
+	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -46,17 +47,19 @@ func (s Service) GenerateToken(user *entity.User, iss string) (string, error) {
 }
 
 func (s Service) VerifyToken(tokenString string) (*Claims, error) {
+	op := "User verify token"
+
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return s.secret, nil
 	})
 	if err != nil {
 
-		return nil, err
+		return nil, richerror.New(op, errmsg.ErrAuthorization).WithKind(richerror.KindUnAthorized)
 	}
 
 	if claims, ok := token.Claims.(*Claims); ok {
 		return claims, nil
 	}
 
-	return nil, errors.New("Could not assert claims")
+	return nil, richerror.New(op, errmsg.ErrClaimAssertion).WithKind(richerror.KindUnexpected)
 }

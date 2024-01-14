@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -47,6 +48,42 @@ func (d DB) FindByEmail(ctx context.Context, email string) (*entity.User, error)
 	res.Decode(&user)
 
 	return &user, nil
+}
+
+func (d DB) IsMobileUnique(mobile string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), d.cli.QueryTimeout)
+	defer cancel()
+
+	filter := bson.M{"mobile": mobile}
+	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
+	if res.Err() != nil {
+		if res.Err() == mongo.ErrNoDocuments {
+
+			return true, nil
+		}
+
+		return false, res.Err()
+	}
+
+	return false, nil
+}
+
+func (d DB) IsEmailUnique(email string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), d.cli.QueryTimeout)
+	defer cancel()
+
+	filter := bson.M{"email": email}
+	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
+	if res.Err() != nil {
+		if res.Err() == mongo.ErrNoDocuments {
+
+			return true, nil
+		}
+
+		return false, res.Err()
+	}
+
+	return false, nil
 }
 
 func (d DB) FindByID(id primitive.ObjectID) (*entity.User, error) {

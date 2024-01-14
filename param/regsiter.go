@@ -11,5 +11,4 @@ type RegisterRequest struct {
 
 type RegisterResponse struct {
 	User   *entity.User `json:"user"`
-	Errors []string     `json:"errors"`
 }

@@ -1,9 +1,7 @@
 package userhandler
 
 import (
-	"log"
-	"mdhesari/kian-quiz-golang-game/param"
-	"mdhesari/kian-quiz-golang-game/service/userservice"
+	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -14,22 +12,18 @@ func (h Handler) Profile(c echo.Context) error {
 
 	claims, err := h.authSrv.VerifyToken(token)
 	if err != nil {
-		log.Println(err)
+		msg, code := richerror.Error(err)
 
-		return echo.NewHTTPError(http.StatusUnauthorized, param.ProfileResponse{
-			User:   nil,
-			Errors: []string{"Invalid Authorization Token."},
+		return echo.NewHTTPError(code, echo.Map{
+			"message": msg,
 		})
 	}
 
 	res, err := h.userSrv.GetByID(claims.UserID)
 	if err != nil {
-		if err == userservice.ErrNotFound {
+		msg, code := richerror.Error(err)
 
-			return echo.ErrNotFound
-		}
-
-		return echo.NewHTTPError(500, err)
+		return echo.NewHTTPError(code, msg)
 	}
 
 	return c.JSON(http.StatusOK, res)

@@ -33,9 +33,9 @@ func main() {
 	authSrv := authservice.New("test")
 	usersrv := userservice.New(&authSrv, repo)
 
-	res := usersrv.Register(uf)
-	if len(res.Errors) > 0 {
-		panic(res.Errors)
+	res, err := usersrv.Register(uf)
+	if err != nil {
+		panic(err)
 	}
 
 	fmt.Println(res)

@@ -3,6 +3,7 @@ package userhandler
 import (
 	"log"
 	"mdhesari/kian-quiz-golang-game/param"
+	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 	"net/http"
 
@@ -18,12 +19,28 @@ func (h Handler) Register(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, param.RegisterResponse{})
 	}
 
-	res := h.userSrv.Register(userservice.UserForm{
+	err := h.userValidator.ValidateRegisterRequest(req)
+	if err != nil {
+
+		return c.JSON(http.StatusUnprocessableEntity, echo.Map{
+			"message": err.Error(),
+		})
+	}
+
+	res, err := h.userSrv.Register(userservice.UserForm{
 		Name:     req.Name,
 		Email:    req.Email,
 		Mobile:   req.Mobile,
 		Password: req.Password,
 	})
+	if err != nil {
+		log.Println(err)
+		msg, code := richerror.Error(err)
 
-	return c.JSON(http.StatusOK, res)
+		return c.JSON(code, echo.Map{
+			"message": msg,
+		})
+	}
+
+	return c.JSON(http.StatusCreated, res)
 }

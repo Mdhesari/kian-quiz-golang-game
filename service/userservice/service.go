@@ -6,7 +6,8 @@ import (
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
-	"mdhesari/kian-quiz-golang-game/pkg/validation"
+	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
+	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -39,34 +40,9 @@ func New(authSrv *authservice.Service, repo Repository) Service {
 	return Service{authSrv: authSrv, repo: repo}
 }
 
-func (s Service) Register(uf UserForm) *param.RegisterResponse {
-	res := param.RegisterResponse{
-		User:   nil,
-		Errors: []string{},
-	}
+func (s Service) Register(uf UserForm) (*param.RegisterResponse, error) {
+	op := "User Register"
 
-	// TODO: validate form
-	if !validation.Name(uf.Name) {
-		res.Errors = append(res.Errors, "Name is required!")
-	}
-
-	if !validation.Password(uf.Password) {
-		res.Errors = append(res.Errors, "Password must be greater than 6 characters.")
-	}
-
-	if !validation.Email(uf.Email) {
-		res.Errors = append(res.Errors, "Email is not valid.")
-	}
-
-	if _, err := s.repo.FindByEmail(context.Background(), uf.Email); err == nil {
-		res.Errors = append(res.Errors, "User with this email exists")
-	}
-
-	if len(res.Errors) > 0 {
-		return &res
-	}
-
-	// create user entity
 	user := entity.User{
 		Name:     uf.Name,
 		Email:    uf.Email,
@@ -74,17 +50,16 @@ func (s Service) Register(uf UserForm) *param.RegisterResponse {
 		Password: uf.Password,
 	}
 
-	// repo store
 	user, err := s.repo.Register(context.Background(), user)
 	if err != nil {
 		log.Println("Repo error: ", err)
 
-		res.Errors = append(res.Errors, "Something went wrong!")
-		return &res
+		return nil, richerror.New(op, errmsg.ErrInternalServer).WithKind(richerror.KindUnexpected)
 	}
 
-	res.User = &user
-	return &res
+	return &param.RegisterResponse{
+		User: &user,
+	}, nil
 }
 
 func (s Service) List() ([]entity.User, error) {
@@ -96,23 +71,21 @@ func (s Service) List() ([]entity.User, error) {
 	return users, nil
 }
 
-func (s Service) Login(req param.LoginRequest) *param.LoginResponse {
+func (s Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
+	op := "User Service Login"
+
 	user, err := s.repo.FindByEmail(context.Background(), req.Email)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 
 			return &param.LoginResponse{
-				Token:  "",
-				Errors: []string{"Credentials do not match."},
-			}
+				Token: "",
+			}, richerror.New(op, "Credentials do not match.").WithErr(err).WithKind(richerror.KindForbidden)
 		}
 
 		log.Println("Error on finding email: ", err)
 
-		return &param.LoginResponse{
-			Token:  "",
-			Errors: []string{err.Error()},
-		}
+		return &param.LoginResponse{}, richerror.New(op, err.Error()).WithKind(richerror.KindInvalid).WithErr(err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
@@ -120,26 +93,19 @@ func (s Service) Login(req param.LoginRequest) *param.LoginResponse {
 			log.Println("Error on hashing password: ", err)
 		}
 
-		return &param.LoginResponse{
-			Token:  "",
-			Errors: []string{"Credentials do not match."},
-		}
+		return &param.LoginResponse{}, richerror.New(op, "Credentials do not match.").WithKind(richerror.KindForbidden)
 	}
 
 	token, err := s.authSrv.GenerateToken(user, "token")
 	if err != nil {
 		log.Println(err)
 
-		return &param.LoginResponse{
-			Token:  "",
-			Errors: []string{"Something went wrong!."},
-		}
+		return &param.LoginResponse{}, richerror.New(op, "Something went wrong!.").WithErr(err)
 	}
 
 	return &param.LoginResponse{
-		Token:  token,
-		Errors: []string{},
-	}
+		Token: token,
+	}, nil
 }
 
 func (s Service) Update() {

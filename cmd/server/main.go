@@ -6,6 +6,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
+	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
 	"mdhesari/kian-quiz-golang-game/repository/migrator"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
@@ -13,8 +14,8 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
-	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 )
 
 var (
@@ -52,8 +53,10 @@ func main() {
 
 	userSrv := userservice.New(&authSrv, repo)
 
+	userValidator := uservalidator.New(repo)
+
 	handlers := []httpserver.Handler{
-		userhandler.New(userSrv, authSrv),
+		userhandler.New(userSrv, authSrv, userValidator),
 		pinghandler.New(),
 	}
 

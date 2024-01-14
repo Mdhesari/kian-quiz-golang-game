@@ -19,11 +19,12 @@ func (h Handler) Register(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, param.RegisterResponse{})
 	}
 
-	err := h.userValidator.ValidateRegisterRequest(req)
-	if err != nil {
+	if fields, err := h.userValidator.ValidateRegisterRequest(req); err != nil {
+		msg, code := richerror.Error(err)
 
-		return c.JSON(http.StatusUnprocessableEntity, echo.Map{
-			"message": err.Error(),
+		return c.JSON(code, echo.Map{
+			"message": msg,
+			"errors":  fields,
 		})
 	}
 

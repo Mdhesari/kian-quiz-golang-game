@@ -13,10 +13,12 @@ func (h Handler) Login(c echo.Context) error {
 
 	c.Bind(&req)
 
-	if err := h.userValidator.ValidateLoginRequest(req); err != nil {
+	if fields, err := h.userValidator.ValidateLoginRequest(req); err != nil {
+		msg, code := richerror.Error(err)
 
-		return c.JSON(http.StatusUnprocessableEntity, echo.Map{
-			"message": err.Error(),
+		return c.JSON(code, echo.Map{
+			"message": msg,
+			"errors":  fields,
 		})
 	}
 

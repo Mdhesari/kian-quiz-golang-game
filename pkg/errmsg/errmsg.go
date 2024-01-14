@@ -6,4 +6,5 @@ const (
 	ErrAuthorization  string = "Authorization required."
 	ErrMobileUnique   string = "Mobile must be unique."
 	ErrEmailUnique    string = "Email must be unique."
+	ErrInvalidInput   string = "Invalid input validation."
 )

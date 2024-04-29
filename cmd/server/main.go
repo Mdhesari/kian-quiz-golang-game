@@ -43,23 +43,24 @@ func main() {
 		Locking:              mongodb.Locking{},
 	})
 	if err != nil {
-		
+
 		panic(err)
 	}
 	migrator.Up()
 
 	repo := mongouser.New(cli)
 
-	authSrv := authservice.New(authservice.Config{
+	authConfig := authservice.Config{
 		Secret: []byte(cfg.JWT.Secret),
-	})
+	}
+	authSrv := authservice.New(authConfig)
 
 	userSrv := userservice.New(&authSrv, repo)
 
 	userValidator := uservalidator.New(repo)
 
 	handlers := []httpserver.Handler{
-		userhandler.New(userSrv, authSrv, userValidator),
+		userhandler.New(userSrv, authSrv, authConfig, userValidator),
 		pinghandler.New(),
 	}
 

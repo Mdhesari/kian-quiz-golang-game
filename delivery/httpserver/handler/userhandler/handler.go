@@ -9,13 +9,15 @@ import (
 type Handler struct {
 	userSrv       userservice.Service
 	authSrv       authservice.Service
+	authConfig    authservice.Config
 	userValidator uservalidator.Validator
 }
 
-func New(userSrv userservice.Service, authSrv authservice.Service, userValidator uservalidator.Validator) Handler {
+func New(userSrv userservice.Service, authSrv authservice.Service, authConfig authservice.Config, userValidator uservalidator.Validator) Handler {
 	return Handler{
 		userSrv:       userSrv,
 		authSrv:       authSrv,
+		authConfig:    authConfig,
 		userValidator: userValidator,
 	}
 }

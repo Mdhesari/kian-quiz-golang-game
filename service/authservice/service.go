@@ -10,13 +10,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Service struct {
-	secret []byte
+type Config struct {
+	Secret []byte
 }
 
-func New(secret string) Service {
+type Service struct {
+	config Config
+}
+
+func New(c Config) Service {
 	return Service{
-		secret: []byte(secret),
+		config: c,
 	}
 }
 
@@ -26,7 +30,9 @@ type Claims struct {
 }
 
 func (s Service) GenerateToken(user *entity.User, iss string) (string, error) {
-	mySigningKey := []byte(s.secret)
+	op := "Generate token"
+
+	mySigningKey := []byte(s.config.Secret)
 
 	// Create the Claims
 	claims := Claims{
@@ -40,7 +46,8 @@ func (s Service) GenerateToken(user *entity.User, iss string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString(mySigningKey)
 	if err != nil {
-		return "", err
+
+		return "", richerror.New(op, errmsg.ErrSignKey).WithErr(err).WithKind(richerror.KindUnexpected)
 	}
 
 	return ss, nil
@@ -50,7 +57,8 @@ func (s Service) VerifyToken(tokenString string) (*Claims, error) {
 	op := "User verify token"
 
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return s.secret, nil
+
+		return s.config.Secret, nil
 	})
 	if err != nil {
 
@@ -58,6 +66,7 @@ func (s Service) VerifyToken(tokenString string) (*Claims, error) {
 	}
 
 	if claims, ok := token.Claims.(*Claims); ok {
+
 		return claims, nil
 	}
 

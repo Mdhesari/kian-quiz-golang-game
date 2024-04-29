@@ -29,8 +29,12 @@ func main() {
 		Mobile:   "+989122222222",
 		Password: "123@123@123",
 	}
+
+	secret := "test"
 	// TODO: token should not be there!
-	authSrv := authservice.New("test")
+	authSrv := authservice.New(authservice.Config{
+		Secret: []byte(secret),
+	})
 	usersrv := userservice.New(&authSrv, repo)
 
 	res, err := usersrv.Register(uf)

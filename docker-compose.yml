@@ -1,15 +1,15 @@
-version: '3.9'
+version: '3.1'
 services:
-  db:
-    image: mongo:latest
+  mongo:
+    image: mongo:8.0.0-rc4-jammy
     container_name: test-mongo
-    restart: always
+    # restart: always
     ports:
       - 27017:27017
     environment:
       - MONGO_INITDB_ROOT_USERNAME=michael
       - MONGO_INITDB_ROOT_PASSWORD=secret
-  db-client:
+  mongo-client:
     image: mongo-express:latest
     restart: always
     ports:
@@ -19,4 +19,4 @@ services:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=secret
       - ME_CONFIG_MONGODB_URL=mongodb://michael:secret@db:27017/
     depends_on:
-      - db
+      - mongo

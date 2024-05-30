@@ -1,0 +1,11 @@
+version: '3.1'
+services:
+  mongo:
+    image: mongo
+    container_name: test-mongo
+    restart: always
+    ports:
+      - 27018:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=michael_test
+      - MONGO_INITDB_ROOT_PASSWORD=secret_test

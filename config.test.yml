@@ -2,17 +2,17 @@ type: yml
 
 server:
   http_server:
-    port: 8080
+    port: 9090
 
 jwt:
-  secret: "secretto"
+  secret: "secret"
 
 database:
   mongodb:
-    port: 27017
+    port: 27018
     host: localhost
-    db_name: db
-    username: michael
-    password: secret
+    db_name: db_test
+    username: michael_test
+    password: secret_test
     migrations: migrations
     duration_seconds: 5

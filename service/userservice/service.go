@@ -34,6 +34,7 @@ type UserForm struct {
 	Email    string
 	Mobile   string
 	Password string
+	RoleID   primitive.ObjectID
 }
 
 func New(authSrv *authservice.Service, repo Repository) Service {
@@ -48,6 +49,7 @@ func (s Service) Register(uf UserForm) (*param.RegisterResponse, error) {
 		Email:    uf.Email,
 		Mobile:   uf.Mobile,
 		Password: uf.Password,
+		RoleID:   uf.RoleID,
 	}
 
 	user, err := s.repo.Register(context.Background(), user)

@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Auth(service authservice.Service, config authservice.Config) echo.MiddlewareFunc {
+func Auth(service *authservice.Service, config authservice.Config) echo.MiddlewareFunc {
 	return mw.WithConfig(mw.Config{
 		ContextKey:    constant.AuthContextKey,
 		SigningMethod: constant.AuthSigningMethod,

@@ -4,13 +4,16 @@ import (
 	"flag"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/backpanelhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
 	"mdhesari/kian-quiz-golang-game/repository/migrator"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
+	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
@@ -48,20 +51,24 @@ func main() {
 	}
 	migrator.Up()
 
-	repo := mongouser.New(cli)
+	userRepo := mongouser.New(cli)
+	rbacRepo := mongorbac.New(cli)
 
 	authConfig := authservice.Config{
 		Secret: []byte(cfg.JWT.Secret),
 	}
 	authSrv := authservice.New(authConfig)
 
-	userSrv := userservice.New(&authSrv, repo)
+	rbacSrv := rbacservice.New(rbacRepo)
 
-	userValidator := uservalidator.New(repo)
+	userSrv := userservice.New(&authSrv, userRepo)
+
+	userValidator := uservalidator.New(userRepo)
 
 	handlers := []httpserver.Handler{
-		userhandler.New(userSrv, authSrv, authConfig, userValidator),
+		userhandler.New(&userSrv, &authSrv, &rbacSrv, authConfig, userValidator),
 		pinghandler.New(),
+		backpanelhandler.New(&userSrv, &rbacSrv, &authSrv, authConfig),
 	}
 
 	config := httpserver.Config{

@@ -1,7 +1,6 @@
 package userhandler
 
 import (
-	"mdhesari/kian-quiz-golang-game/pkg/constant"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"net/http"
@@ -9,12 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func getClaims(c echo.Context) *authservice.Claims {
-	return c.Get(constant.AuthContextKey).(*authservice.Claims)
-}
-
 func (h Handler) Profile(c echo.Context) error {
-	claims := getClaims(c)
+	claims := authservice.GetClaims(c)
 
 	res, err := h.userSrv.GetByID(claims.UserID)
 	if err != nil {

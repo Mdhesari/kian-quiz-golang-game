@@ -3,6 +3,7 @@ package userhandler
 import (
 	"log"
 	"mdhesari/kian-quiz-golang-game/param"
+	"mdhesari/kian-quiz-golang-game/pkg/constant"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 	"net/http"
@@ -28,11 +29,21 @@ func (h Handler) Register(c echo.Context) error {
 		})
 	}
 
+	role, err := h.rbacSrv.GetRole(constant.RoleUser)
+	if err != nil {
+		msg, code := richerror.Error(err)
+
+		log.Println(err)
+
+		return echo.NewHTTPError(code, msg)
+	}
+
 	res, err := h.userSrv.Register(userservice.UserForm{
 		Name:     req.Name,
 		Email:    req.Email,
 		Mobile:   req.Mobile,
 		Password: req.Password,
+		RoleID:   role.ID,
 	})
 	if err != nil {
 		log.Println(err)

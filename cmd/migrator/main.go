@@ -36,7 +36,7 @@ func main() {
 		Locking:              mongodb.Locking{},
 	})
 	if err != nil {
-		
+
 		panic(err)
 	}
 

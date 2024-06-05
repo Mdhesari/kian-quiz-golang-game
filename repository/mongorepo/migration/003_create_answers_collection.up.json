@@ -1,0 +1,30 @@
+[
+    {
+        "create": "answers",
+        "clusteredIndex": {
+            "key": {
+                "_id": 1
+            },
+            "unique": true,
+            "name": "answers clustered key"
+        },
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "title": "Answer Object Validation",
+                "required": [
+                    "title",
+                    "difficulty"
+                ],
+                "properties": {
+                    "text": {
+                        "bsonType": "string"
+                    },
+                    "question_id": {
+                        "bsonType": "objectId"
+                    }
+                }
+            }
+        }
+    }
+]

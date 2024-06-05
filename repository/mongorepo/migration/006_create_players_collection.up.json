@@ -1,0 +1,36 @@
+[
+    {
+        "create": "players",
+        "clusteredIndex": {
+            "key": {
+                "_id": 1
+            },
+            "unique": true,
+            "name": "players clustered key"
+        },
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "title": "Player Object Validation",
+                "required": [
+                    "user_id",
+                    "game_id"
+                ],
+                "properties": {
+                    "user_id": {
+                        "bsonType": "objectId"
+                    },
+                    "game_id": {
+                        "bsonType": "objectId"
+                    },
+                    "answer_ids": {
+                        "bsonType": "array"
+                    },
+                    "score": {
+                        "bsonType": "double"
+                    }
+                }
+            }
+        }
+    }
+]

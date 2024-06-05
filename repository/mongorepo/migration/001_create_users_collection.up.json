@@ -1,0 +1,37 @@
+[
+    {
+        "create": "users",
+        "clusteredIndex": {
+            "key": {
+                "_id": 1
+            },
+            "unique": true,
+            "name": "users clustered key"
+        },
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "title": "User Object Validation",
+                "required": [
+                    "name",
+                    "email",
+                    "mobile"
+                ],
+                "properties": {
+                    "name": {
+                        "bsonType": "string"
+                    },
+                    "email": {
+                        "bsonType": "string"
+                    },
+                    "mobile": {
+                        "bsonType": "string"
+                    },
+                    "password": {
+                        "bsonType": "binData"
+                    }
+                }
+            }
+        }
+    }
+]

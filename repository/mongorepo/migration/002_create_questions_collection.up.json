@@ -1,0 +1,42 @@
+[
+    {
+        "create": "questions",
+        "clusteredIndex": {
+            "key": {
+                "_id": 1
+            },
+            "unique": true,
+            "name": "questions clustered key"
+        },
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "title": "Question Object Validation",
+                "required": [
+                    "title",
+                    "difficulty"
+                ],
+                "properties": {
+                    "title": {
+                        "bsonType": "string"
+                    },
+                    "description": {
+                        "bsonType": "string"
+                    },
+                    "category_id": {
+                        "bsonType": "objectId"
+                    },
+                    "correct_answer_id": {
+                        "bsonType": "objectId"
+                    },
+                    "answer_ids": {
+                        "bsonType": "array"
+                    },
+                    "difficulty": {
+                        "bsonType": "int"
+                    }
+                }
+            }
+        }
+    }
+]

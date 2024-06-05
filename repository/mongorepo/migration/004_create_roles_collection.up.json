@@ -1,0 +1,26 @@
+[
+    {
+        "create": "roles",
+        "clusteredIndex": {
+            "key": {
+                "_id": 1
+            },
+            "unique": true,
+            "name": "roles clustered key"
+        },
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "title": "Role Object Validation",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "bsonType": "string"
+                    }
+                }
+            }
+        }
+    }
+]

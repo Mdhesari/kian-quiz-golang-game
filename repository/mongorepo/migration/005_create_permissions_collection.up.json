@@ -1,0 +1,26 @@
+[
+    {
+        "create": "permissions",
+        "clusteredIndex": {
+            "key": {
+                "_id": 1
+            },
+            "unique": true,
+            "name": "permissions clustered key"
+        },
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "title": "Permission Object Validation",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "bsonType": "string"
+                    }
+                }
+            }
+        }
+    }
+]

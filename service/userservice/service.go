@@ -34,7 +34,7 @@ type UserForm struct {
 	Email    string
 	Mobile   string
 	Password string
-	RoleID   primitive.ObjectID
+	RoleID   *primitive.ObjectID
 }
 
 func New(authSrv *authservice.Service, repo Repository) Service {

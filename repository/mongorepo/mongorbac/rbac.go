@@ -6,6 +6,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (d *DB) CreateRole(ctx context.Context, role entity.Role) error {
@@ -27,6 +28,11 @@ func (d *DB) GetRoles(ctx context.Context) ([]entity.Role, error) {
 
 	cur, err := d.cli.Conn().Collection("roles").Find(ctx, bson.D{})
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+
+			return nil, nil
+		}
+
 		return nil, err
 	}
 
@@ -44,6 +50,10 @@ func (d *DB) GetRole(ctx context.Context, name string) (*entity.Role, error) {
 		"name": name,
 	})
 	if res.Err() != nil {
+		if res.Err() == mongo.ErrNoDocuments {
+
+			return nil, nil
+		}
 
 		return nil, res.Err()
 	}

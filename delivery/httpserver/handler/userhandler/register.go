@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (h Handler) Register(c echo.Context) error {
@@ -38,12 +39,17 @@ func (h Handler) Register(c echo.Context) error {
 		return echo.NewHTTPError(code, msg)
 	}
 
+	var roleID *primitive.ObjectID
+	if role != nil {
+		roleID = &role.ID
+	}
+
 	res, err := h.userSrv.Register(userservice.UserForm{
 		Name:     req.Name,
 		Email:    req.Email,
 		Mobile:   req.Mobile,
 		Password: req.Password,
-		RoleID:   role.ID,
+		RoleID:   roleID,
 	})
 	if err != nil {
 		log.Println(err)

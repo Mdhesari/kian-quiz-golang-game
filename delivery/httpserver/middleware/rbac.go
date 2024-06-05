@@ -18,9 +18,13 @@ func RBAC(userSrv *userservice.Service, rbacSrv *rbacservice.Service) echo.Middl
 
 				return err
 			}
+		
+			if res.User.RoleID == nil {
 
+				return c.JSON(http.StatusUnauthorized, echo.Map{})
+			}
 			// TODO - res with rbace srv
-			hasPerm, err := rbacSrv.HasPermissions(res.User.RoleID, "list-users")
+			hasPerm, err := rbacSrv.HasPermissions(*res.User.RoleID, "list-users")
 			if err != nil {
 
 				panic(err)

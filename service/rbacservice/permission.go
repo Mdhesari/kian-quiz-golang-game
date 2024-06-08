@@ -12,7 +12,7 @@ func (s Service) GetPermissionIds(ctx context.Context, perms ...string) ([]primi
 
 	permission, err := s.accessRepo.GetPermissionIds(ctx, perms...)
 	if err != nil {
-		
+
 		return nil, richerror.New(op, err.Error()).WithErr(err)
 	}
 
@@ -24,11 +24,12 @@ func (s Service) HasPermissions(roleID primitive.ObjectID, permissions ...string
 
 	perms, err := s.accessRepo.GetPermissionIds(context.TODO(), permissions...)
 	if err != nil {
-		
+
 		return false, err
 	}
-	res, err := s.accessRepo.HasPermissions(context.Background(), roleID, perms...)
+	res, err := s.accessRepo.HasPermissions(context.TODO(), roleID, perms...)
 	if err != nil {
+
 		return false, richerror.New(op, err.Error()).WithKind(richerror.KindUnexpected)
 	}
 

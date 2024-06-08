@@ -44,15 +44,20 @@ func New(authSrv *authservice.Service, repo Repository) Service {
 func (s Service) Register(uf UserForm) (*param.RegisterResponse, error) {
 	op := "User Register"
 
+	password, err := bcrypt.GenerateFromPassword([]byte(uf.Password), bcrypt.DefaultCost)
+	if err != nil {
+
+		return nil, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
+	}
 	user := entity.User{
 		Name:     uf.Name,
 		Email:    uf.Email,
 		Mobile:   uf.Mobile,
-		Password: uf.Password,
+		Password: password,
 		RoleID:   uf.RoleID,
 	}
 
-	user, err := s.repo.Register(context.Background(), user)
+	user, err = s.repo.Register(context.Background(), user)
 	if err != nil {
 		log.Println("Repo error: ", err)
 
@@ -90,7 +95,7 @@ func (s Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
 		return &param.LoginResponse{}, richerror.New(op, err.Error()).WithKind(richerror.KindInvalid).WithErr(err)
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(req.Password)); err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
 			log.Println("Error on hashing password: ", err)
 		}

@@ -35,7 +35,7 @@ func main() {
 		Name:     "Yalda",
 		Email:    "yalda@aqafazli.ir",
 		Mobile:   "09222222222",
-		Password: "mahsaamini",
+		Password: []byte("mahsaamini"),
 	}
 
 	_, err = collection.InsertOne(context.TODO(), user)

@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"mdhesari/kian-quiz-golang-game/param"
+	"mdhesari/kian-quiz-golang-game/pkg/constant"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
@@ -18,20 +20,19 @@ func RBAC(userSrv *userservice.Service, rbacSrv *rbacservice.Service) echo.Middl
 
 				return err
 			}
-		
-			if res.User.RoleID == nil {
 
-				return c.JSON(http.StatusUnauthorized, echo.Map{})
+			if res.User.RoleID == nil {
+				return c.JSON(http.StatusUnauthorized, param.GetDefaultUnAuthorizedResponse())
 			}
 			// TODO - res with rbace srv
-			hasPerm, err := rbacSrv.HasPermissions(*res.User.RoleID, "list-users")
+			perms := []string{constant.PermissionListUsers}
+			hasPerm, err := rbacSrv.HasPermissions(*res.User.RoleID, perms...)
 			if err != nil {
 
 				panic(err)
 			}
 			if !hasPerm {
-
-				return c.JSON(http.StatusUnauthorized, echo.Map{})
+				return c.JSON(http.StatusUnauthorized, param.GetDefaultUnAuthorizedResponse())
 			}
 
 			return next(c)

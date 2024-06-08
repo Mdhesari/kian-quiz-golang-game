@@ -27,6 +27,9 @@
                     "mobile": {
                         "bsonType": "string"
                     },
+                    "role_id": {
+                        "bsonType": "objectId"
+                    },
                     "password": {
                         "bsonType": "binData"
                     }

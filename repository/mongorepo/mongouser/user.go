@@ -106,11 +106,12 @@ func (d DB) Register(ctx context.Context, u entity.User) (entity.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
-	hash, err := d.cli.Hash.Generate(u.Password)
-	if err != nil {
-		return entity.User{}, err
-	}
-	u.Password = hash
+	// TODO - Is this the better way of hashing?
+	// hash, err := d.cli.Hash.Generate(u.Password)
+	// if err != nil {
+	// 	return entity.User{}, err
+	// }
+	// u.Password = hash
 
 	result, err := d.cli.Conn().Collection("users").InsertOne(ctx, u)
 	if err != nil {

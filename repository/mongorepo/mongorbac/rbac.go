@@ -2,6 +2,7 @@ package mongorbac
 
 import (
 	"context"
+	"fmt"
 	"mdhesari/kian-quiz-golang-game/entity"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -76,7 +77,7 @@ func (d *DB) GetPermissionIds(ctx context.Context, perms ...string) ([]primitive
 	}
 
 	permissions := []entity.Permission{}
-	if err := cur.All(ctx, permissions); err != nil {
+	if err := cur.All(ctx, &permissions); err != nil {
 		return nil, err
 	}
 
@@ -92,7 +93,8 @@ func (d *DB) HasPermissions(ctx context.Context, roleID primitive.ObjectID, perm
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
-	cur, err := d.cli.Conn().Collection("access_controls").Find(ctx, bson.M{
+	fmt.Println(roleID, permissionIDs)
+	cur, err := d.cli.Conn().Collection("access").Find(ctx, bson.M{
 		"role_id":       roleID,
 		"permission_id": bson.M{"$in": permissionIDs},
 	})
@@ -101,12 +103,11 @@ func (d *DB) HasPermissions(ctx context.Context, roleID primitive.ObjectID, perm
 		return false, err
 	}
 
-	accesses := []entity.Access{}
-	if err := cur.All(ctx, accesses); err != nil {
+	access := []entity.Access{}
+	if err := cur.All(ctx, &access); err != nil {
 
 		return false, err
 	}
 
-	//TODO: check accesses
-	return false, nil
+	return len(access) > 0, nil
 }

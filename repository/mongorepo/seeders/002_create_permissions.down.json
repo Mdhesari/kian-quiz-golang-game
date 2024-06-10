@@ -1,0 +1,19 @@
+[
+    {
+        "delete": "permissions",
+        "deletes": [
+            {
+                "q": {
+                    "name": {
+                        "$in": [
+                            "list-users",
+                            "create-user",
+                            "update-user",
+                            "delete-user"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+]

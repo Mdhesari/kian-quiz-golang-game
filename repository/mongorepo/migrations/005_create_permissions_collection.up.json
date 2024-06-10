@@ -1,17 +1,17 @@
 [
     {
-        "create": "roles",
+        "create": "permissions",
         "clusteredIndex": {
             "key": {
                 "_id": 1
             },
             "unique": true,
-            "name": "roles clustered key"
+            "name": "permissions clustered key"
         },
         "validator": {
             "$jsonSchema": {
                 "bsonType": "object",
-                "title": "Role Object Validation",
+                "title": "Permission Object Validation",
                 "required": [
                     "name"
                 ],
@@ -22,5 +22,17 @@
                 }
             }
         }
+    },
+    {
+        "createIndexes": "permissions",
+        "indexes": [
+            {
+                "key": {
+                    "name": 1
+                },
+                "name": "name",
+                "unique": true
+            }
+        ]
     }
 ]

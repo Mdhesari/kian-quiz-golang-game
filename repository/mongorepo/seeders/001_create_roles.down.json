@@ -1,0 +1,17 @@
+[
+    {
+        "delete": "roles",
+        "deletes": [
+            {
+                "q": {
+                    "name": {
+                        "$in": [
+                            "user",
+                            "admin"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+]

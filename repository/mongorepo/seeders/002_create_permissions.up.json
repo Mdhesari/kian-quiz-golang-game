@@ -1,0 +1,19 @@
+[
+    {
+        "insert": "permissions",
+        "documents": [
+            {
+                "name": "list-users"
+            },
+            {
+                "name": "create-user"
+            },
+            {
+                "name": "update-user"
+            },
+            {
+                "name": "delete-user"
+            }
+        ]
+    }
+]

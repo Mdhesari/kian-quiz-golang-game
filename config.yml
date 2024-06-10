@@ -8,6 +8,8 @@ jwt:
   secret: "secretto"
 
 database:
+  seeders: "file://repository/mongorepo/seeders"
+  migrations: "file://repository/mongorepo/migrations"
   mongodb:
     port: 27017
     host: localhost

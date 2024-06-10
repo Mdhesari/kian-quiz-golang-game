@@ -1,0 +1,13 @@
+[
+    {
+        "insert": "roles",
+        "documents": [
+            {
+                "name": "user"
+            },
+            {
+                "name": "admin"
+            }
+        ]
+    }
+]

@@ -44,7 +44,7 @@ func main() {
 		MigrationsCollection: cfg.Database.MongoDB.Migrations,
 		TransactionMode:      false,
 		Locking:              mongodb.Locking{},
-	})
+	}, cfg.Database.Migrations)
 	if err != nil {
 
 		panic(err)

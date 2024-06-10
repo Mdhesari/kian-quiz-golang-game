@@ -6,7 +6,9 @@ import (
 )
 
 type Database struct {
-	MongoDB mongorepo.Config `koanf:"mongodb"`
+	Migrations string           `koanf:"migrations"`
+	Seeders    string           `koanf:"seeders"`
+	MongoDB    mongorepo.Config `koanf:"mongodb"`
 }
 
 type JWT struct {

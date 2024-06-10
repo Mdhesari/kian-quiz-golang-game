@@ -1,0 +1,16 @@
+[
+    {
+        "delete": "roles",
+        "deletes": [
+            {
+                "q": {
+                    "email": {
+                        "$in": [
+                            "mdhesari99@gmail.com"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+]

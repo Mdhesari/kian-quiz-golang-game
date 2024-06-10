@@ -10,9 +10,7 @@ type Migrator struct {
 	migrate *migrate.Migrate
 }
 
-func New(client *mongo.Client, dbConfig *mongodb.Config) (*Migrator, error) {
-	msource := "file://repository/mongorepo/migration"
-
+func New(client *mongo.Client, dbConfig *mongodb.Config, msource string) (*Migrator, error) {
 	driver, err := mongodb.WithInstance(client, dbConfig)
 	if err != nil {
 		return nil, err
@@ -28,10 +26,10 @@ func New(client *mongo.Client, dbConfig *mongodb.Config) (*Migrator, error) {
 	}, nil
 }
 
-func (m Migrator) Up() {
-	m.migrate.Up()
+func (m Migrator) Up() error {
+	return m.migrate.Up()
 }
 
-func (m Migrator) Down() {
-	m.migrate.Down()
+func (m Migrator) Down() error {
+	return m.migrate.Down()
 }

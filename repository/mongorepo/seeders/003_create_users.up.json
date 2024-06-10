@@ -1,0 +1,12 @@
+[
+    {
+        "insert": "users",
+        "documents": [
+            {
+                "name": "Mohamad Hesari",
+                "email": "mdhesari99@gmail.com",
+                "mobile": "989128177871"
+            }
+        ]
+    }
+]

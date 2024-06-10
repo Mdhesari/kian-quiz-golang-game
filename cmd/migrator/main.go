@@ -6,7 +6,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/repository/migrator"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
-	"os"
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -15,7 +14,6 @@ import (
 )
 
 var (
-	args  []string
 	seeds *bool
 	down  *bool
 	cfg   config.Config
@@ -25,7 +23,6 @@ func init() {
 	cfg = config.Load("config.yml")
 	seeds = flag.Bool("seeds", false, "Runs seeders.")
 	down = flag.Bool("down", false, "Down migrations.")
-	args = os.Args[1:]
 
 	flag.Parse()
 }

@@ -6,6 +6,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/hellofresh/janus v0.0.0-20230925145208-ce8de8183c67
 	github.com/knadh/koanf/v2 v2.0.1
+	github.com/labstack/gommon v0.4.2
 	go.mongodb.org/mongo-driver v1.13.1
 )
 
@@ -14,7 +15,6 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
-	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect

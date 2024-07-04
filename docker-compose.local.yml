@@ -1,0 +1,45 @@
+version: '3.1'
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=michael
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+    # networks:
+      # - backend # App Service
+  # app:
+    # Configuration for building the docker image for the service
+    # build:
+      # context: . # Use an image built from the specified dockerfile in the current directory.
+      # dockerfile: ./docker/app/Dockerfile
+    # ports:
+      # - "8080:8080" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    # restart: unless-stopped
+    # depends_on:
+      # - mongo # This service depends on redis. Start that first.
+      # environment:
+      # Pass environment variables to the service
+      # REDIS_URL: redis:6379
+    # networks:
+      # Networks to join (Services on the same network can communicate with each other using their name)
+      # - backend
+    # volumes:
+      # - ./:/app
+  # mongo-client:
+  #   image: mongo-express:latest
+  #   restart: always
+  #   ports:
+  #     - 8081:8081
+  #   environment:
+  #     - ME_CONFIG_MONGODB_ADMINUSERNAME=michael
+  #     - ME_CONFIG_MONGODB_ADMINPASSWORD=secret
+  #     - ME_CONFIG_MONGODB_URL=mongodb://michael:secret@db:27017/
+  #   depends_on:
+  #     - mongo
+
+# networks:
+  # backend:

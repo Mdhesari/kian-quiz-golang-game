@@ -14,13 +14,13 @@ type Service struct {
 }
 
 type Repo interface {
-	addToWaitingList(ctx context.Context, userId primitive.ObjectID, categoryId primitive.ObjectID) error
+	AddToWaitingList(ctx context.Context, userId primitive.ObjectID, categoryId primitive.ObjectID) error
 }
 
 func (s Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*param.MatchingAddToWaitingListResponse, error) {
 	op := "Matching Service: Add to waiting list."
 
-	err := s.repo.addToWaitingList(context.Background(), req.UserID, req.CategoryID)
+	err := s.repo.AddToWaitingList(context.Background(), req.UserID, req.CategoryID)
 	if err != nil {
 
 		return nil, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)

@@ -65,4 +65,4 @@ func (r RichError) Message() string {
 
 func (r RichError) Kind() Kind {
 	return r.kind
-}	
+}

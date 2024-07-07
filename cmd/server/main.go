@@ -2,17 +2,22 @@ package main
 
 import (
 	"flag"
+	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/backpanelhandler"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/matchinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
+	"mdhesari/kian-quiz-golang-game/delivery/validator/matchingvalidator"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
 	"mdhesari/kian-quiz-golang-game/repository/migrator"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
+	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redismatching"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
+	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 
@@ -32,7 +37,6 @@ func init() {
 }
 
 func main() {
-	// Todo: duration should be in config
 	cli, err := mongorepo.New(cfg.Database.MongoDB, encrypt.Hash{})
 	if err != nil {
 
@@ -51,24 +55,30 @@ func main() {
 	}
 	migrator.Up()
 
-	userRepo := mongouser.New(cli)
-	rbacRepo := mongorbac.New(cli)
-
 	authConfig := authservice.Config{
 		Secret: []byte(cfg.JWT.Secret),
 	}
 	authSrv := authservice.New(authConfig)
 
+	rbacRepo := mongorbac.New(cli)
 	rbacSrv := rbacservice.New(rbacRepo)
 
+	userRepo := mongouser.New(cli)
 	userSrv := userservice.New(&authSrv, userRepo)
-
 	userValidator := uservalidator.New(userRepo)
+
+	var tst interface{}
+	categoryRepo := tst.(matchingvalidator.CategoryRepo)
+	redisAdap := redisadapter.New(cfg.Redis)
+	matchingRepo := redismatching.New(redisAdap)
+	matchingSrv := matchingservice.New(matchingRepo)
+	matchingValidator := matchingvalidator.New(categoryRepo)
 
 	handlers := []httpserver.Handler{
 		userhandler.New(&userSrv, &authSrv, &rbacSrv, authConfig, userValidator),
 		pinghandler.New(),
 		backpanelhandler.New(&userSrv, &rbacSrv, &authSrv, authConfig),
+		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator),
 	}
 
 	config := httpserver.Config{

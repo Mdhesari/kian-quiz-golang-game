@@ -17,6 +17,12 @@ type Repo interface {
 	AddToWaitingList(ctx context.Context, userId primitive.ObjectID, categoryId primitive.ObjectID) error
 }
 
+func New(repo Repo) Service {
+	return Service{
+		repo: repo,
+	}
+}
+
 func (s Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*param.MatchingAddToWaitingListResponse, error) {
 	op := "Matching Service: Add to waiting list."
 

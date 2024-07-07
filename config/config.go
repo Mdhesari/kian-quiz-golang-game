@@ -1,6 +1,7 @@
 package config
 
 import (
+	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 )
@@ -16,7 +17,8 @@ type JWT struct {
 }
 
 type Config struct {
-	Database Database          `koanf:"database"`
-	JWT      JWT               `koanf:"jwt"`
-	Server   httpserver.Config `koanf:"server"`
+	Database Database            `koanf:"database"`
+	JWT      JWT                 `koanf:"jwt"`
+	Server   httpserver.Config   `koanf:"server"`
+	Redis    redisadapter.Config `koanf:"redis"`
 }

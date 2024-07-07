@@ -20,7 +20,6 @@ type Adapter struct {
 
 func New(c Config) Adapter {
 	cli := redis.NewClient(&redis.Options{
-		Network:  c.Host,
 		Addr:     fmt.Sprintf("%s:%d", c.Host, c.Port),
 		Username: c.Username,
 		Password: c.Password,

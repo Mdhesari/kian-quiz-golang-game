@@ -1,0 +1,41 @@
+[
+    {
+        "create": "categories",
+        "clusteredIndex": {
+            "key": {
+                "_id": 1
+            },
+            "unique": true,
+            "name": "categories clustered key"
+        },
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "title": "Player Object Validation",
+                "required": [
+                    "title"
+                ],
+                "properties": {
+                    "title": {
+                        "bsonType": "string"
+                    },
+                    "description": {
+                        "bsonType": "string"
+                    }
+                }
+            }
+        }
+    },
+    {
+        "createIndexes": "categories",
+        "indexes": [
+            {
+                "key": {
+                    "title": "text"
+                },
+                "name": "title",
+                "unique": true
+            }
+        ]
+    }
+]

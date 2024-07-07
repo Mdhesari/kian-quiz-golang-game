@@ -13,6 +13,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
 	"mdhesari/kian-quiz-golang-game/repository/migrator"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redismatching"
@@ -67,8 +68,7 @@ func main() {
 	userSrv := userservice.New(&authSrv, userRepo)
 	userValidator := uservalidator.New(userRepo)
 
-	var tst interface{}
-	categoryRepo := tst.(matchingvalidator.CategoryRepo)
+	categoryRepo := mongocategory.New(cli)
 	redisAdap := redisadapter.New(cfg.Redis)
 	matchingRepo := redismatching.New(redisAdap)
 	matchingSrv := matchingservice.New(matchingRepo)

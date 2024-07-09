@@ -7,6 +7,7 @@ require (
 	github.com/hellofresh/janus v0.0.0-20230925145208-ce8de8183c67
 	github.com/knadh/koanf/v2 v2.0.1
 	github.com/labstack/gommon v0.4.2
+	github.com/redis/go-redis/v9 v9.5.3
 	go.mongodb.org/mongo-driver v1.13.1
 )
 
@@ -22,7 +23,6 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/redis/go-redis/v9 v9.5.3 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

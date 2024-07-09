@@ -31,7 +31,7 @@ func New(c Config, h []Handler) Server {
 	}
 }
 
-func (s Server) Serve() {
+func (s Server) Serve() *echo.Echo {
 	echo := echo.New()
 
 	echo.Use(middleware.Logger())
@@ -47,7 +47,9 @@ func (s Server) Serve() {
 
 	fmt.Printf("start echo server on %s\n", address)
 
-	if err := echo.Start(address); err != nil {
-		fmt.Println("router start error", err)
-	}
+	go func() {
+		echo.Logger.Fatal(echo.Start(address))
+	}()
+
+	return echo
 }

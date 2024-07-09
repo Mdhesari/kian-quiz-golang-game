@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
@@ -17,10 +19,14 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redismatching"
+	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -87,5 +93,28 @@ func main() {
 
 	server = httpserver.New(config, handlers)
 
-	server.Serve()
+	echo := server.Serve()
+
+	scheduler := scheduler.New()
+	go scheduler.Start()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+
+	time.Sleep(1 * time.Second)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err := echo.Shutdown(ctx); err != nil {
+		fmt.Println("Err: ", err)
+	}
+	<-ctx.Done()
+
+	// done := make(chan bool, 1)
+	// done <- true
+
+	// fmt.Println("Shutting down gracefully")
+
+	// time.Sleep(5 * time.Second)
 }

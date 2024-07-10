@@ -26,7 +26,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 	"os"
 	"os/signal"
-	"time"
+	"sync"
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -93,23 +93,24 @@ func main() {
 
 	server = httpserver.New(config, handlers)
 
-	echo := server.Serve()
+	go server.Serve()
 
-	scheduler := scheduler.New()
-	go scheduler.Start()
+	var wg sync.WaitGroup
+	scheduler := scheduler.New(&matchingSrv)
+	go scheduler.Start(&wg)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 
-	time.Sleep(1 * time.Second)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Application.GracefulShutdownTimeout)
 	defer cancel()
-	if err := echo.Shutdown(ctx); err != nil {
+	if err := server.Router.Shutdown(ctx); err != nil {
 		fmt.Println("Err: ", err)
 	}
 	<-ctx.Done()
+
+	wg.Wait()
 
 	// done := make(chan bool, 1)
 	// done <- true

@@ -4,7 +4,12 @@ import (
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
+	"time"
 )
+
+type Application struct {
+	GracefulShutdownTimeout time.Duration `koanf:"graceful_shutdown_timeout"`
+}
 
 type Database struct {
 	Migrations string           `koanf:"migrations"`
@@ -17,8 +22,9 @@ type JWT struct {
 }
 
 type Config struct {
-	Database Database            `koanf:"database"`
-	JWT      JWT                 `koanf:"jwt"`
-	Server   httpserver.Config   `koanf:"server"`
-	Redis    redisadapter.Config `koanf:"redis"`
+	Application Application         `koanf:"application"`
+	Database    Database            `koanf:"database"`
+	JWT         JWT                 `koanf:"jwt"`
+	Server      httpserver.Config   `koanf:"server"`
+	Redis       redisadapter.Config `koanf:"redis"`
 }

@@ -36,3 +36,7 @@ func (s Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*p
 		Timeout: 1000 * time.Nanosecond,
 	}, nil
 }
+
+func (s Service) MatchWaitedUsers(req param.MatchingWaitedUsersRequest) (*param.MatchingWaitedUsersResponse, error) {
+	return nil, nil
+}

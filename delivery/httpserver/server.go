@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -21,25 +22,25 @@ type Config struct {
 
 type Server struct {
 	config   Config
+	Router   *echo.Echo
 	handlers []Handler
 }
 
 func New(c Config, h []Handler) Server {
 	return Server{
+		Router:   echo.New(),
 		handlers: h,
 		config:   c,
 	}
 }
 
-func (s Server) Serve() *echo.Echo {
-	echo := echo.New()
-
-	echo.Use(middleware.Logger())
-	echo.Use(middleware.Recover())
+func (s Server) Serve() {
+	s.Router.Use(middleware.Logger())
+	s.Router.Use(middleware.Recover())
 
 	// config handlers
 	for _, h := range s.handlers {
-		h.SetRoutes(echo)
+		h.SetRoutes(s.Router)
 	}
 
 	// Start server
@@ -47,9 +48,8 @@ func (s Server) Serve() *echo.Echo {
 
 	fmt.Printf("start echo server on %s\n", address)
 
-	go func() {
-		echo.Logger.Fatal(echo.Start(address))
-	}()
-
-	return echo
+	err := s.Router.Start(address)
+	if err != nil {
+		log.Println(err)
+	}
 }

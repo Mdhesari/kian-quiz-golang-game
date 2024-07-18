@@ -11,6 +11,9 @@ server:
 jwt:
   secret: "secretto"
 
+scheduler:
+  match_waited_users_interval_seconds: 30
+
 database:
   seeders: "file://repository/mongorepo/seeders"
   migrations: "file://repository/mongorepo/migrations"

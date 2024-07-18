@@ -13,18 +13,24 @@ import (
 	"github.com/go-co-op/gocron/v2"
 )
 
+type Config struct {
+	MatchWaitedUsersIntervalSeconds int `koanf:"match_waited_users_interval_seconds"`
+}
+
 type Scheduler struct {
+	config      Config
 	sch         gocron.Scheduler
 	matchingSrv *matchingservice.Service
 }
 
-func New(matchingSrv *matchingservice.Service) Scheduler {
+func New(config Config, matchingSrv *matchingservice.Service) Scheduler {
 	sch, err := gocron.NewScheduler()
 	if err != nil {
 		log.Println("Schedule error")
 	}
 
 	return Scheduler{
+		config:      config,
 		sch:         sch,
 		matchingSrv: matchingSrv,
 	}
@@ -34,9 +40,7 @@ func (s Scheduler) Start(wg *sync.WaitGroup) {
 	fmt.Println("started")
 
 	j, err := s.sch.NewJob(
-		gocron.DurationJob(
-			5*time.Second,
-		),
+		gocron.DurationJob(time.Duration(s.config.MatchWaitedUsersIntervalSeconds)*time.Second),
 		gocron.NewTask(s.matchWaitedUsers),
 	)
 	if err != nil {
@@ -59,8 +63,6 @@ func (s Scheduler) Start(wg *sync.WaitGroup) {
 			wg.Done()
 			return
 		default:
-			fmt.Println(time.Now())
-
 			time.Sleep(1 * time.Second)
 		}
 	}

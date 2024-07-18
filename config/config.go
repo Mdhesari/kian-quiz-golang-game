@@ -4,6 +4,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
+	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"time"
 )
@@ -24,7 +25,8 @@ type JWT struct {
 
 type Config struct {
 	Application Application            `koanf:"application"`
-	Presence    presenceservice.Config `kaonf:"presence"`
+	Presence    presenceservice.Config `koanf:"presence"`
+	Scheduler   scheduler.Config       `koanf:"scheduler"`
 	Database    Database               `koanf:"database"`
 	JWT         JWT                    `koanf:"jwt"`
 	Server      httpserver.Config      `koanf:"server"`

@@ -102,7 +102,7 @@ func main() {
 	go server.Serve()
 
 	var wg sync.WaitGroup
-	scheduler := scheduler.New(&matchingSrv)
+	scheduler := scheduler.New(cfg.Scheduler, &matchingSrv)
 	go scheduler.Start(&wg)
 
 	quit := make(chan os.Signal, 1)

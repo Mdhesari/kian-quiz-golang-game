@@ -9,5 +9,5 @@ import (
 func (h Handler) SetRoutes(r *echo.Echo) {
 	g := r.Group("/matching")
 
-	g.POST("/add-to-waiting-list", h.AddToWaitingList, middleware.Auth(h.authSrv, h.authConfig))
+	g.POST("/add-to-waiting-list", h.AddToWaitingList, middleware.Auth(h.authSrv, h.authConfig), middleware.Presence(h.presenceSrv))
 }

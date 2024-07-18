@@ -19,9 +19,11 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redismatching"
+	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redispresence"
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
+	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 	"os"
@@ -81,11 +83,14 @@ func main() {
 	matchingSrv := matchingservice.New(matchingRepo)
 	matchingValidator := matchingvalidator.New(categoryRepo)
 
+	presenceRepo := redispresence.New(redisAdap)
+	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
+
 	handlers := []httpserver.Handler{
 		userhandler.New(&userSrv, &authSrv, &rbacSrv, authConfig, userValidator),
 		pinghandler.New(),
 		backpanelhandler.New(&userSrv, &rbacSrv, &authSrv, authConfig),
-		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator),
+		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator, presenceSrv),
 	}
 
 	config := httpserver.Config{

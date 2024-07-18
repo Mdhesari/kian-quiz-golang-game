@@ -1,5 +1,9 @@
 type: yml
 
+presence:
+  prefix: "presence"
+  expiration: "4h"
+
 server:
   http_server:
     port: 8080

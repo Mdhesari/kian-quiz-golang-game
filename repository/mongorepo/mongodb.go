@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,12 +22,10 @@ type Config struct {
 type MongoDB struct {
 	config       Config
 	conn         *mongo.Database
-	hash         encrypt.Hash
 	QueryTimeout time.Duration
-	Hash         encrypt.Hash `koanf:"hash"`
 }
 
-func New(c Config, h encrypt.Hash) (*MongoDB, error) {
+func New(c Config) (*MongoDB, error) {
 	url := fmt.Sprintf("mongodb://%s:%s@%s:%d/", c.Username, c.Password, c.Host, c.Port)
 	clientOptions := options.Client().ApplyURI(url)
 
@@ -46,7 +43,6 @@ func New(c Config, h encrypt.Hash) (*MongoDB, error) {
 
 	return &MongoDB{
 		conn:         cli.Database(c.DBName),
-		Hash:         h,
 		QueryTimeout: time.Duration(c.DurationSeconds * int(time.Second)),
 		config:       c,
 	}, nil

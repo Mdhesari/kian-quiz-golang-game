@@ -33,7 +33,6 @@ func (s Service) Upsert(ctx context.Context, req param.PresenceUpsertRequest) (*
 	op := "Prescence service:upsert"
 
 	key := fmt.Sprintf("%s:%s", s.config.Prefix, req.UserId.Hex())
-	fmt.Println(key)
 	err := s.repo.Upsert(ctx, key, req.Timestamp, s.config.Expiration)
 	if err != nil {
 

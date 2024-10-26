@@ -1,18 +1,4 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: ./docker/app/Dockerfile
-    ports:
-      - 8080:8080
-    restart: unless-stopped
-    depends_on:
-      - redis
-      - mongo
-    volumes:
-      - ./:/app
-    networks:
-      - kian
   redis:
     image: 'redis:alpine'
     ports:
@@ -33,11 +19,27 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=michael
       - MONGO_INITDB_ROOT_PASSWORD=secret
+  app:
+    # Configuration for building the docker image for the service
+    build:
+      context: . # Use an image built from the specified dockerfile in the current directory.
+      dockerfile: ./docker/app/Dockerfile
+    ports:
+      - "8080:8080" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    restart: unless-stopped
+    depends_on:
+      - mongo # This service depends on redis. Start that first.
+    environment:
+      # Pass environment variables to the service
+      REDIS_URL: redis:6379
     networks:
-      - kian
+      # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
+    volumes:
+      - ./:/app
 
 volumes:
   sail-redis:
 
 networks:
-  kian:
+  backend:

@@ -7,7 +7,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"testing"
 
-	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -42,7 +41,7 @@ func TestCanGetPermissionIds(t *testing.T) {
 func getTestRepo() *DB {
 	cfg := config.Load("../../../config.test.yml")
 
-	mongoRepo, err := mongorepo.New(cfg.Database.MongoDB, encrypt.Hash{})
+	mongoRepo, err := mongorepo.New(cfg.Database.MongoDB)
 	if err != nil {
 		panic(err)
 	}

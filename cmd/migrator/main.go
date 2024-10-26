@@ -9,7 +9,6 @@ import (
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 	"github.com/labstack/gommon/log"
 )
 
@@ -28,7 +27,7 @@ func init() {
 }
 
 func main() {
-	cli, err := mongorepo.New(cfg.Database.MongoDB, encrypt.Hash{})
+	cli, err := mongorepo.New(cfg.Database.MongoDB)
 	if err != nil {
 
 		panic("could not connect to mongodb.")

@@ -30,4 +30,4 @@ RUN go build -o main cmd/server/main.go
 EXPOSE 8080
 
 # Run the executable
-CMD ["./main"]
+CMD ["./main"]  

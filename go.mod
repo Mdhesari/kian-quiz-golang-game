@@ -5,7 +5,6 @@ go 1.21.1
 require (
 	github.com/go-co-op/gocron/v2 v2.9.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
-	github.com/hellofresh/janus v0.0.0-20230925145208-ce8de8183c67
 	github.com/knadh/koanf/v2 v2.0.1
 	github.com/labstack/gommon v0.4.2
 	github.com/redis/go-redis/v9 v9.5.3

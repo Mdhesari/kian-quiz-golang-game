@@ -6,8 +6,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
-
-	"github.com/hellofresh/janus/pkg/plugin/basic/encrypt"
 )
 
 func main() {
@@ -19,7 +17,7 @@ func main() {
 		DBName:          "mongo",
 		Migrations:      "migrations",
 		DurationSeconds: 5,
-	}, encrypt.Hash{})
+	})
 
 	repo := mongouser.New(cli)
 

@@ -12,7 +12,7 @@ database:
   migrations: "file://repository/mongorepo/migrations"
   mongodb:
     port: 27017
-    host: localhost
+    host: mongo
     db_name: db
     username: michael
     password: secret

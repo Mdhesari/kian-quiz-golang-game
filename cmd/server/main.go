@@ -44,6 +44,7 @@ func init() {
 }
 
 func main() {
+	
 	cli, err := mongorepo.New(cfg.Database.MongoDB, encrypt.Hash{})
 	if err != nil {
 

@@ -33,8 +33,6 @@ func New(matchingSrv *matchingservice.Service) Scheduler {
 func (s Scheduler) Start(wg *sync.WaitGroup) {
 	fmt.Println("started")
 
-	wg.Add(1)
-
 	j, err := s.sch.NewJob(
 		gocron.DurationJob(
 			5*time.Second,

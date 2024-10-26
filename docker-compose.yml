@@ -1,5 +1,18 @@
-version: '3.1'
 services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - mongo
+    volumes:
+      - ./:/app
+    networks:
+      - kian
   redis:
     image: 'redis:alpine'
     ports:
@@ -10,6 +23,8 @@ services:
       test: [ "CMD", "redis-cli", "ping" ]
       retries: 3
       timeout: 5s
+    networks:
+      - kian
   mongo:
     image: mongo
     restart: always
@@ -18,6 +33,11 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=michael
       - MONGO_INITDB_ROOT_PASSWORD=secret
+    networks:
+      - kian
 
 volumes:
   sail-redis:
+
+networks:
+  kian:

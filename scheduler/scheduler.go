@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -71,5 +72,5 @@ func (s Scheduler) Start(wg *sync.WaitGroup) {
 func (s Scheduler) matchWaitedUsers() {
 	log.Println("matching waited users...")
 
-	s.matchingSrv.MatchWaitedUsers(param.MatchingWaitedUsersRequest{})
+	s.matchingSrv.MatchWaitedUsers(context.Background(), param.MatchingWaitedUsersRequest{})
 }

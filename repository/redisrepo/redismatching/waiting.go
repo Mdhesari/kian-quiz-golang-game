@@ -22,3 +22,4 @@ func (db DB) AddToWaitingList(ctx context.Context, userId primitive.ObjectID, ca
 
 	return nil
 }
+

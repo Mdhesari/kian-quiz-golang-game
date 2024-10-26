@@ -78,7 +78,7 @@ func main() {
 	categoryRepo := mongocategory.New(cli)
 	redisAdap := redisadapter.New(cfg.Redis)
 	matchingRepo := redismatching.New(redisAdap)
-	matchingSrv := matchingservice.New(matchingRepo)
+	matchingSrv := matchingservice.New(matchingRepo, categoryRepo)
 	matchingValidator := matchingvalidator.New(categoryRepo)
 
 	presenceRepo := redispresence.New(redisAdap)

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package presence;
+
+option go_package = "protobuf/golang/presence";
+
+message GetPresenceRequest {
+    repeated string userId = 1;
+}
+
+message GetPresenceResponse {
+    repeated GetPresenceItem items = 1;
+}
+
+message GetPresenceItem {
+    string userId = 1;
+    uint64 timestamp = 2;
+}

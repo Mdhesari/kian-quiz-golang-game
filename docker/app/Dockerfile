@@ -8,9 +8,6 @@ FROM golang:latest
 # RUN apk update && apk upgrade && \
 #     apk add --no-cache bash git openssh
 
-# Add Maintainer Info
-LABEL maintainer="Rajeev Singh <rajeevhub@gmail.com>"
-
 # Set the Current Working Directory inside the container
 WORKDIR /usr/local/bin
 
@@ -24,7 +21,7 @@ RUN go mod download && go mod verify
 COPY . .
 
 # Build the Go app
-RUN go build -mod vendor -o main .
+RUN go build -o main cmd/server/main.go
 
 # Expose port 8080 to the outside world
 EXPOSE 8080

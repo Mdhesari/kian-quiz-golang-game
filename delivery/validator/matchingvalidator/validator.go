@@ -16,7 +16,7 @@ import (
 type ValidationBag map[string]string
 
 type CategoryRepo interface {
-	FindById(ctx context.Context, id primitive.ObjectID) (*entity.Category, error)
+	FindById(ctx context.Context, id primitive.ObjectID) (entity.Category, error)
 }
 
 type Validator struct {
@@ -70,7 +70,7 @@ func (v Validator) isCategoryValid(value interface{}) error {
 	categoryId := value.(primitive.ObjectID)
 
 	cat, err := v.categoryRepo.FindById(context.Background(), categoryId)
-	if err != nil || cat == nil {
+	if err != nil || cat.ID.Hex() == "" {
 
 		return errors.New(errmsg.ErrCategoryNotFound)
 	}

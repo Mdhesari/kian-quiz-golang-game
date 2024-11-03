@@ -14,6 +14,9 @@ jwt:
 scheduler:
   match_waited_users_interval_seconds: 30
 
+redis:
+  host: redis
+
 database:
   seeders: "file://repository/mongorepo/seeders"
   migrations: "file://repository/mongorepo/migrations"

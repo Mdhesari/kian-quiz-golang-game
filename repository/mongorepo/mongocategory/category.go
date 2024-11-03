@@ -7,9 +7,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (d *DB) FindById(ctx context.Context, id primitive.ObjectID) (*entity.Category, error) {
+func (d *DB) FindById(ctx context.Context, id primitive.ObjectID) (entity.Category, error) {
+	var category entity.Category
+
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
@@ -19,14 +22,39 @@ func (d *DB) FindById(ctx context.Context, id primitive.ObjectID) (*entity.Categ
 	if res.Err() != nil {
 		if res.Err() == mongo.ErrNoDocuments {
 
-			return nil, nil
+			return category, nil
 		}
 
-		return nil, res.Err()
+		return category, res.Err()
 	}
 
-	var category entity.Category
 	res.Decode(&category)
 
-	return &category, nil
+	return category, nil
+}
+
+func (d *DB) GetAll(ctx context.Context) ([]entity.Category, error) {
+	var categories []entity.Category
+
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	cur, err := d.cli.Conn().Collection("categories").Find(ctx, bson.D{}, options.Find())
+	if err != nil {
+
+		return categories, err
+	}
+	defer cur.Close(ctx)
+
+	for cur.Next(ctx) {
+		var category entity.Category
+		if err := cur.Decode(&category); err != nil {
+
+			return categories, err
+		}
+
+		categories = append(categories, category)
+	}
+
+	return categories, nil
 }

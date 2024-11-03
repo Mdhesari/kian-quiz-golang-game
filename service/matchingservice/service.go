@@ -24,11 +24,12 @@ type PresenceClient interface {
 }
 
 type Repo interface {
-	AddToWaitingList(ctx context.Context, userId primitive.ObjectID, categoryId primitive.ObjectID) error
+	AddToWaitingList(ctx context.Context, userId primitive.ObjectID, category entity.Category) error
 	GetWaitingListByCategory(ctx context.Context, category entity.Category) ([]entity.WaitingMember, error)
 }
 
 type CategoryRepo interface {
+	FindById(ctx context.Context, categoryId primitive.ObjectID) (entity.Category, error)
 	GetAll(ctx context.Context) ([]entity.Category, error)
 }
 
@@ -42,7 +43,14 @@ func New(repo Repo, categoryRepo CategoryRepo) Service {
 func (s Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*param.MatchingAddToWaitingListResponse, error) {
 	op := "Matching Service: Add to waiting list."
 
-	err := s.repo.AddToWaitingList(context.Background(), req.UserID, req.CategoryID)
+	ctx := context.Background()
+	category, err := s.categoryRepo.FindById(ctx, req.CategoryID)
+	if err != nil {
+
+		return nil, err
+	}
+
+	err = s.repo.AddToWaitingList(ctx, req.UserID, category)
 	if err != nil {
 
 		return nil, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
@@ -104,7 +112,7 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 
 	// match the list by oldest request and publish matched message to the broker
 	// for _, item := range finalList {
-		
+
 	// }
 
 	// remove the users from waiting list

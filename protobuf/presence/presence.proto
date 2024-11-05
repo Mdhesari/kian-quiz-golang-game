@@ -16,3 +16,7 @@ message GetPresenceItem {
     string userId = 1;
     uint64 timestamp = 2;
 }
+
+service PresenceService {
+    rpc GetPresence(GetPresenceRequest) returns (GetPresenceResponse);
+}

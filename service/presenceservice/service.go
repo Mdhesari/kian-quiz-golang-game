@@ -6,6 +6,8 @@ import (
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Service struct {
@@ -20,6 +22,7 @@ type Config struct {
 
 type Repo interface {
 	Upsert(ctx context.Context, key string, timestamp int64, exp time.Duration) error
+	GetPresence(ctx context.Context, prefix string, userIds []primitive.ObjectID) (map[primitive.ObjectID]int64, error)
 }
 
 func New(cfg Config, repo Repo) Service {
@@ -29,8 +32,28 @@ func New(cfg Config, repo Repo) Service {
 	}
 }
 
+func (s Service) GetPresence(ctx context.Context, req param.PresenceRequest) (*param.PresenceResponse, error) {
+	res := param.PresenceResponse{}
+	op := "Presence service:get"
+
+	presenceList, err := s.repo.GetPresence(ctx, s.config.Prefix, req.UserIds)
+	if err != nil {
+
+		return nil, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
+	}
+
+	for userId, timestamp := range presenceList {
+		res.Items = append(res.Items, param.PresenceItem{
+			UserId:    userId,
+			Timestamp: timestamp,
+		})
+	}
+
+	return &res, nil
+}
+
 func (s Service) Upsert(ctx context.Context, req param.PresenceUpsertRequest) (*param.PrescenceUpsertResponse, error) {
-	op := "Prescence service:upsert"
+	op := "Presence service:upsert"
 
 	key := fmt.Sprintf("%s:%s", s.config.Prefix, req.UserId.Hex())
 	err := s.repo.Upsert(ctx, key, req.Timestamp, s.config.Expiration)

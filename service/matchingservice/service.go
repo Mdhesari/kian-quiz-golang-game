@@ -20,7 +20,7 @@ type Service struct {
 }
 
 type PresenceClient interface {
-	GetByUserIds(ctx context.Context, req param.PresenceRequest) (param.PresenceResponse, error)
+	GetPresence(ctx context.Context, req param.PresenceRequest) (param.PresenceResponse, error)
 }
 
 type Repo interface {
@@ -96,12 +96,12 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 		userIds = append(userIds, m.UserId)
 	}
 
-	// exclude users that have been offline for a long period of time
 	presenceReq := param.PresenceRequest{
 		UserIds: userIds,
 	}
-	presenceList, err := s.presenceClient.GetByUserIds(ctx, presenceReq)
+	presenceList, err := s.presenceClient.GetPresence(ctx, presenceReq)
 
+	// exclude users that have been offline for a long period of time
 	var finalList []entity.WaitingMember
 	for _, m := range waitingList {
 		lastOnlineTimestamp, ok := getPresenceItem(presenceList, m.UserId)

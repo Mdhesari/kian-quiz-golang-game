@@ -44,7 +44,6 @@ services:
     networks:
       - kian
     volumes:
-      - ./:/app
       - 'go:/go/pkg'
 
 volumes:

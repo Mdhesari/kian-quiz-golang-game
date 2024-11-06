@@ -50,7 +50,6 @@ func main() {
 
 		panic("could not connect to mongodb.")
 	}
-	fmt.Println("hi")
 
 	migrator, err := migrator.New(cli.Conn().Client(), &mongodb.Config{
 		DatabaseName:         cfg.Database.MongoDB.DBName,

@@ -1,5 +1,5 @@
 up-local:
-	@docker compose -f docker-compose.local.yml watch -d
+	@docker compose -f docker-compose.local.yml watch
 
 up:
 	@docker compose up -d

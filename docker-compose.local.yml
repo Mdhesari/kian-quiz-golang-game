@@ -15,23 +15,24 @@ services:
     image: mongo
     restart: always
     ports:
-      - 27017:27017
+      - '${FORWARD_MONGO_PORT:-27017}:27017'
+    volumes:
+      - 'mongo:/data/db'
     networks:
       - kian
     environment:
       - MONGO_INITDB_ROOT_USERNAME=michael
       - MONGO_INITDB_ROOT_PASSWORD=secret
   app:
-    # Configuration for building the docker image for the service
     build:
-      context: . # Use an image built from the specified dockerfile in the current directory.
+      context: .
       dockerfile: ./docker/local/Dockerfile
-    command: go run main.go
+    command: go run cmd/server/main.go
     ports:
-      - "8080:8080" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+      - '${FORWARD_APP_PORT:-8080}:8080'
     restart: unless-stopped
     depends_on:
-      - mongo # This service depends on redis. Start that first.
+      - mongo
       - redis
     develop:
       watch:
@@ -39,16 +40,17 @@ services:
           path: ./
           target: /usr/src/app
     environment:
-      # Pass environment variables to the service
       REDIS_URL: redis:6379
     networks:
-      # Networks to join (Services on the same network can communicate with each other using their name)
       - kian
     volumes:
       - ./:/app
+      - 'go:/go/pkg'
 
 volumes:
+  mongo:
   redis:
+  go:
 
 networks:
   kian:

@@ -40,15 +40,15 @@ func New(config Config, matchingSrv *matchingservice.Service) Scheduler {
 func (s Scheduler) Start(wg *sync.WaitGroup) {
 	fmt.Println("started")
 
-	j, err := s.sch.NewJob(
+	_, err := s.sch.NewJob(
 		gocron.DurationJob(time.Duration(s.config.MatchWaitedUsersIntervalSeconds)*time.Second),
 		gocron.NewTask(s.matchWaitedUsers),
 	)
 	if err != nil {
-		log.Println("Schedule job failed: ", err)
-	}
+		log.Fatalf("Schedule job failed: %v\n", err)
 
-	log.Println(j.ID())
+		return
+	}
 
 	s.sch.Start()
 

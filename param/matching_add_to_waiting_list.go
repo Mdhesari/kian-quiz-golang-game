@@ -7,8 +7,8 @@ import (
 )
 
 type MatchingAddToWaitingListRequest struct {
-	UserID     primitive.ObjectID `json:"user_id"`
-	CategoryID primitive.ObjectID `json:"category_id"`
+	UserID     primitive.ObjectID `json:"user_id" form:"user_id"`
+	CategoryID primitive.ObjectID `json:"category_id" form:"category_id"`
 }
 
 type MatchingAddToWaitingListResponse struct {

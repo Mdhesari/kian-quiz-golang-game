@@ -2,6 +2,7 @@ package matchingservice
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -73,7 +74,7 @@ func (s Service) MatchWaitedUsers(ctx context.Context, req param.MatchingWaitedU
 	var wg sync.WaitGroup
 	for _, category := range categories {
 		wg.Add(1)
-		go s.Match(ctx, category, &wg)
+		s.Match(ctx, category, &wg)
 	}
 	wg.Wait()
 
@@ -99,7 +100,13 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 	presenceReq := param.PresenceRequest{
 		UserIds: userIds,
 	}
+	fmt.Println("req presence")
 	presenceList, err := s.presenceClient.GetPresence(ctx, presenceReq)
+	if err != nil {
+		log.Fatalf("Get presence failed: %v\n", err)
+
+		return
+	}
 
 	// exclude users that have been offline for a long period of time
 	var finalList []entity.WaitingMember

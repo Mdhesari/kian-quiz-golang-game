@@ -12,7 +12,7 @@ jwt:
   secret: "secretto"
 
 scheduler:
-  match_waited_users_interval_seconds: 30
+  match_waited_users_interval_seconds: 5
 
 redis:
   host: redis

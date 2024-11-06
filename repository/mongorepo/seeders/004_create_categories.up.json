@@ -1,0 +1,19 @@
+[
+    {
+        "insert": "categories",
+        "documents": [
+            {
+                "title": "footbal",
+                "description": "footbal is awesome."
+            },
+            {
+                "title": "art",
+                "description": "art is awesome."
+            },
+            {
+                "title": "software",
+                "description": "software is awesome."
+            }
+        ]
+    }
+]

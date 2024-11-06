@@ -46,6 +46,7 @@ func main() {
 	}
 
 	if *down {
+		fmt.Println("down")
 		err := mgrt.Down()
 		if err != nil {
 			panic(err)

@@ -31,8 +31,8 @@ func (db DB) GetWaitingListByCategory(ctx context.Context, category entity.Categ
 
 	categoryKey := getCategoryKey(category)
 	list, err := db.adapter.Cli().ZRangeByScoreWithScores(ctx, categoryKey, &redis.ZRangeBy{
-		Min:    "0",
-		Max:    "-1",
+		Min:    "-inf",
+		Max:    "+inf",
 		Offset: 0,
 		Count:  0,
 	}).Result()

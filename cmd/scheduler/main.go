@@ -23,7 +23,7 @@ func init() {
 
 func main() {
 	var wg sync.WaitGroup
-	
+
 	redisAdap := redisadapter.New(cfg.Redis)
 	matchingRepo := redismatching.New(redisAdap)
 

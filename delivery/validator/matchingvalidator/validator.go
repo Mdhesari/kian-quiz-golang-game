@@ -1,10 +1,8 @@
 package matchingvalidator
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
@@ -15,18 +13,12 @@ import (
 
 type ValidationBag map[string]string
 
-type CategoryRepo interface {
-	FindById(ctx context.Context, id primitive.ObjectID) (entity.Category, error)
-}
-
 type Validator struct {
-	categoryRepo CategoryRepo
+	//
 }
 
-func New(categoryRepo CategoryRepo) Validator {
-	return Validator{
-		categoryRepo: categoryRepo,
-	}
+func New() Validator {
+	return Validator{}
 }
 
 func (v Validator) getValidationBag(err error) ValidationBag {
@@ -48,8 +40,8 @@ func (v Validator) ValidateAddToWaitingListRequest(req param.MatchingAddToWaitin
 	// TODO - Category is not mapped correctly with koanf
 	err := validation.ValidateStruct(
 		&req,
-		validation.Field(&req.CategoryID, validation.Required, validation.By(v.isCategoryValid)),
-		validation.Field(&req.UserID, validation.Required),
+		validation.Field(&req.CategoryID, validation.Required, validation.By(v.isPrimitiveValid)),
+		validation.Field(&req.UserID, validation.Required, validation.By(v.isPrimitiveValid)),
 	)
 	if err != nil {
 		errFields := v.getValidationBag(err)
@@ -58,7 +50,6 @@ func (v Validator) ValidateAddToWaitingListRequest(req param.MatchingAddToWaitin
 		return errFields, richerror.New(op, errmsg.ErrInvalidInput).
 			WithKind(richerror.KindInvalid).
 			WithMeta(map[string]interface{}{
-				// TODO: password is exposed
 				"req": req,
 			}).WithErr(err)
 	}
@@ -66,13 +57,11 @@ func (v Validator) ValidateAddToWaitingListRequest(req param.MatchingAddToWaitin
 	return nil, nil
 }
 
-func (v Validator) isCategoryValid(value interface{}) error {
-	categoryId := value.(primitive.ObjectID)
+func (v Validator) isPrimitiveValid(value interface{}) error {
+	id, _ := value.(primitive.ObjectID)
+	if id.IsZero() {
 
-	cat, err := v.categoryRepo.FindById(context.Background(), categoryId)
-	if err != nil || cat.ID.Hex() == "" {
-
-		return errors.New(errmsg.ErrCategoryNotFound)
+		return errors.New(errmsg.ErrInvalidInput)
 	}
 
 	return nil

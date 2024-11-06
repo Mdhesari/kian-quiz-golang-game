@@ -5,7 +5,13 @@
             {
                 "name": "Mohamad Hesari",
                 "email": "mdhesari99@gmail.com",
-                "mobile": "989128177871"
+                "mobile": "989128177871",
+                "password": {
+                    "$binary": {
+                        "base64": "JDJhJDEwJGpDNThEMnlLU0U0WjVFRDk1L0pyOXVRUzdsdGhSUHdSbzhMVHVQTFlRQ0ZlZTFDSm81bUF5",
+                        "subType": "00"
+                    }
+                }
             }
         ]
     }

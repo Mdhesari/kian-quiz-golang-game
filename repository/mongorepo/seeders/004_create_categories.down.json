@@ -1,0 +1,16 @@
+[
+    {
+        "delete": "categories",
+        "deletes": [
+            {
+                "q": {
+                    "title": {
+                        "$in": [
+                            "mdhesari99@gmail.com"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+]

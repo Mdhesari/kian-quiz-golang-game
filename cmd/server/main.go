@@ -79,7 +79,7 @@ func main() {
 	redisAdap := redisadapter.New(cfg.Redis)
 	matchingRepo := redismatching.New(redisAdap)
 	matchingSrv := matchingservice.New(matchingRepo, categoryRepo)
-	matchingValidator := matchingvalidator.New(categoryRepo)
+	matchingValidator := matchingvalidator.New()
 
 	presenceRepo := redispresence.New(redisAdap)
 	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)

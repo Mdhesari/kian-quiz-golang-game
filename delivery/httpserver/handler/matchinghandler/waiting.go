@@ -1,6 +1,7 @@
 package matchinghandler
 
 import (
+	"log"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/claim"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
@@ -12,9 +13,11 @@ import (
 func (h Handler) AddToWaitingList(c echo.Context) error {
 	var req param.MatchingAddToWaitingListRequest
 	if err := c.Bind(&req); err != nil {
+		log.Printf("Matching handler error: %v\n", err)
 
 		return echo.NewHTTPError(http.StatusBadRequest)
 	}
+
 	claims := claim.GetClaimsFromEchoContext(c)
 	req.UserID = claims.UserID
 

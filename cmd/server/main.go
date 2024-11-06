@@ -115,11 +115,4 @@ func main() {
 	<-ctx.Done()
 
 	wg.Wait()
-
-	// done := make(chan bool, 1)
-	// done <- true
-
-	// fmt.Println("Shutting down gracefully")
-
-	// time.Sleep(5 * time.Second)
 }

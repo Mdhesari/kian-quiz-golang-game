@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Presence(presenceSrv presenceservice.Service) echo.MiddlewareFunc {
+func Presence(presenceSrv *presenceservice.Service) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			claims := claim.GetClaimsFromEchoContext(c)

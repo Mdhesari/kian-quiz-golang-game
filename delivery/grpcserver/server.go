@@ -13,11 +13,11 @@ import (
 
 type Server struct {
 	presence.UnimplementedPresenceServiceServer
-	svc presenceservice.Service
+	srv presenceservice.Service
 }
 
 func (s Server) GetPresence(ctx context.Context, req *presence.GetPresenceRequest) (*presence.GetPresenceResponse, error) {
-	res, err := s.svc.GetPresence(ctx, protobufmapper.MapFromProtobufPresenceRequestToParam(req))
+	res, err := s.srv.GetPresence(ctx, protobufmapper.MapFromProtobufPresenceRequestToParam(req))
 	if err != nil {
 
 		return nil, err
@@ -29,22 +29,21 @@ func (s Server) GetPresence(ctx context.Context, req *presence.GetPresenceReques
 func New(srv presenceservice.Service) Server {
 	return Server{
 		UnimplementedPresenceServiceServer: presence.UnimplementedPresenceServiceServer{},
-		svc:                                srv,
+		srv:                                srv,
 	}
 }
 
 func (s Server) Start() {
-	grpcServer := grpc.NewServer()
-
-	presence.RegisterPresenceServiceServer(grpcServer, s)
-
 	listener, err := net.Listen("tcp", ":8089")
 	if err != nil {
-
 		log.Fatal("Colud not open listener.")
 	}
 
+	grpcServer := grpc.NewServer()
+
+	presence.RegisterPresenceServiceServer(grpcServer, &s)
 	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatal("Could not server gprc server.")
+		log.Fatal("Could not serve gprc server.")
 	}
+	
 }

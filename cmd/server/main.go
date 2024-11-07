@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
+	"mdhesari/kian-quiz-golang-game/adapter/presenceadapter"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
@@ -32,6 +34,7 @@ import (
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -78,17 +81,23 @@ func main() {
 	categoryRepo := mongocategory.New(cli)
 	redisAdap := redisadapter.New(cfg.Redis)
 	matchingRepo := redismatching.New(redisAdap)
-	matchingSrv := matchingservice.New(matchingRepo, categoryRepo)
+
+	grpConn, err := grpc.Dial("172.18.0.5:8089", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Grpc could not dial %v\n", err)
+	}
+	presenceCli := presenceadapter.New(grpConn)
+	matchingSrv := matchingservice.New(matchingRepo, categoryRepo, presenceCli)
 	matchingValidator := matchingvalidator.New()
 
 	presenceRepo := redispresence.New(redisAdap)
 	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
 
 	handlers := []httpserver.Handler{
-		userhandler.New(&userSrv, &authSrv, &rbacSrv, authConfig, userValidator),
+		userhandler.New(&userSrv, &authSrv, &rbacSrv, &presenceSrv, authConfig, userValidator),
 		pinghandler.New(),
 		backpanelhandler.New(&userSrv, &rbacSrv, &authSrv, authConfig),
-		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator, presenceSrv),
+		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator, &presenceSrv),
 	}
 
 	config := httpserver.Config{

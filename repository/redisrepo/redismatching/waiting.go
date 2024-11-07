@@ -27,14 +27,12 @@ func (db DB) AddToWaitingList(ctx context.Context, userId primitive.ObjectID, ca
 }
 
 func (db DB) GetWaitingListByCategory(ctx context.Context, category entity.Category) ([]entity.WaitingMember, error) {
-	var waitingMembers []entity.WaitingMember
+	waitingMembers := []entity.WaitingMember{}
 
 	categoryKey := getCategoryKey(category)
 	list, err := db.adapter.Cli().ZRangeByScoreWithScores(ctx, categoryKey, &redis.ZRangeBy{
-		Min:    "-inf",
-		Max:    "+inf",
-		Offset: 0,
-		Count:  0,
+		Min: "-inf",
+		Max: "+inf",
 	}).Result()
 	if err != nil {
 
@@ -60,5 +58,5 @@ func (db DB) GetWaitingListByCategory(ctx context.Context, category entity.Categ
 }
 
 func getCategoryKey(category entity.Category) string {
-	return fmt.Sprintf("%s:%s", WaitingListPrefix, category.ID)
+	return fmt.Sprintf("%s:%s", WaitingListPrefix, category.ID.Hex())
 }

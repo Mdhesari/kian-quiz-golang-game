@@ -12,10 +12,10 @@ type Handler struct {
 	authSrv           *authservice.Service
 	matchingSrv       matchingservice.Service
 	matchingValidator matchingvalidator.Validator
-	presenceSrv       presenceservice.Service
+	presenceSrv       *presenceservice.Service
 }
 
-func New(authConfig authservice.Config, authSrv *authservice.Service, matchingSrv matchingservice.Service, matchingValidator matchingvalidator.Validator, presenceSrv presenceservice.Service) Handler {
+func New(authConfig authservice.Config, authSrv *authservice.Service, matchingSrv matchingservice.Service, matchingValidator matchingvalidator.Validator, presenceSrv *presenceservice.Service) Handler {
 	return Handler{
 		authConfig:        authConfig,
 		authSrv:           authSrv,

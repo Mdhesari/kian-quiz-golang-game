@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"log"
+	"mdhesari/kian-quiz-golang-game/adapter/presenceadapter"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
@@ -10,6 +12,8 @@ import (
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"sync"
+
+	"google.golang.org/grpc"
 )
 
 var (
@@ -34,7 +38,12 @@ func main() {
 	}
 	mongocategory := mongocategory.New(cli)
 
-	matchingSrv := matchingservice.New(matchingRepo, mongocategory)
+	grpConn, err := grpc.Dial(":8089", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Grpc could not dial %v\n", err)
+	}
+	presenceCli := presenceadapter.New(grpConn)
+	matchingSrv := matchingservice.New(matchingRepo, mongocategory, presenceCli)
 
 	scheduler := scheduler.New(cfg.Scheduler, &matchingSrv)
 

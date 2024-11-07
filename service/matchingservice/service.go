@@ -34,10 +34,11 @@ type CategoryRepo interface {
 	GetAll(ctx context.Context) ([]entity.Category, error)
 }
 
-func New(repo Repo, categoryRepo CategoryRepo) Service {
+func New(repo Repo, categoryRepo CategoryRepo, presenceCli PresenceClient) Service {
 	return Service{
 		repo:         repo,
 		categoryRepo: categoryRepo,
+		presenceClient: presenceCli,
 	}
 }
 
@@ -74,7 +75,7 @@ func (s Service) MatchWaitedUsers(ctx context.Context, req param.MatchingWaitedU
 	var wg sync.WaitGroup
 	for _, category := range categories {
 		wg.Add(1)
-		s.Match(ctx, category, &wg)
+		go s.Match(ctx, category, &wg)
 	}
 	wg.Wait()
 
@@ -84,10 +85,13 @@ func (s Service) MatchWaitedUsers(ctx context.Context, req param.MatchingWaitedU
 func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	// get list of scores:category
 	waitingList, err := s.repo.GetWaitingListByCategory(ctx, category)
 	if err != nil {
 		log.Printf("Get waiting list by category error: %v\n", err)
+
+		return
+	}
+	if len(waitingList) < 1 {
 
 		return
 	}
@@ -100,10 +104,14 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 	presenceReq := param.PresenceRequest{
 		UserIds: userIds,
 	}
-	fmt.Println("req presence")
+
 	presenceList, err := s.presenceClient.GetPresence(ctx, presenceReq)
 	if err != nil {
 		log.Fatalf("Get presence failed: %v\n", err)
+
+		return
+	}
+	if len(presenceList.Items) < 1 {
 
 		return
 	}
@@ -112,10 +120,12 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 	var finalList []entity.WaitingMember
 	for _, m := range waitingList {
 		lastOnlineTimestamp, ok := getPresenceItem(presenceList, m.UserId)
-		if ok && lastOnlineTimestamp > timestamp.Add(-60*time.Second) && m.Timestamp > timestamp.Add(-300*time.Second) {
+		if ok && lastOnlineTimestamp > timestamp.Add(-1000*time.Hour) && m.Timestamp > timestamp.Add(-3000*time.Hour) {
 			finalList = append(finalList, m)
 		}
 	}
+
+	fmt.Println("finaaal ====", finalList)
 
 	// match the list by oldest request and publish matched message to the broker
 	// for _, item := range finalList {

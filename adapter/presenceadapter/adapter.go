@@ -2,7 +2,6 @@ package presenceadapter
 
 import (
 	"context"
-	"fmt"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufmapper"
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
@@ -22,7 +21,6 @@ func New(conn *grpc.ClientConn) Client {
 }
 
 func (c Client) GetPresence(ctx context.Context, req param.PresenceRequest) (param.PresenceResponse, error) {
-	fmt.Println("preeeeeeeeeeeee")
 	res, err := c.presenceSrv.GetPresence(ctx, &presence.GetPresenceRequest{
 		UserId: slice.MapFromPrimitiveObjectIDToHexString(req.UserIds),
 	})

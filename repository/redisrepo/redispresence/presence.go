@@ -16,7 +16,7 @@ func (db DB) GetPresence(ctx context.Context, prefix string, userIds []primitive
 	for _, userId := range userIds {
 		keys = append(keys, fmt.Sprintf("%s:%s", prefix, userId.Hex()))
 	}
-	res, err := db.adapter.Cli().MGet(ctx, "presence:1", "presence:2").Result()
+	res, err := db.adapter.Cli().MGet(ctx, keys...).Result()
 	if err != nil {
 
 		return presenceList, err

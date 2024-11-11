@@ -34,6 +34,7 @@ func New(srv presenceservice.Service) Server {
 }
 
 func (s Server) Start() {
+	// TODO - add to config
 	listener, err := net.Listen("tcp", ":8089")
 	if err != nil {
 		log.Fatal("Colud not open listener.")

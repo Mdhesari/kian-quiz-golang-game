@@ -57,6 +57,18 @@ func (db DB) GetWaitingListByCategory(ctx context.Context, category entity.Categ
 	return waitingMembers, nil
 }
 
+func (db DB) RemoveUsersFromWaitingList(ctx context.Context, category entity.Category, userIds []string) error {
+	categoryKey := getCategoryKey(category)
+	// TODO - do we need to check deleted count?
+	_, err := db.adapter.Cli().ZRem(ctx, categoryKey, userIds).Result()
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
 func getCategoryKey(category entity.Category) string {
 	return fmt.Sprintf("%s:%s", WaitingListPrefix, category.ID.Hex())
 }

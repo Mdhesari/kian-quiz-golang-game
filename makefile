@@ -10,7 +10,7 @@ down:
 prune:
 	@docker image prune -f
 
-log:
+logs:
 	@docker compose logs -f -t
 
 up-test: 
@@ -18,3 +18,8 @@ up-test:
 
 down-test:
 	@docker compose -f docker-compose.test.yml down
+
+reup:
+	@make down && make up
+restart:
+	@docker compose restart

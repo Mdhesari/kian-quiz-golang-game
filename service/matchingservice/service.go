@@ -2,7 +2,6 @@ package matchingservice
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -27,6 +26,7 @@ type PresenceClient interface {
 type Repo interface {
 	AddToWaitingList(ctx context.Context, userId primitive.ObjectID, category entity.Category) error
 	GetWaitingListByCategory(ctx context.Context, category entity.Category) ([]entity.WaitingMember, error)
+	RemoveUsersFromWaitingList(ctx context.Context, categroy entity.Category, userIds []string) error
 }
 
 type CategoryRepo interface {
@@ -36,8 +36,8 @@ type CategoryRepo interface {
 
 func New(repo Repo, categoryRepo CategoryRepo, presenceCli PresenceClient) Service {
 	return Service{
-		repo:         repo,
-		categoryRepo: categoryRepo,
+		repo:           repo,
+		categoryRepo:   categoryRepo,
 		presenceClient: presenceCli,
 	}
 }
@@ -116,16 +116,28 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 		return
 	}
 
+	var usersToBeRemoved []string = make([]string, 0)
 	// exclude users that have been offline for a long period of time
 	var finalList []entity.WaitingMember
 	for _, m := range waitingList {
 		lastOnlineTimestamp, ok := getPresenceItem(presenceList, m.UserId)
+		// TODO - add time to config
 		if ok && lastOnlineTimestamp > timestamp.Add(-1000*time.Hour) && m.Timestamp > timestamp.Add(-3000*time.Hour) {
 			finalList = append(finalList, m)
+		} else {
+			usersToBeRemoved = append(usersToBeRemoved, m.UserId.Hex())
 		}
 	}
 
-	fmt.Println("finaaal ====", finalList)
+	go func() {
+		// TODO - add time to config
+		removeUsersCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if err := s.repo.RemoveUsersFromWaitingList(removeUsersCtx, category, usersToBeRemoved); err != nil {
+			// TODO - update metrics
+		}
+	}()
 
 	// match the list by oldest request and publish matched message to the broker
 	// for _, item := range finalList {

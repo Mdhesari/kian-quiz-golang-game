@@ -1,11 +1,13 @@
 package matchingvalidator
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
+	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,11 +16,17 @@ import (
 type ValidationBag map[string]string
 
 type Validator struct {
-	//
+	categoryRepo CategoryRepository
 }
 
-func New() Validator {
-	return Validator{}
+type CategoryRepository interface {
+	Exists(ctx context.Context, categoryId primitive.ObjectID) (bool, error)
+}
+
+func New(categoryRepo CategoryRepository) Validator {
+	return Validator{
+		categoryRepo: categoryRepo,
+	}
 }
 
 func (v Validator) getValidationBag(err error) ValidationBag {
@@ -40,7 +48,7 @@ func (v Validator) ValidateAddToWaitingListRequest(req param.MatchingAddToWaitin
 	// TODO - Category is not mapped correctly with koanf
 	err := validation.ValidateStruct(
 		&req,
-		validation.Field(&req.CategoryID, validation.Required, validation.By(v.isPrimitiveValid)),
+		validation.Field(&req.CategoryID, validation.Required, validation.By(v.isPrimitiveValid), validation.By(v.isCategoryIdValid)),
 		validation.Field(&req.UserID, validation.Required, validation.By(v.isPrimitiveValid)),
 	)
 	if err != nil {
@@ -55,6 +63,27 @@ func (v Validator) ValidateAddToWaitingListRequest(req param.MatchingAddToWaitin
 	}
 
 	return nil, nil
+}
+
+func (v Validator) isCategoryIdValid(value interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	id, ok := value.(primitive.ObjectID)
+	if !ok {
+
+		return errors.New(errmsg.ErrInvalidInput)
+	}
+	res, err := v.categoryRepo.Exists(ctx, id)
+	if err != nil {
+
+		return errors.New(errmsg.ErrInternalServer)
+	}
+	if !res {
+		return errors.New(errmsg.ErrInvalidInput)
+	}
+
+	return nil
 }
 
 func (v Validator) isPrimitiveValid(value interface{}) error {

@@ -8,6 +8,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/adapter/presenceadapter"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
+	"mdhesari/kian-quiz-golang-game/delivery/grpcserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/backpanelhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/matchinghandler"
@@ -82,16 +83,21 @@ func main() {
 	redisAdap := redisadapter.New(cfg.Redis)
 	matchingRepo := redismatching.New(redisAdap)
 
-	grpConn, err := grpc.Dial("172.18.0.5:8089", grpc.WithInsecure())
+	presenceRepo := redispresence.New(redisAdap)
+	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
+	presenceserver := grpcserver.New(presenceSrv)
+
+	// TODO - this should be removed later it's just for development purposes
+	fmt.Println("Starting presence server...")
+	go presenceserver.Start()
+
+	grpConn, err := grpc.Dial("127.0.0.1:8089", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Grpc could not dial %v\n", err)
 	}
 	presenceCli := presenceadapter.New(grpConn)
 	matchingSrv := matchingservice.New(matchingRepo, categoryRepo, presenceCli)
-	matchingValidator := matchingvalidator.New()
-
-	presenceRepo := redispresence.New(redisAdap)
-	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
+	matchingValidator := matchingvalidator.New(categoryRepo)
 
 	handlers := []httpserver.Handler{
 		userhandler.New(&userSrv, &authSrv, &rbacSrv, &presenceSrv, authConfig, userValidator),

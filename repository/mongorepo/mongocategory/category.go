@@ -58,3 +58,13 @@ func (d *DB) GetAll(ctx context.Context) ([]entity.Category, error) {
 
 	return categories, nil
 }
+
+func (d *DB) Exists(ctx context.Context, id primitive.ObjectID) (bool, error) {
+	cat, err := d.FindById(ctx, id)
+	if err != nil {
+
+		return false, err
+	}
+
+	return !cat.ID.IsZero(), nil
+}

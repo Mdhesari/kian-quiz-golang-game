@@ -1,7 +1,6 @@
 package protobufmapper
 
 import (
-	"fmt"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/presence"
 
@@ -12,7 +11,6 @@ func MapFromProtobufPresenceResponseToParam(res *presence.GetPresenceResponse) p
 	paramRes := param.PresenceResponse{}
 
 	for _, item := range res.Items {
-		fmt.Println(item.UserId)
 		userId, _ := primitive.ObjectIDFromHex(item.UserId)
 		paramRes.Items = append(paramRes.Items, param.PresenceItem{
 			UserId:    userId,

@@ -10,7 +10,6 @@ import (
 
 func (h Handler) Login(c echo.Context) error {
 	var req param.LoginRequest
-
 	c.Bind(&req)
 
 	if fields, err := h.userValidator.ValidateLoginRequest(req); err != nil {

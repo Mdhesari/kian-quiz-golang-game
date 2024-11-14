@@ -11,6 +11,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/grpcserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/backpanelhandler"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/categoryhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/matchinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
@@ -25,6 +26,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redispresence"
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
+	"mdhesari/kian-quiz-golang-game/service/categoryservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
@@ -99,11 +101,14 @@ func main() {
 	matchingSrv := matchingservice.New(matchingRepo, categoryRepo, presenceCli)
 	matchingValidator := matchingvalidator.New(categoryRepo)
 
+	categorySrv := categoryservice.New(categoryRepo)
+
 	handlers := []httpserver.Handler{
 		userhandler.New(&userSrv, &authSrv, &rbacSrv, &presenceSrv, authConfig, userValidator),
 		pinghandler.New(),
 		backpanelhandler.New(&userSrv, &rbacSrv, &authSrv, authConfig),
 		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator, &presenceSrv),
+		categoryhandler.New(&categorySrv, &presenceSrv, &authSrv, authConfig),
 	}
 
 	config := httpserver.Config{

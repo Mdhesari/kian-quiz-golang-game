@@ -2,9 +2,12 @@ package matchingservice
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
+	"mdhesari/kian-quiz-golang-game/pkg/constant"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"mdhesari/kian-quiz-golang-game/pkg/timestamp"
 	"sync"
@@ -17,6 +20,11 @@ type Service struct {
 	repo           Repo
 	categoryRepo   CategoryRepo
 	presenceClient PresenceClient
+	pub            Publisher
+}
+
+type Publisher interface {
+	Publish(ctx context.Context, topic string, payload string)
 }
 
 type PresenceClient interface {
@@ -34,9 +42,10 @@ type CategoryRepo interface {
 	GetAll(ctx context.Context) ([]entity.Category, error)
 }
 
-func New(repo Repo, categoryRepo CategoryRepo, presenceCli PresenceClient) Service {
+func New(repo Repo, categoryRepo CategoryRepo, presenceCli PresenceClient, pub Publisher) Service {
 	return Service{
 		repo:           repo,
+		pub:            pub,
 		categoryRepo:   categoryRepo,
 		presenceClient: presenceCli,
 	}
@@ -138,11 +147,23 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 			// TODO - update metrics
 		}
 	}()
-
+	fmt.Println(finalList)
 	// match the list by oldest request and publish matched message to the broker
-	// for _, item := range finalList {
-
-	// }
+	for i := 1; i < len(finalList); i += 2 {
+		pm := entity.PlayersMatched{
+			Players:  []primitive.ObjectID{finalList[i].UserId, finalList[i-1].UserId},
+			Category: category,
+		}
+		fmt.Println(pm)
+		pmencoded, err := json.Marshal(pm)
+		if err != nil {
+			// update metrics
+			// TODO - manage error
+			continue
+		}
+		
+		s.pub.Publish(ctx, constant.GAME_STARTED, string(pmencoded))
+	}
 
 	// remove the users from waiting list
 }

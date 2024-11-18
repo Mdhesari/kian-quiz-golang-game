@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package matching;
+
+option go_package = "protobuf/golang/matching";
+
+message UsersMatched {
+    repeated string userIds = 1;
+    Category category = 2;
+}
+
+message Category {
+    string ID = 1;
+    string Ttile = 2;
+    string Description = 3;
+}

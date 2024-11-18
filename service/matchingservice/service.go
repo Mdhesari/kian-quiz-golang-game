@@ -2,13 +2,12 @@ package matchingservice
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
-	"mdhesari/kian-quiz-golang-game/pkg/constant"
+	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
+	"mdhesari/kian-quiz-golang-game/pkg/slice"
 	"mdhesari/kian-quiz-golang-game/pkg/timestamp"
 	"sync"
 	"time"
@@ -138,34 +137,22 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 		}
 	}
 
-	go func() {
-		// TODO - add time to config
-		removeUsersCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
+	go s.removeUsersFromWaitingList(category, usersToBeRemoved)
 
-		if err := s.repo.RemoveUsersFromWaitingList(removeUsersCtx, category, usersToBeRemoved); err != nil {
-			// TODO - update metrics
-		}
-	}()
-	fmt.Println(finalList)
 	// match the list by oldest request and publish matched message to the broker
 	for i := 1; i < len(finalList); i += 2 {
-		pm := entity.PlayersMatched{
+		e := entity.PlayersMatched{
 			Players:  []primitive.ObjectID{finalList[i].UserId, finalList[i-1].UserId},
 			Category: category,
 		}
-		fmt.Println(pm)
-		pmencoded, err := json.Marshal(pm)
-		if err != nil {
-			// update metrics
-			// TODO - manage error
-			continue
-		}
-		
-		s.pub.Publish(ctx, constant.GAME_STARTED, string(pmencoded))
+
+		s.pub.Publish(ctx, string(entity.UsersMatched), protobufencoder.EncodeUsersMatchedEvent(e))
+
+		usersToBeRemoved = append(usersToBeRemoved, slice.MapFromPrimitiveObjectIDToHexString(e.Players)...)
 	}
 
 	// remove the users from waiting list
+	// go s.removeUsersFromWaitingList(category, usersToBeRemoved)
 }
 
 func getPresenceItem(presenceList param.PresenceResponse, userId primitive.ObjectID) (int64, bool) {
@@ -177,4 +164,13 @@ func getPresenceItem(presenceList param.PresenceResponse, userId primitive.Objec
 	}
 
 	return 0, false
+}
+
+func (s Service) removeUsersFromWaitingList(category entity.Category, userIds []string) {
+	removeUsersCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := s.repo.RemoveUsersFromWaitingList(removeUsersCtx, category, userIds); err != nil {
+		// TODO - update metrics
+	}
 }

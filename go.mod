@@ -6,6 +6,7 @@ toolchain go1.23.2
 
 require (
 	github.com/go-co-op/gocron/v2 v2.9.0
+	github.com/gobwas/ws v1.4.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/knadh/koanf/v2 v2.0.1
 	github.com/labstack/gommon v0.4.2
@@ -19,6 +20,8 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/gobwas/httphead v0.1.0 // indirect
+	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect

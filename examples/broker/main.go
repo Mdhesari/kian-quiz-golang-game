@@ -7,6 +7,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
 )
 
 var cfg config.Config
@@ -25,9 +26,8 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
-
 		
-
-		fmt.Println("new message ", msg)
+		playersMatched := protobufdecoder.DecodeUsersMatchedEvent(msg.Payload)
+		fmt.Println("new message %v\n", playersMatched)
 	}
 }

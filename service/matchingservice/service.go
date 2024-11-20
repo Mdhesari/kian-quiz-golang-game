@@ -119,10 +119,6 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 
 		return
 	}
-	if len(presenceList.Items) < 1 {
-
-		return
-	}
 
 	var usersToBeRemoved []string = make([]string, 0)
 	// exclude users that have been offline for a long period of time

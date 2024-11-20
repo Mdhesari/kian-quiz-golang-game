@@ -133,8 +133,6 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 		}
 	}
 
-	go s.removeUsersFromWaitingList(category, usersToBeRemoved)
-
 	// match the list by oldest request and publish matched message to the broker
 	for i := 1; i < len(finalList); i += 2 {
 		e := entity.PlayersMatched{
@@ -148,7 +146,7 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 	}
 
 	// remove the users from waiting list
-	// go s.removeUsersFromWaitingList(category, usersToBeRemoved)
+	go s.removeUsersFromWaitingList(category, usersToBeRemoved)
 }
 
 func getPresenceItem(presenceList param.PresenceResponse, userId primitive.ObjectID) (int64, bool) {

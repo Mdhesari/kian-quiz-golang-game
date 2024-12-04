@@ -50,7 +50,7 @@ func init() {
 	flag.Parse()
 }
 
-func main() {
+func main() {	
 	cli, err := mongorepo.New(cfg.Database.MongoDB)
 	if err != nil {
 

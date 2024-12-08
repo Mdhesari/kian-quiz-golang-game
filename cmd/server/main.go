@@ -14,6 +14,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/categoryhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/matchinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/prometheushandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/matchingvalidator"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
@@ -50,7 +51,7 @@ func init() {
 	flag.Parse()
 }
 
-func main() {	
+func main() {
 	cli, err := mongorepo.New(cfg.Database.MongoDB)
 	if err != nil {
 
@@ -109,6 +110,7 @@ func main() {
 		backpanelhandler.New(&userSrv, &rbacSrv, &authSrv, authConfig),
 		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator, &presenceSrv),
 		categoryhandler.New(&categorySrv, &presenceSrv, &authSrv, authConfig),
+		prometheushandler.New(),
 	}
 
 	config := httpserver.Config{

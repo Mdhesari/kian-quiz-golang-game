@@ -5,6 +5,7 @@ import (
 	"log"
 	"mdhesari/kian-quiz-golang-game/logger"
 
+	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
@@ -37,6 +38,7 @@ func New(c Config, h []Handler) Server {
 }
 
 func (s Server) Serve() {
+	s.Router.Use(echoprometheus.NewMiddleware("myapp"))
 	s.Router.Use(middleware.RequestID())
 	s.Router.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {

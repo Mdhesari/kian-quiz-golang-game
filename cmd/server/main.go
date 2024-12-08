@@ -40,6 +40,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
+
+	_ "net/http/pprof"
 )
 
 var (
@@ -53,6 +55,11 @@ func init() {
 }
 
 func main() {
+	// Start the HTTP server
+	go func() {
+		http.ListenAndServe(":6060", nil)
+	}()
+
 	cli, err := mongorepo.New(cfg.Database.MongoDB)
 	if err != nil {
 

@@ -29,6 +29,7 @@ services:
       dockerfile: ./docker/app/Dockerfile
     ports:
       - '${FORWARD_APP_PORT:-8080}:8080'
+      - 6060:6060
     restart: unless-stopped
     depends_on:
       - mongo

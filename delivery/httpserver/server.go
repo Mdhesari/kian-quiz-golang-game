@@ -3,11 +3,14 @@ package httpserver
 import (
 	"fmt"
 	"log"
+	"mdhesari/kian-quiz-golang-game/logger"
+
 	// "mdhesari/kian-quiz-golang-game/logger"
 
 	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.uber.org/zap"
 	// "go.uber.org/zap"
 )
 
@@ -40,41 +43,41 @@ func New(c Config, h []Handler) Server {
 func (s Server) Serve() {
 	s.Router.Use(echoprometheus.NewMiddleware("echo"))
 	s.Router.Use(middleware.RequestID())
-	// s.Router.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-	// 	LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-	// 		logger.Logger.Named("http-server").Info("request",
-	// 			zap.String("request_id", v.RequestID),
-	// 			zap.String("host", v.Host),
-	// 			zap.String("content-length", v.ContentLength),
-	// 			zap.String("protocol", v.Protocol),
-	// 			zap.String("method", v.Method),
-	// 			zap.Duration("latency", v.Latency),
-	// 			zap.String("error", v.Error.Error()),
-	// 			zap.String("remote_ip", v.RemoteIP),
-	// 			zap.Int64("response_size", v.ResponseSize),
-	// 			zap.String("uri", v.URI),
-	// 			zap.Int("status", v.Status),
-	// 		)
+	s.Router.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			logger.Logger.Named("http-server").Info("request",
+				zap.String("request_id", v.RequestID),
+				zap.String("host", v.Host),
+				zap.String("content-length", v.ContentLength),
+				zap.String("protocol", v.Protocol),
+				zap.String("method", v.Method),
+				zap.Duration("latency", v.Latency),
+				zap.String("error", v.Error.Error()),
+				zap.String("remote_ip", v.RemoteIP),
+				zap.Int64("response_size", v.ResponseSize),
+				zap.String("uri", v.URI),
+				zap.Int("status", v.Status),
+			)
 
-	// 		return nil
-	// 	},
-	// 	HandleError:      true,
-	// 	LogLatency:       true,
-	// 	LogProtocol:      true,
-	// 	LogRemoteIP:      true,
-	// 	LogHost:          true,
-	// 	LogMethod:        true,
-	// 	LogURI:           true,
-	// 	LogURIPath:       true,
-	// 	LogRoutePath:     true,
-	// 	LogRequestID:     true,
-	// 	LogReferer:       true,
-	// 	LogUserAgent:     true,
-	// 	LogStatus:        true,
-	// 	LogError:         true,
-	// 	LogContentLength: true,
-	// 	LogResponseSize:  true,
-	// }))
+			return nil
+		},
+		HandleError:      true,
+		LogLatency:       true,
+		LogProtocol:      true,
+		LogRemoteIP:      true,
+		LogHost:          true,
+		LogMethod:        true,
+		LogURI:           true,
+		LogURIPath:       true,
+		LogRoutePath:     true,
+		LogRequestID:     true,
+		LogReferer:       true,
+		LogUserAgent:     true,
+		LogStatus:        true,
+		LogError:         true,
+		LogContentLength: true,
+		LogResponseSize:  true,
+	}))
 	s.Router.Use(middleware.Recover())
 
 	// config handlers

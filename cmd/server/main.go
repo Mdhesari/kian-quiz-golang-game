@@ -14,7 +14,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/categoryhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/matchinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
-	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/prometheushandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/matchingvalidator"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
@@ -32,12 +31,14 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
 
@@ -110,8 +111,11 @@ func main() {
 		backpanelhandler.New(&userSrv, &rbacSrv, &authSrv, authConfig),
 		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator, &presenceSrv),
 		categoryhandler.New(&categorySrv, &presenceSrv, &authSrv, authConfig),
-		prometheushandler.New(),
 	}
+
+	// TODO - refactor
+	http.Handle("/metrics", promhttp.Handler())
+	go http.ListenAndServe(":8090", nil)
 
 	config := httpserver.Config{
 		HTTPServer: cfg.Server.HTTPServer,

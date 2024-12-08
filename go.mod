@@ -9,6 +9,7 @@ require (
 	github.com/gobwas/ws v1.4.0
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/knadh/koanf/v2 v2.0.1
+	github.com/labstack/echo-contrib v0.17.1
 	github.com/labstack/gommon v0.4.2
 	github.com/redis/go-redis/v9 v9.5.3
 	go.mongodb.org/mongo-driver v1.17.1
@@ -25,13 +26,10 @@ require (
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
-	github.com/labstack/echo-contrib v0.17.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect

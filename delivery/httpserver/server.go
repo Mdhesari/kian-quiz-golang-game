@@ -45,6 +45,10 @@ func (s Server) Serve() {
 	s.Router.Use(middleware.RequestID())
 	s.Router.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			var err string = ""
+			if v.Error != nil {
+				err = v.Error.Error()
+			}
 			logger.Logger.Named("http-server").Info("request",
 				zap.String("request_id", v.RequestID),
 				zap.String("host", v.Host),
@@ -52,7 +56,7 @@ func (s Server) Serve() {
 				zap.String("protocol", v.Protocol),
 				zap.String("method", v.Method),
 				zap.Duration("latency", v.Latency),
-				zap.String("error", v.Error.Error()),
+				zap.String("error", err),
 				zap.String("remote_ip", v.RemoteIP),
 				zap.Int64("response_size", v.ResponseSize),
 				zap.String("uri", v.URI),

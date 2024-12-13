@@ -49,7 +49,7 @@ func (s Server) Serve() {
 			if v.Error != nil {
 				err = v.Error.Error()
 			}
-			logger.Logger.Named("http-server").Info("request",
+			logger.L().Named("http-server").Info("request",
 				zap.String("request_id", v.RequestID),
 				zap.String("host", v.Host),
 				zap.String("content-length", v.ContentLength),

@@ -8,7 +8,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"os"
 	"os/signal"
-	"sync"
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
@@ -37,7 +36,7 @@ func New(config Config, matchingSrv *matchingservice.Service) Scheduler {
 	}
 }
 
-func (s Scheduler) Start(wg *sync.WaitGroup) {
+func (s Scheduler) Start() {
 	fmt.Println("started")
 
 	_, err := s.sch.NewJob(
@@ -60,8 +59,7 @@ func (s Scheduler) Start(wg *sync.WaitGroup) {
 		case <-quit:
 			s.sch.Shutdown()
 			fmt.Println("exiting scheduller...")
-
-			wg.Done()
+			
 			return
 		default:
 			time.Sleep(1 * time.Second)

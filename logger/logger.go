@@ -9,19 +9,23 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var Logger *zap.Logger
+var logger *zap.Logger
 
 var once sync.Once
+
+func L() *zap.Logger {
+	return logger
+}
 
 func init() {
 	once.Do(func() {
 		fileWriter := zapcore.AddSync(
 			&lumberjack.Logger{
-				Filename:   "./logs/logs.json",
-				MaxSize:    1,
-				MaxAge:     30,
-				LocalTime:  false,
-				Compress:   false,
+				Filename:  "./logs/logs.json",
+				MaxSize:   1,
+				MaxAge:    30,
+				LocalTime: false,
+				Compress:  false,
 			},
 		)
 		stdoutWriter := zapcore.AddSync(os.Stdout)
@@ -34,7 +38,7 @@ func init() {
 			zapcore.NewCore(encoder, stdoutWriter, level),
 			zapcore.NewCore(encoder, fileWriter, level),
 		)
-		
-		Logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(level))
+
+		logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(level))
 	})
 }

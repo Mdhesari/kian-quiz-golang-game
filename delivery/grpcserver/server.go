@@ -13,7 +13,7 @@ import (
 
 type Server struct {
 	presence.UnimplementedPresenceServiceServer
-	srv presenceservice.Service
+	srv *presenceservice.Service
 }
 
 func (s Server) GetPresence(ctx context.Context, req *presence.GetPresenceRequest) (*presence.GetPresenceResponse, error) {
@@ -26,7 +26,7 @@ func (s Server) GetPresence(ctx context.Context, req *presence.GetPresenceReques
 	return protobufmapper.MapFromParamPresenceResponseToProtobuf(*res), nil
 }
 
-func New(srv presenceservice.Service) Server {
+func New(srv *presenceservice.Service) Server {
 	return Server{
 		UnimplementedPresenceServiceServer: presence.UnimplementedPresenceServiceServer{},
 		srv:                                srv,

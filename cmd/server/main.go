@@ -55,13 +55,55 @@ var (
 	server httpserver.Server
 )
 
+type services struct {
+	authSrv     *authservice.Service
+	userSrv     *userservice.Service
+	matchingSrv *matchingservice.Service
+	categorySrv *categoryservice.Service
+	presenceSrv *presenceservice.Service
+	rbacSrv     *rbacservice.Service
+}
+
 func init() {
 	cfg = config.Load("config.yml")
 	flag.Parse()
 }
 
+func setupServices(cfg config.Config) services {
+	authConfig := authservice.Config{
+		Secret: []byte(cfg.JWT.Secret),
+	}
+	authSrv := authservice.New(authConfig)
+
+	cli, err := mongorepo.New(cfg.Database.MongoDB)
+	if err != nil {
+
+		panic("could not connect to mongodb.")
+	}
+
+	rbacRepo := mongorbac.New(cli)
+	rbacSrv := rbacservice.New(rbacRepo)
+
+	userRepo := mongouser.New(cli)
+	userSrv := userservice.New(&authSrv, userRepo)
+	userValidator := uservalidator.New(userRepo)
+
+	categoryRepo := mongocategory.New(cli)
+	redisAdap := redisadapter.New(cfg.Redis)
+	matchingRepo := redismatching.New(redisAdap)
+
+	presenceRepo := redispresence.New(redisAdap)
+	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
+
+	matchingSrv := matchingservice.New(matchingRepo, categoryRepo, presenceCli, redisAdap)
+
+	categorySrv := categoryservice.New(categoryRepo)
+}
+
 func main() {
 	log.Println("goroutines: ", runtime.NumGoroutine())
+
+	var srvs services = setupServices(cfg)
 
 	go func() {
 		// Start the HTTP server
@@ -86,44 +128,6 @@ func main() {
 		}
 	}()
 
-	cli, err := mongorepo.New(cfg.Database.MongoDB)
-	if err != nil {
-
-		panic("could not connect to mongodb.")
-	}
-
-	migrator, err := migrator.New(cli.Conn().Client(), &mongodb.Config{
-		DatabaseName:         cfg.Database.MongoDB.DBName,
-		MigrationsCollection: cfg.Database.MongoDB.Migrations,
-		TransactionMode:      false,
-		Locking:              mongodb.Locking{},
-	}, cfg.Database.Migrations)
-	if err != nil {
-
-		panic(err)
-	}
-	migrator.Up()
-
-	authConfig := authservice.Config{
-		Secret: []byte(cfg.JWT.Secret),
-	}
-	authSrv := authservice.New(authConfig)
-
-	rbacRepo := mongorbac.New(cli)
-	rbacSrv := rbacservice.New(rbacRepo)
-
-	userRepo := mongouser.New(cli)
-	userSrv := userservice.New(&authSrv, userRepo)
-	userValidator := uservalidator.New(userRepo)
-
-	categoryRepo := mongocategory.New(cli)
-	redisAdap := redisadapter.New(cfg.Redis)
-	matchingRepo := redismatching.New(redisAdap)
-
-	presenceRepo := redispresence.New(redisAdap)
-	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
-	presenceserver := grpcserver.New(presenceSrv)
-
 	// TODO - Sepearte cmd
 	go func() {
 		redisAdap := redisadapter.New(cfg.Redis)
@@ -142,6 +146,7 @@ func main() {
 
 	// TODO - this should be removed later it's just for development purposes
 	fmt.Println("Starting presence server...")
+	presenceserver := grpcserver.New(srvs.presenceSrv)
 	go presenceserver.Start()
 
 	grpConn, err := grpc.Dial("127.0.0.1:8089", grpc.WithInsecure())
@@ -149,16 +154,12 @@ func main() {
 		log.Fatalf("Grpc could not dial %v\n", err)
 	}
 	presenceCli := presenceadapter.New(grpConn)
-	matchingSrv := matchingservice.New(matchingRepo, categoryRepo, presenceCli, redisAdap)
-	matchingValidator := matchingvalidator.New(categoryRepo)
-
-	categorySrv := categoryservice.New(categoryRepo)
 
 	handlers := []httpserver.Handler{
-		userhandler.New(&userSrv, &authSrv, &rbacSrv, &presenceSrv, authConfig, userValidator),
+		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, authConfig, userValidator),
 		pinghandler.New(),
-		backpanelhandler.New(&userSrv, &rbacSrv, &authSrv, authConfig),
-		matchinghandler.New(authConfig, &authSrv, matchingSrv, matchingValidator, &presenceSrv),
+		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, authConfig),
+		matchinghandler.New(authConfig, srvs.authSrv, *srvs.matchingSrv, matchingValidator, &presenceSrv),
 		categoryhandler.New(&categorySrv, &presenceSrv, &authSrv, authConfig),
 	}
 
@@ -175,9 +176,8 @@ func main() {
 	go server.Serve()
 
 	var wg sync.WaitGroup
-
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 
 		scheduler := scheduler.New(cfg.Scheduler, &matchingSrv)

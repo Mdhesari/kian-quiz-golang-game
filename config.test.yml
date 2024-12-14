@@ -1,18 +1,30 @@
 type: yml
 
+presence:
+  prefix: "presence"
+  expiration: "4h"
+
 server:
   http_server:
-    port: 9090
+    port: 8080
 
 jwt:
-  secret: "secret"
+  secret: "secretto"
+
+scheduler:
+  match_waited_users_interval_seconds: 5
+
+redis:
+  host: redis
 
 database:
+  seeders: "file://repository/mongorepo/seeders"
+  migrations: "file://repository/mongorepo/migrations"
   mongodb:
-    port: 27018
-    host: localhost
-    db_name: db_test
-    username: michael_test
-    password: secret_test
+    port: 27017
+    host: mongodb
+    db_name: db
+    username: michael
+    password: secret
     migrations: migrations
     duration_seconds: 5

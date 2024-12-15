@@ -6,7 +6,7 @@ presence:
 
 server:
   http_server:
-    port: 8080
+    port: 80
 
 jwt:
   secret: "secretto"

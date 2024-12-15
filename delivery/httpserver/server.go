@@ -5,13 +5,10 @@ import (
 	"log"
 	"mdhesari/kian-quiz-golang-game/logger"
 
-	// "mdhesari/kian-quiz-golang-game/logger"
-
 	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
-	// "go.uber.org/zap"
 )
 
 type Handler interface {

@@ -18,12 +18,8 @@ type Handler interface {
 	SetRoutes(r *echo.Echo)
 }
 
-type HTTPServer struct {
-	Port int `koanf:"port"`
-}
-
 type Config struct {
-	HTTPServer HTTPServer `koanf:"http_server"`
+	Port int `koanf:"port"`
 }
 
 type Server struct {
@@ -90,7 +86,7 @@ func (s Server) Serve() {
 	}
 
 	// Start server
-	address := fmt.Sprintf(":%d", s.config.HTTPServer.Port)
+	address := fmt.Sprintf(":%d", s.config.Port)
 
 	fmt.Printf("start echo server on %s\n", address)
 

@@ -33,10 +33,13 @@ func init() {
 
 		encoderCfg := zap.NewProductionEncoderConfig()
 		encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-		encoder := zapcore.NewJSONEncoder(encoderCfg)
+		jsonEncoder := zapcore.NewJSONEncoder(encoderCfg)
+		encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		consoleEncoder := zapcore.NewConsoleEncoder(encoderCfg)
+
 		core := zapcore.NewTee(
-			zapcore.NewCore(encoder, stdoutWriter, level),
-			zapcore.NewCore(encoder, fileWriter, level),
+			zapcore.NewCore(consoleEncoder, stdoutWriter, level),
+			zapcore.NewCore(jsonEncoder, fileWriter, level),
 		)
 
 		logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(level))

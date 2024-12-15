@@ -20,7 +20,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
-	"mdhesari/kian-quiz-golang-game/repository/migrator"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
@@ -41,9 +40,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -51,8 +48,7 @@ import (
 )
 
 var (
-	cfg    config.Config
-	server httpserver.Server
+	cfg config.Config
 )
 
 type services struct {
@@ -69,42 +65,57 @@ func init() {
 	flag.Parse()
 }
 
-func setupServices(cfg config.Config) services {
-	authConfig := authservice.Config{
-		Secret: []byte(cfg.JWT.Secret),
-	}
+func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
+	authConfig := cfg.Auth
 	authSrv := authservice.New(authConfig)
 
-	cli, err := mongorepo.New(cfg.Database.MongoDB)
+	rbacRepo := mongorbac.New(mongoCli)
+	rbacSrv := rbacservice.New(rbacRepo)
+
+	userRepo := mongouser.New(mongoCli)
+	userSrv := userservice.New(&authSrv, userRepo)
+
+	categoryRepo := mongocategory.New(mongoCli)
+	redisAdap := redisadapter.New(cfg.Redis)
+
+	presenceRepo := redispresence.New(redisAdap)
+	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
+
+	grpConn, err := grpc.Dial("127.0.0.1:8089", grpc.WithInsecure())
+	if err != nil {
+
+		log.Fatalf("Grpc could not dial %v\n", err)
+	}
+	presenceCli := presenceadapter.New(grpConn)
+	matchingRepo := redismatching.New(redisAdap)
+	matchingSrv := matchingservice.New(matchingRepo, categoryRepo, presenceCli, redisAdap)
+
+	categorySrv := categoryservice.New(categoryRepo)
+
+	return services{
+		authSrv:     &authSrv,
+		userSrv:     &userSrv,
+		matchingSrv: &matchingSrv,
+		categorySrv: &categorySrv,
+		presenceSrv: &presenceSrv,
+		rbacSrv:     &rbacSrv,
+	}
+}
+
+func main() {
+	logger.L().Info("Welcome to KianQuiz.")
+
+	// TODO - Is there a better way?
+	cfg.Auth.Secret = []byte(cfg.JWT.Secret)
+	mongoCli, err := mongorepo.New(cfg.Database.MongoDB)
 	if err != nil {
 
 		panic("could not connect to mongodb.")
 	}
 
-	rbacRepo := mongorbac.New(cli)
-	rbacSrv := rbacservice.New(rbacRepo)
+	var srvs services = setupServices(&cfg, mongoCli)
 
-	userRepo := mongouser.New(cli)
-	userSrv := userservice.New(&authSrv, userRepo)
-	userValidator := uservalidator.New(userRepo)
-
-	categoryRepo := mongocategory.New(cli)
-	redisAdap := redisadapter.New(cfg.Redis)
-	matchingRepo := redismatching.New(redisAdap)
-
-	presenceRepo := redispresence.New(redisAdap)
-	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
-
-	matchingSrv := matchingservice.New(matchingRepo, categoryRepo, presenceCli, redisAdap)
-
-	categorySrv := categoryservice.New(categoryRepo)
-}
-
-func main() {
-	log.Println("goroutines: ", runtime.NumGoroutine())
-
-	var srvs services = setupServices(cfg)
-
+	// TODO - Profling
 	go func() {
 		// Start the HTTP server
 		server := http.Server{
@@ -128,7 +139,7 @@ func main() {
 		}
 	}()
 
-	// TODO - Sepearte cmd
+	// TODO - Sepearte cmd for subscription
 	go func() {
 		redisAdap := redisadapter.New(cfg.Redis)
 		subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.UsersMatched))
@@ -144,43 +155,34 @@ func main() {
 		}
 	}()
 
-	// TODO - this should be removed later it's just for development purposes
-	fmt.Println("Starting presence server...")
+	// TODO - Seperate cmd for presence server
 	presenceserver := grpcserver.New(srvs.presenceSrv)
 	go presenceserver.Start()
 
-	grpConn, err := grpc.Dial("127.0.0.1:8089", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Grpc could not dial %v\n", err)
-	}
-	presenceCli := presenceadapter.New(grpConn)
+	userRepo := mongouser.New(mongoCli)
+	userValidator := uservalidator.New(userRepo)
+
+	categoryRepo := mongocategory.New(mongoCli)
+	matchingValidator := matchingvalidator.New(categoryRepo)
 
 	handlers := []httpserver.Handler{
-		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, authConfig, userValidator),
 		pinghandler.New(),
-		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, authConfig),
-		matchinghandler.New(authConfig, srvs.authSrv, *srvs.matchingSrv, matchingValidator, &presenceSrv),
-		categoryhandler.New(&categorySrv, &presenceSrv, &authSrv, authConfig),
+		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, userValidator),
+		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, cfg.Auth),
+		matchinghandler.New(cfg.Auth, srvs.authSrv, *srvs.matchingSrv, matchingValidator, srvs.presenceSrv),
+		categoryhandler.New(srvs.categorySrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 	}
 
-	// TODO - refactor
-	http.Handle("/metrics", promhttp.Handler())
-	go http.ListenAndServe(":8090", nil)
+	httpSvr := httpserver.New(cfg.Server.HttpServer, handlers)
+	go httpSvr.Serve()
 
-	config := httpserver.Config{
-		HTTPServer: cfg.Server.HTTPServer,
-	}
-
-	server = httpserver.New(config, handlers)
-
-	go server.Serve()
-
+	// TODO - Separate cmd for schedule
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		scheduler := scheduler.New(cfg.Scheduler, &matchingSrv)
+		scheduler := scheduler.New(cfg.Scheduler, srvs.matchingSrv)
 		scheduler.Start()
 	}()
 
@@ -188,9 +190,10 @@ func main() {
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 
+	// Gracefully shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Application.GracefulShutdownTimeout)
 	defer cancel()
-	if err := server.Router.Shutdown(ctx); err != nil {
+	if err := httpSvr.Router.Shutdown(ctx); err != nil {
 		fmt.Println("Err: ", err)
 	}
 	<-ctx.Done()

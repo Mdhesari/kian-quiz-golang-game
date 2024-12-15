@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	cfg    config.Config
+	cfg config.Config
 )
 
 func init() {
@@ -48,7 +48,11 @@ func main() {
 	scheduler := scheduler.New(cfg.Scheduler, &matchingSrv)
 
 	wg.Add(1)
-	go scheduler.Start(&wg)
+	go func() {
+		defer wg.Done()
+
+		scheduler.Start()
+	}()
 
 	wg.Wait()
 }

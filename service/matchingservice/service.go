@@ -140,7 +140,7 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 			Category: category,
 		}
 
-		s.pub.Publish(ctx, string(entity.UsersMatched), protobufencoder.EncodeUsersMatchedEvent(e))
+		s.pub.Publish(ctx, string(entity.UsersMatchedEvent), protobufencoder.EncodeUsersMatchedEvent(e))
 
 		usersToBeRemoved = append(usersToBeRemoved, slice.MapFromPrimitiveObjectIDToHexString(e.Players)...)
 	}

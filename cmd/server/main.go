@@ -19,9 +19,13 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
+	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
+	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
+	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongogame"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redismatching"
@@ -29,6 +33,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/categoryservice"
+	"mdhesari/kian-quiz-golang-game/service/gameservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
@@ -36,7 +41,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"sync"
 	"syscall"
 
@@ -141,8 +145,10 @@ func main() {
 
 	// TODO - Sepearte cmd for subscription
 	go func() {
+		gameRepo := mongogame.New(mongoCli)
+		gameSrv := gameservice.New(gameRepo)
 		redisAdap := redisadapter.New(cfg.Redis)
-		subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.UsersMatched))
+		subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.UsersMatchedEvent))
 		for {
 			msg, err := subscriber.ReceiveMessage(context.Background())
 			if err != nil {
@@ -151,7 +157,20 @@ func main() {
 			}
 
 			playersMatched := protobufdecoder.DecodeUsersMatchedEvent(msg.Payload)
-			fmt.Printf("new message %v\n", playersMatched)
+
+			game, err := gameSrv.Create(context.Background(), param.GameCreateRequest{
+				Players:  playersMatched.Players,
+				Category: playersMatched.Category,
+			})
+			if err != nil {
+
+				logger.L().Error(err.Error(), zap.Error(err), zap.Any("game", game))
+			}
+
+			payload := protobufencoder.EncodeGameStartedEvent(entity.GameStarted{
+				PlayerIds: game.Game.PlayerIDs,
+			})
+			redisAdap.Publish(context.Background(), string(entity.GameStartedEvent), payload)
 		}
 	}()
 
@@ -200,6 +219,5 @@ func main() {
 
 	wg.Wait()
 
-	log.Print("Application shutdown gracefully.")
-	log.Println("goroutines: ", runtime.NumGoroutine())
+	logger.L().Info("Shutdown services gracefully.")
 }

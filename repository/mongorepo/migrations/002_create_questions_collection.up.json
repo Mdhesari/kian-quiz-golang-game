@@ -26,10 +26,7 @@
                     "category_id": {
                         "bsonType": "objectId"
                     },
-                    "correct_answer_id": {
-                        "bsonType": "objectId"
-                    },
-                    "answer_ids": {
+                    "answers": {
                         "bsonType": "array"
                     },
                     "difficulty": {

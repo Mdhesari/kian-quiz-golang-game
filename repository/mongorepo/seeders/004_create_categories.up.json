@@ -3,16 +3,28 @@
         "insert": "categories",
         "documents": [
             {
-                "title": "footbal",
-                "description": "footbal is awesome."
+                "title": "General Knowledge",
+                "description": "Test your knowledge across various topics"
             },
             {
-                "title": "art",
-                "description": "art is awesome."
+                "title": "Sports & Fitness",
+                "description": "Questions about athletics and physical activities."
             },
             {
-                "title": "software",
-                "description": "software is awesome."
+                "title": "Science",
+                "description": "Explore the world of science and technology."
+            },
+            {
+                "title": "Music",
+                "description": "Test your musical knowledge."
+            },
+            {
+                "title": "History",
+                "description": "Questions about countries and cultures"
+            },
+            {
+                "title": "Technology",
+                "description": "How are you in the tech world?"
             }
         ]
     }

@@ -24,7 +24,7 @@ func main() {
 	presenceRepo := redispresence.New(redisAdap)
 	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
 
-	presenceserver := grpcserver.New(&presenceSrv)
+	presenceserver := grpcserver.New(cfg.Server.GrpcServer, &presenceSrv)
 	fmt.Println("Starting presence server...")
 	presenceserver.Start()
 }

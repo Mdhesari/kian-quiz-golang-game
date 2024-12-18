@@ -19,7 +19,7 @@ func init() {
 
 func main() {
 	redisAdap := redisadapter.New(cfg.Redis)
-	subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.UsersMatched))
+	subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.UsersMatchedEvent))
 
 	for {
 		msg, err := subscriber.ReceiveMessage(context.Background())

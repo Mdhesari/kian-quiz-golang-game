@@ -22,7 +22,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
-	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongogame"
@@ -110,7 +109,7 @@ func main() {
 	logger.L().Info("Welcome to KianQuiz.")
 
 	// TODO - Is there a better way?
-	cfg.Auth.Secret = []byte(cfg.JWT.Secret)
+	// cfg.Auth.Secret = []byte(cfg.Auth.Secret)
 	mongoCli, err := mongorepo.New(cfg.Database.MongoDB)
 	if err != nil {
 

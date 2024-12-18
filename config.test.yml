@@ -8,8 +8,9 @@ server:
   http_server:
     port: 80
 
-jwt:
+auth:
   secret: "secretto"
+  expires_in_minutes: 10080
 
 scheduler:
   match_waited_users_interval_seconds: 5

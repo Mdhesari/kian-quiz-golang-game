@@ -2,16 +2,19 @@ package authservice
 
 import (
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 )
 
 type Config struct {
-	Secret []byte
+	Secret           []byte        `koanf:"secret"`
+	ExpiresInMinutes time.Duration `koanf:"expires_in_minutes"`
 }
 
 type Service struct {
@@ -34,11 +37,13 @@ func (s Service) GenerateToken(user *entity.User, iss string) (string, error) {
 
 	mySigningKey := []byte(s.config.Secret)
 
+	logger.L().Info("creating a new jwt token.", zap.Any("duration", s.config.ExpiresInMinutes))
+
 	// Create the Claims
 	claims := Claims{
 		user.ID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * s.config.ExpiresInMinutes)),
 			Issuer:    iss,
 		},
 	}

@@ -33,7 +33,6 @@ type Config struct {
 	Presence    presenceservice.Config `koanf:"presence"`
 	Scheduler   scheduler.Config       `koanf:"scheduler"`
 	Database    Database               `koanf:"database"`
-	JWT         JWT                    `koanf:"jwt"`
 	Server      Server                 `koanf:"server"`
 	Redis       redisadapter.Config    `koanf:"redis"`
 	Auth        authservice.Config     `koanf:"auth"`

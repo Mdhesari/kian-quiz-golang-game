@@ -85,8 +85,8 @@ func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
 
 	presenceRepo := redispresence.New(redisAdap)
 	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
-
-	grpConn, err := grpc.Dial("127.0.0.1:8089", grpc.WithInsecure())
+	address := fmt.Sprintf(":%d", cfg.Server.GrpcServer.Port)
+	grpConn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 
 		log.Fatalf("Grpc could not dial %v\n", err)
@@ -184,7 +184,7 @@ func main() {
 	}()
 
 	// TODO - Seperate cmd for presence server
-	presenceserver := grpcserver.New(srvs.presenceSrv)
+	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
 	go presenceserver.Start()
 
 	userRepo := mongouser.New(mongoCli)

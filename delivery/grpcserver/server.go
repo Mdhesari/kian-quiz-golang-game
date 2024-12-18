@@ -2,6 +2,7 @@ package grpcserver
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufmapper"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/presence"
@@ -13,7 +14,12 @@ import (
 
 type Server struct {
 	presence.UnimplementedPresenceServiceServer
-	srv *presenceservice.Service
+	config Config
+	srv    *presenceservice.Service
+}
+
+type Config struct {
+	Port int `koanf:"port"`
 }
 
 func (s Server) GetPresence(ctx context.Context, req *presence.GetPresenceRequest) (*presence.GetPresenceResponse, error) {
@@ -26,16 +32,17 @@ func (s Server) GetPresence(ctx context.Context, req *presence.GetPresenceReques
 	return protobufmapper.MapFromParamPresenceResponseToProtobuf(*res), nil
 }
 
-func New(srv *presenceservice.Service) Server {
+func New(cfg Config, srv *presenceservice.Service) Server {
 	return Server{
+		config:                             cfg,
 		UnimplementedPresenceServiceServer: presence.UnimplementedPresenceServiceServer{},
 		srv:                                srv,
 	}
 }
 
 func (s Server) Start() {
-	// TODO - add to config
-	listener, err := net.Listen("tcp", ":8089")
+	address := fmt.Sprintf(":%d", s.config.Port)
+	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatal("Colud not open listener.")
 	}
@@ -46,5 +53,5 @@ func (s Server) Start() {
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatal("Could not serve gprc server.")
 	}
-	
+
 }

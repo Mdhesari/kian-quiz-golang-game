@@ -23,7 +23,7 @@ import (
 
 var cfg config.Config
 
-var amountOfQuestions = 50
+var amountOfQuestions = 40
 var questions chan entity.Question
 var difficulties map[string]entity.QuestionDifficulty = map[string]entity.QuestionDifficulty{
 	"easy":   entity.QuestionDifficultyEasy,

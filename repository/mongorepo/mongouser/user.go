@@ -94,6 +94,7 @@ func (d DB) FindByID(id primitive.ObjectID) (*entity.User, error) {
 	filter := bson.M{"_id": id}
 	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
 	if res.Err() != nil {
+
 		return nil, res.Err()
 	}
 

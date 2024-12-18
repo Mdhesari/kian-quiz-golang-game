@@ -12,6 +12,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/backpanelhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/categoryhandler"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/gamehandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/matchinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
@@ -61,6 +62,7 @@ type services struct {
 	categorySrv *categoryservice.Service
 	presenceSrv *presenceservice.Service
 	rbacSrv     *rbacservice.Service
+	gameSrv     *gameservice.Service
 }
 
 func init() {
@@ -95,6 +97,9 @@ func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
 
 	categorySrv := categoryservice.New(categoryRepo)
 
+	gameRepo := mongogame.New(mongoCli)
+	gameSrv := gameservice.New(gameRepo)
+
 	return services{
 		authSrv:     &authSrv,
 		userSrv:     &userSrv,
@@ -102,6 +107,7 @@ func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
 		categorySrv: &categorySrv,
 		presenceSrv: &presenceSrv,
 		rbacSrv:     &rbacSrv,
+		gameSrv:     &gameSrv,
 	}
 }
 
@@ -187,6 +193,7 @@ func main() {
 
 	handlers := []httpserver.Handler{
 		pinghandler.New(),
+		gamehandler.New(srvs.gameSrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, userValidator),
 		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, cfg.Auth),
 		matchinghandler.New(cfg.Auth, srvs.authSrv, *srvs.matchingSrv, matchingValidator, srvs.presenceSrv),

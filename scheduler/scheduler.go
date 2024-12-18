@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron/v2"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -57,9 +59,15 @@ func (s Scheduler) Start() {
 	for {
 		select {
 		case <-quit:
-			s.sch.Shutdown()
-			fmt.Println("exiting scheduller...")
-			
+			err := s.sch.Shutdown()
+			if err != nil {
+				logger.L().Error("Could not shutdown scheduller.", zap.Error(err))
+
+				return
+			}
+
+			logger.L().Info("Scheduler shutdown gracefully.")
+
 			return
 		default:
 			time.Sleep(1 * time.Second)

@@ -14,3 +14,11 @@ type GameCreateRequest struct {
 type GameCreateResponse struct {
 	Game entity.Game `json:"game"`
 }
+
+type GameGetRequest struct {
+	GameId primitive.ObjectID `json:"game_id"`
+}
+
+type GameGetResponse struct {
+	Game entity.Game `json:"game"`
+}

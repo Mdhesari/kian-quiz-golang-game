@@ -142,7 +142,9 @@ func main() {
 		}()
 
 		if err := server.ListenAndServe(); err != nil {
-			logger.L().Error("Http server error.", zap.Error(err))
+			if err != http.ErrServerClosed {
+				logger.L().Error("Http server error.", zap.Error(err))
+			}
 
 			return
 		}

@@ -12,6 +12,7 @@ import (
 
 func (h Handler) GetGames(c echo.Context) error {
 	var req param.GameGetRequest
+	
 	if err := c.Bind(&req); err != nil {
 		logger.L().Error("Could not bind game request.", zap.Error(err))
 

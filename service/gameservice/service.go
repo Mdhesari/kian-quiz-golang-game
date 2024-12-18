@@ -56,6 +56,7 @@ func (s Service) GetGameById(ctx context.Context, req param.GameGetRequest) (par
 		return param.GameGetResponse{}, err
 	}
 	if game.ID.IsZero() {
+		logger.L().Info("Game does not exists!", zap.String("game_id", req.GameId.Hex()))
 
 		return param.GameGetResponse{}, richerror.New(op, errmsg.ErrNotFound).WithErr(err).WithKind(richerror.KindNotFound)
 	}

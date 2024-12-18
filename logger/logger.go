@@ -42,6 +42,6 @@ func init() {
 			zapcore.NewCore(jsonEncoder, fileWriter, level),
 		)
 
-		logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(level))
+		logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
 	})
 }

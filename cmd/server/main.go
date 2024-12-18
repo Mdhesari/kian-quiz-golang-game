@@ -166,6 +166,8 @@ func main() {
 				logger.L().Error(err.Error(), zap.Error(err), zap.Any("game", game))
 			}
 
+			logger.L().Info("A new game created.", zap.Any("game", game.Game.ID))
+
 			payload := protobufencoder.EncodeGameStartedEvent(entity.GameStarted{
 				PlayerIds: game.Game.PlayerIDs,
 			})

@@ -5,6 +5,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
+	"time"
 )
 
 type Repository interface {
@@ -27,6 +28,7 @@ func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param
 	game, err := s.repo.Create(ctx, entity.Game{
 		PlayerIDs:  req.Players,
 		CategoryID: req.Category.ID,
+		StartTime: time.Now(),
 	})
 	if err != nil {
 

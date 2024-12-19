@@ -70,52 +70,9 @@ func init() {
 	flag.Parse()
 }
 
-func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
-	authConfig := cfg.Auth
-	authSrv := authservice.New(authConfig)
-
-	rbacRepo := mongorbac.New(mongoCli)
-	rbacSrv := rbacservice.New(rbacRepo)
-
-	userRepo := mongouser.New(mongoCli)
-	userSrv := userservice.New(&authSrv, userRepo)
-
-	categoryRepo := mongocategory.New(mongoCli)
-	redisAdap := redisadapter.New(cfg.Redis)
-
-	presenceRepo := redispresence.New(redisAdap)
-	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
-	address := fmt.Sprintf(":%d", cfg.Server.GrpcServer.Port)
-	grpConn, err := grpc.Dial(address, grpc.WithInsecure())
-	if err != nil {
-
-		log.Fatalf("Grpc could not dial %v\n", err)
-	}
-	presenceCli := presenceadapter.New(grpConn)
-	matchingRepo := redismatching.New(redisAdap)
-	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, categoryRepo, presenceCli, redisAdap)
-
-	categorySrv := categoryservice.New(categoryRepo)
-
-	gameRepo := mongogame.New(mongoCli)
-	gameSrv := gameservice.New(gameRepo)
-
-	return services{
-		authSrv:     &authSrv,
-		userSrv:     &userSrv,
-		matchingSrv: &matchingSrv,
-		categorySrv: &categorySrv,
-		presenceSrv: &presenceSrv,
-		rbacSrv:     &rbacSrv,
-		gameSrv:     &gameSrv,
-	}
-}
-
 func main() {
 	logger.L().Info("Welcome to KianQuiz.")
 
-	// TODO - Is there a better way?
-	// cfg.Auth.Secret = []byte(cfg.Auth.Secret)
 	mongoCli, err := mongorepo.New(cfg.Database.MongoDB)
 	if err != nil {
 
@@ -123,32 +80,6 @@ func main() {
 	}
 
 	var srvs services = setupServices(&cfg, mongoCli)
-
-	// TODO - Profling
-	go func() {
-		// Start the HTTP server
-		server := http.Server{
-			Addr: ":6060",
-		}
-
-		go func() {
-			sigChan := make(chan os.Signal, 1)
-			signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-			<-sigChan
-
-			if err := server.Close(); err != nil {
-				logger.L().Error("Could not close server.", zap.Error(err))
-			}
-		}()
-
-		if err := server.ListenAndServe(); err != nil {
-			if err != http.ErrServerClosed {
-				logger.L().Error("Http server error.", zap.Error(err))
-			}
-
-			return
-		}
-	}()
 
 	// TODO - Sepearte cmd for subscription
 	go func() {
@@ -220,14 +151,56 @@ func main() {
 	<-quit
 
 	// Gracefully shutdown
+	logger.L().Info("Gracefully shutting down http server...")
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Application.GracefulShutdownTimeout)
 	defer cancel()
 	if err := httpSvr.Router.Shutdown(ctx); err != nil {
-		fmt.Println("Err: ", err)
+		logger.L().Error("Could not shutdown http server.", zap.Error(err))
 	}
 	<-ctx.Done()
 
 	wg.Wait()
 
 	logger.L().Info("Shutdown services gracefully.")
+}
+
+func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
+	authConfig := cfg.Auth
+	authSrv := authservice.New(authConfig)
+
+	rbacRepo := mongorbac.New(mongoCli)
+	rbacSrv := rbacservice.New(rbacRepo)
+
+	userRepo := mongouser.New(mongoCli)
+	userSrv := userservice.New(&authSrv, userRepo)
+
+	categoryRepo := mongocategory.New(mongoCli)
+	redisAdap := redisadapter.New(cfg.Redis)
+
+	presenceRepo := redispresence.New(redisAdap)
+	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
+	address := fmt.Sprintf(":%d", cfg.Server.GrpcServer.Port)
+	grpConn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+
+		log.Fatalf("Grpc could not dial %v\n", err)
+	}
+	presenceCli := presenceadapter.New(grpConn)
+	matchingRepo := redismatching.New(redisAdap)
+	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, categoryRepo, presenceCli, redisAdap)
+
+	categorySrv := categoryservice.New(categoryRepo)
+
+	gameRepo := mongogame.New(mongoCli)
+	gameSrv := gameservice.New(gameRepo)
+
+	return services{
+		authSrv:     &authSrv,
+		userSrv:     &userSrv,
+		matchingSrv: &matchingSrv,
+		categorySrv: &categorySrv,
+		presenceSrv: &presenceSrv,
+		rbacSrv:     &rbacSrv,
+		gameSrv:     &gameSrv,
+	}
 }

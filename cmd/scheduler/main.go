@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/adapter/presenceadapter"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
@@ -38,7 +39,8 @@ func main() {
 	}
 	mongocategory := mongocategory.New(cli)
 
-	grpConn, err := grpc.Dial(":8089", grpc.WithInsecure())
+	address := fmt.Sprintf(":%d", cfg.Server.GrpcServer.Port)
+	grpConn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Grpc could not dial %v\n", err)
 	}

@@ -1,0 +1,78 @@
+[
+    {
+        "create": "games",
+        "clusteredIndex": {
+            "key": {
+                "_id": 1
+            },
+            "unique": true,
+            "name": "games clustered key"
+        },
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "title": "Game Object Validation",
+                "required": [
+                    "category_id",
+                    "player_ids"
+                ],
+                "properties": {
+                    "category_id": {
+                        "bsonType": "objectId"
+                    },
+                    "question_ids": {
+                        "bsonType": "array",
+                        "items": {
+                            "bsonType": "objectId"
+                        }
+                    },
+                    "player_ids": {
+                        "bsonType": "array",
+                        "items": {
+                            "bsonType": "objectId"
+                        }
+                    },
+                    "rounds": {
+                        "bsonType": "array",
+                        "items": {
+                            "bsonType": "object",
+                            "required": [
+                                "question_id",
+                                "player_id",
+                                "answer"
+                            ],
+                            "properties": {
+                                "question_id": {
+                                    "bsonType": "objectId"
+                                },
+                                "player_id": {
+                                    "bsonType": "objectId"
+                                },
+                                "answer": {
+                                    "bsonType": "object",
+                                    "properties": {
+                                        "value": {
+                                            "bsonType": "string"
+                                        },
+                                        "correct": {
+                                            "bsonType": "bool"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "winner_id": {
+                        "bsonType": "objectId"
+                    },
+                    "start_time": {
+                        "bsonType": "date"
+                    },
+                    "end_time": {
+                        "bsonType": "date"
+                    }
+                }
+            }
+        }
+    }
+]

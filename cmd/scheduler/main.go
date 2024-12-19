@@ -43,7 +43,7 @@ func main() {
 		log.Fatalf("Grpc could not dial %v\n", err)
 	}
 	presenceCli := presenceadapter.New(grpConn)
-	matchingSrv := matchingservice.New(matchingRepo, mongocategory, presenceCli, redisAdap)
+	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, mongocategory, presenceCli, redisAdap)
 
 	scheduler := scheduler.New(cfg.Scheduler, &matchingSrv)
 

@@ -15,7 +15,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type Config struct {
+	MatchingTimeoutSeconds uint `koanf:"matching_timeout_seconds"`
+}
+
 type Service struct {
+	cfg            Config
 	repo           Repo
 	categoryRepo   CategoryRepo
 	presenceClient PresenceClient
@@ -41,12 +46,13 @@ type CategoryRepo interface {
 	GetAll(ctx context.Context) ([]entity.Category, error)
 }
 
-func New(repo Repo, categoryRepo CategoryRepo, presenceCli PresenceClient, pub Publisher) Service {
+func New(cfg Config, repo Repo, categoryRepo CategoryRepo, presenceCli PresenceClient, pub Publisher) Service {
 	return Service{
+		cfg:            cfg,
 		repo:           repo,
-		pub:            pub,
 		categoryRepo:   categoryRepo,
 		presenceClient: presenceCli,
+		pub:            pub,
 	}
 }
 
@@ -67,7 +73,7 @@ func (s Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*p
 	}
 
 	return &param.MatchingAddToWaitingListResponse{
-		Timeout: 1000 * time.Nanosecond,
+		Timeout: s.cfg.MatchingTimeoutSeconds,
 	}, nil
 }
 

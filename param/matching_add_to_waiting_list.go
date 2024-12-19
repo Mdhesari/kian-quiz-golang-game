@@ -1,8 +1,6 @@
 package param
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -12,5 +10,5 @@ type MatchingAddToWaitingListRequest struct {
 }
 
 type MatchingAddToWaitingListResponse struct {
-	Timeout time.Duration `json:"timeout_in_nanoseconds"`
+	Timeout uint `json:"timeout_in_seconds"`
 }

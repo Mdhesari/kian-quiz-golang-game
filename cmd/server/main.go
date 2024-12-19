@@ -93,7 +93,7 @@ func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
 	}
 	presenceCli := presenceadapter.New(grpConn)
 	matchingRepo := redismatching.New(redisAdap)
-	matchingSrv := matchingservice.New(matchingRepo, categoryRepo, presenceCli, redisAdap)
+	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, categoryRepo, presenceCli, redisAdap)
 
 	categorySrv := categoryservice.New(categoryRepo)
 

@@ -7,12 +7,13 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
+	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"time"
 )
 
 type Application struct {
-	GracefulShutdownTimeout time.Duration `koanf:"graceful_shutdown_timeout"`
+	GracefulShutdownTimeout time.Duration          `koanf:"graceful_shutdown_timeout"`
 }
 
 type Database struct {
@@ -38,4 +39,5 @@ type Config struct {
 	Server      Server                 `koanf:"server"`
 	Redis       redisadapter.Config    `koanf:"redis"`
 	Auth        authservice.Config     `koanf:"auth"`
+	Matching                matchingservice.Config `koanf:"matching"`
 }

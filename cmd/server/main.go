@@ -38,11 +38,10 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
-	"net/http"
+
 	"os"
 	"os/signal"
 	"sync"
-	"syscall"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"go.uber.org/zap"

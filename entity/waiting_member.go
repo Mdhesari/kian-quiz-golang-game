@@ -5,7 +5,7 @@ import (
 )
 
 type WaitingMember struct {
-	UserId    primitive.ObjectID
-	Category  Category
-	Timestamp int64
+	UserId    primitive.ObjectID `json:"user_id`
+	Category  Category           `json:"category"`
+	Timestamp int64              `json:"timestamp"`
 }

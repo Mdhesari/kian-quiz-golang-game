@@ -31,10 +31,16 @@ func New(repo Repository) Service {
 func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param.GameCreateResponse, error) {
 	op := "Game Service: Create a new game."
 
+	var questionIds []primitive.ObjectID
+	for _, q := range req.Questions {
+		questionIds = append(questionIds, q.ID)
+	}
+
 	game, err := s.repo.Create(ctx, entity.Game{
-		PlayerIDs:  req.Players,
-		CategoryID: req.Category.ID,
-		StartTime:  time.Now(),
+		PlayerIDs:   req.Players,
+		CategoryID:  req.Category.ID,
+		QuestionIDs: questionIds,
+		StartTime:   time.Now(),
 	})
 	if err != nil {
 

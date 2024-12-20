@@ -26,6 +26,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongogame"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongoquestion"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redismatching"
@@ -36,6 +37,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/gameservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
+	"mdhesari/kian-quiz-golang-game/service/questionservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 
@@ -84,6 +86,9 @@ func main() {
 	go func() {
 		gameRepo := mongogame.New(mongoCli)
 		gameSrv := gameservice.New(gameRepo)
+
+		questionRepo := mongoquestion.New(mongoCli)
+		questionSrv := questionservice.New(questionRepo)
 		redisAdap := redisadapter.New(cfg.Redis)
 		subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.UsersMatchedEvent))
 		for {
@@ -95,9 +100,19 @@ func main() {
 
 			playersMatched := protobufdecoder.DecodeUsersMatchedEvent(msg.Payload)
 
+			questionRes, err := questionSrv.GetRandomQuestions(context.Background(), param.QuestionGetRequest{
+				CategoryId: playersMatched.Category.ID,
+				Count:      6,
+			})
+			if err != nil {
+
+				logger.L().Error("Could not get random questions for creating game.", zap.Error(err), zap.Any("Event", playersMatched))
+			}
+
 			game, err := gameSrv.Create(context.Background(), param.GameCreateRequest{
-				Players:  playersMatched.Players,
-				Category: playersMatched.Category,
+				Players:   playersMatched.Players,
+				Category:  playersMatched.Category,
+				Questions: questionRes.Items,
 			})
 			if err != nil {
 

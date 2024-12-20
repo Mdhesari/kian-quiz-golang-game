@@ -1,4 +1,4 @@
-# KianQuiz System Design
+# KianQuiz
 
 ## Overview
 
@@ -117,45 +117,6 @@ KianQuiz is a quiz game designed for 1v1 player interactions. Players compete th
 - **Technologies**: Golang, MongoDB
 - **Responsibilities**:
   - Track and update player rankings based on game outcomes.
-
----
-
-## Database Schema
-
-### Users
-
-```json
-{
-  "_id": "ObjectId",
-  "username": "string",
-  "password": "string (hashed)",
-  "email": "string",
-  "rank": "number",
-  "presence": "boolean"
-}
-```
-
-### Games
-
-```json
-{
-  "_id": "ObjectId",
-  "player1_id": "ObjectId",
-  "player2_id": "ObjectId",
-  "category": "string",
-  "rounds": [
-    {
-      "question_id": "ObjectId",
-      "answers": { "player1": "string", "player2": "string" },
-      "scores": { "player1": "number", "player2": "number" }
-    }
-  ],
-  "winner_id": "ObjectId",
-  "created_at": "timestamp"
-}
-```
-
----
 
 ## Technologies Used
 

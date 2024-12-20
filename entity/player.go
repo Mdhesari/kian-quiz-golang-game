@@ -9,9 +9,3 @@ type Player struct {
 	AnswerIDs []primitive.ObjectID `bson:"answer_ids"`
 	Score     int                  `bson:"score"`
 }
-
-type PlayerAnswer struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	PlayerID primitive.ObjectID `bson:"player_id"`
-	AnswerID primitive.ObjectID `bson:"answer_id"`
-}

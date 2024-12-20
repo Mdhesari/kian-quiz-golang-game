@@ -102,7 +102,7 @@ func main() {
 
 			questionRes, err := questionSrv.GetRandomQuestions(context.Background(), param.QuestionGetRequest{
 				CategoryId: playersMatched.Category.ID,
-				Count:      6,
+				Count:      cfg.Application.Game.QuestionsCount,
 			})
 			if err != nil {
 

@@ -1,5 +1,9 @@
 type: yml
 
+application:
+  game:
+    questions_count: 6
+
 presence:
   prefix: "presence"
   expiration: "4h"

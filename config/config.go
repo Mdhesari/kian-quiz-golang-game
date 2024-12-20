@@ -13,7 +13,12 @@ import (
 )
 
 type Application struct {
-	GracefulShutdownTimeout time.Duration          `koanf:"graceful_shutdown_timeout"`
+	GracefulShutdownTimeout time.Duration `koanf:"graceful_shutdown_timeout"`
+	Game                    Game          `koanf:"game"`
+}
+
+type Game struct {
+	QuestionsCount int `koanf:"questions_count"`
 }
 
 type Database struct {
@@ -39,5 +44,5 @@ type Config struct {
 	Server      Server                 `koanf:"server"`
 	Redis       redisadapter.Config    `koanf:"redis"`
 	Auth        authservice.Config     `koanf:"auth"`
-	Matching                matchingservice.Config `koanf:"matching"`
+	Matching    matchingservice.Config `koanf:"matching"`
 }

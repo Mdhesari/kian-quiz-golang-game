@@ -23,6 +23,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
+	"mdhesari/kian-quiz-golang-game/pubsub"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongogame"
@@ -53,7 +54,10 @@ import (
 )
 
 var (
-	cfg config.Config
+	cfg           config.Config
+	mongoCli      *mongorepo.MongoDB
+	redisAdap     redisadapter.Adapter
+	pubsubManager *pubsub.PubSubManager
 )
 
 type services struct {
@@ -68,65 +72,27 @@ type services struct {
 
 func init() {
 	cfg = config.Load("config.yml")
+
+	var err error
+	mongoCli, err = mongorepo.New(cfg.Database.MongoDB)
+	if err != nil {
+
+		panic("could not connect to mongodb.")
+	}
+
+	redisAdap = redisadapter.New(cfg.Redis)
+
+	pubsubManager = pubsub.NewPubSubManager(redisAdap)
+
 	flag.Parse()
 }
 
 func main() {
 	logger.L().Info("Welcome to KianQuiz.")
 
-	mongoCli, err := mongorepo.New(cfg.Database.MongoDB)
-	if err != nil {
+	var srvs services = setupServices(&cfg)
 
-		panic("could not connect to mongodb.")
-	}
-
-	var srvs services = setupServices(&cfg, mongoCli)
-
-	// TODO - Sepearte cmd for subscription
-	go func() {
-		gameRepo := mongogame.New(mongoCli)
-		gameSrv := gameservice.New(gameRepo)
-
-		questionRepo := mongoquestion.New(mongoCli)
-		questionSrv := questionservice.New(questionRepo)
-		redisAdap := redisadapter.New(cfg.Redis)
-		subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.UsersMatchedEvent))
-		for {
-			msg, err := subscriber.ReceiveMessage(context.Background())
-			if err != nil {
-
-				logger.L().Error("Redis sub: Could not recieve message.", zap.Error(err))
-			}
-
-			playersMatched := protobufdecoder.DecodeUsersMatchedEvent(msg.Payload)
-
-			questionRes, err := questionSrv.GetRandomQuestions(context.Background(), param.QuestionGetRequest{
-				CategoryId: playersMatched.Category.ID,
-				Count:      cfg.Application.Game.QuestionsCount,
-			})
-			if err != nil {
-
-				logger.L().Error("Could not get random questions for creating game.", zap.Error(err), zap.Any("Event", playersMatched))
-			}
-
-			game, err := gameSrv.Create(context.Background(), param.GameCreateRequest{
-				Players:   playersMatched.Players,
-				Category:  playersMatched.Category,
-				Questions: questionRes.Items,
-			})
-			if err != nil {
-
-				logger.L().Error(err.Error(), zap.Error(err), zap.Any("game", game))
-			}
-
-			logger.L().Info("A new game created.", zap.Any("game", game.Game.ID))
-
-			payload := protobufencoder.EncodeGameStartedEvent(entity.GameStarted{
-				PlayerIds: game.Game.PlayerIDs,
-			})
-			redisAdap.Publish(context.Background(), string(entity.GameStartedEvent), payload)
-		}
-	}()
+	pubsubManager.Subscribe(string(entity.UsersMatchedEvent), setupGameAndPublishGameStartedEvent)
 
 	// TODO - Seperate cmd for presence server
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
@@ -178,7 +144,7 @@ func main() {
 	logger.L().Info("Shutdown services gracefully.")
 }
 
-func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
+func setupServices(cfg *config.Config) services {
 	authConfig := cfg.Auth
 	authSrv := authservice.New(authConfig)
 
@@ -201,7 +167,7 @@ func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
 	}
 	presenceCli := presenceadapter.New(grpConn)
 	matchingRepo := redismatching.New(redisAdap)
-	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, categoryRepo, presenceCli, redisAdap)
+	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, categoryRepo, presenceCli, pubsubManager)
 
 	categorySrv := categoryservice.New(categoryRepo)
 
@@ -217,4 +183,42 @@ func setupServices(cfg *config.Config, mongoCli *mongorepo.MongoDB) services {
 		rbacSrv:     &rbacSrv,
 		gameSrv:     &gameSrv,
 	}
+}
+
+func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payload string) error {
+	gameRepo := mongogame.New(mongoCli)
+	gameSrv := gameservice.New(gameRepo)
+
+	questionRepo := mongoquestion.New(mongoCli)
+	questionSrv := questionservice.New(questionRepo)
+
+	playersMatched := protobufdecoder.DecodeUsersMatchedEvent(payload)
+
+	questionRes, err := questionSrv.GetRandomQuestions(context.Background(), param.QuestionGetRequest{
+		CategoryId: playersMatched.Category.ID,
+		Count:      cfg.Application.Game.QuestionsCount,
+	})
+	if err != nil {
+
+		logger.L().Error("Could not get random questions for creating game.", zap.Error(err), zap.Any("Event", playersMatched))
+	}
+
+	game, err := gameSrv.Create(context.Background(), param.GameCreateRequest{
+		Players:   playersMatched.Players,
+		Category:  playersMatched.Category,
+		Questions: questionRes.Items,
+	})
+	if err != nil {
+
+		logger.L().Error(err.Error(), zap.Error(err), zap.Any("game", game))
+	}
+
+	logger.L().Info("A new game created.", zap.Any("game", game.Game.ID))
+
+	gameStartedPayload := protobufencoder.EncodeGameStartedEvent(entity.GameStarted{
+		PlayerIds: game.Game.PlayerIDs,
+	})
+	pubsubManager.Publish(context.Background(), string(entity.GameStartedEvent), gameStartedPayload)
+
+	return nil
 }

@@ -92,6 +92,7 @@ func main() {
 
 	var srvs services = setupServices(&cfg)
 
+	// TODO - Shall we move this to a service or something like that?
 	pubsubManager.Subscribe(string(entity.UsersMatchedEvent), setupGameAndPublishGameStartedEvent)
 
 	// TODO - Seperate cmd for presence server
@@ -131,12 +132,13 @@ func main() {
 	<-quit
 
 	// Gracefully shutdown
-	logger.L().Info("Gracefully shutting down http server...")
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.Application.GracefulShutdownTimeout)
 	defer cancel()
+
 	if err := httpSvr.Router.Shutdown(ctx); err != nil {
 		logger.L().Error("Could not shutdown http server.", zap.Error(err))
 	}
+
 	<-ctx.Done()
 
 	wg.Wait()

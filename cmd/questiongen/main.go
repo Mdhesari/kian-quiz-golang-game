@@ -75,7 +75,7 @@ func main() {
 				}
 
 				return nil
-			}, retry.Attempts(3), retry.Delay(5*time.Second))
+			}, retry.Attempts(uint(len(categoriesOpenTDB))), retry.Delay(5*time.Second))
 
 			if err != nil {
 				logger.L().Error("Finally Could not find and add questions", zap.Error(err), zap.Any("category", catId), zap.Any("opentdbId", openTtdbId))

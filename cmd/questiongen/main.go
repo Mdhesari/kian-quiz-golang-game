@@ -4,6 +4,7 @@ import (
 	// "encoding/json"
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -18,7 +19,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 )
 
 var cfg config.Config
@@ -55,6 +58,8 @@ func main() {
 
 	questions = make(chan entity.Question, len(categoriesOpenTDB)*amountOfQuestions)
 
+	logger.L().Info("Started generating questions from opentdb.", zap.Int("amount", amountOfQuestions), zap.Int("categories_count", len(categoriesOpenTDB)))
+
 	var wg sync.WaitGroup
 
 	for catId, openTtdbId := range categoriesOpenTDB {
@@ -63,7 +68,18 @@ func main() {
 		go func() {
 			defer wg.Done()
 
-			findAndAddQuestions(catId, openTtdbId, questions)
+			err := retry.Do(func() error {
+				err := findAndAddQuestions(catId, openTtdbId, questions)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			}, retry.Attempts(3), retry.Delay(5*time.Second))
+
+			if err != nil {
+				logger.L().Error("Finally Could not find and add questions", zap.Error(err), zap.Any("category", catId), zap.Any("opentdbId", openTtdbId))
+			}
 		}()
 	}
 
@@ -89,7 +105,7 @@ func main() {
 	fmt.Printf("\n%d questions created from %d generated questions count.", len(rows.InsertedIDs), len(qus))
 }
 
-func findAndAddQuestions(categoryId primitive.ObjectID, opentdbId int, ques chan<- entity.Question) {
+func findAndAddQuestions(categoryId primitive.ObjectID, opentdbId int, ques chan<- entity.Question) error {
 	res, err := http.Get(fmt.Sprintf("https://opentdb.com/api.php?amount=%d&category=%d&type=multiple", amountOfQuestions, opentdbId))
 	if err != nil {
 		panic(err)
@@ -100,25 +116,14 @@ func findAndAddQuestions(categoryId primitive.ObjectID, opentdbId int, ques chan
 	if err != nil {
 		logger.L().Error(err.Error())
 
-		return
+		return err
 	}
 
 	// TODO - should be refactored
 	var results OpenTDB
 	json.Unmarshal(b, &results)
 	if len(results.Results) < 1 {
-		fmt.Println("results are empty let's try one more time!")
-		time.Sleep(2 * time.Second)
-
-		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
-			findAndAddQuestions(categoryId, opentdbId, ques)
-		}()
-
-		wg.Wait()
+		return errors.New("Ratelimit.")
 	}
 
 	for _, q := range results.Results {
@@ -141,6 +146,8 @@ func findAndAddQuestions(categoryId primitive.ObjectID, opentdbId int, ques chan
 			Difficulty: difficulties[q.Difficulty],
 		}
 	}
+
+	return nil
 }
 
 func getCategoriesOpenTdbMap(mongoCli *mongorepo.MongoDB) map[primitive.ObjectID]int {

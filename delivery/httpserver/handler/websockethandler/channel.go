@@ -4,7 +4,7 @@ import (
 	"context"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"net/http"
-	"time"
+	// "time"
 
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -21,18 +21,6 @@ func (h *Handler) Channel(c echo.Context) error {
 	}
 	defer conn.Close()
 
-	if err := conn.SetReadDeadline(time.Now().Add(h.cfg.ReadTimeout)); err != nil {
-		logger.L().Error("Coud not set read deadline for websocket.", zap.Error(err))
-
-		return err
-	}
-
-	if err := conn.SetWriteDeadline(time.Now().Add(h.cfg.WriteTimeout)); err != nil {
-		logger.L().Error("Coud not set write deadline for websocket.", zap.Error(err))
-
-		return err
-	}
-
 	channel := c.Param("channel")
 	ctx, cancel := context.WithCancel(c.Request().Context())
 	defer cancel()
@@ -43,6 +31,7 @@ func (h *Handler) Channel(c echo.Context) error {
 	ch := pubsub.Channel()
 
 	go func() {
+		// TODO - Read timeout
 		for {
 			msg, opCode, err := wsutil.ReadClientData(conn)
 			if err != nil {
@@ -67,10 +56,11 @@ func (h *Handler) Channel(c echo.Context) error {
 		}
 	}()
 
-	ticker := time.NewTicker(h.cfg.PingPeriod)
-	defer ticker.Stop()
+	// ticker := time.NewTicker(h.cfg.PingPeriod)
+	// defer ticker.Stop()
 
 	for {
+		// TODO - write timeout
 		select {
 		case <-ctx.Done():
 			logger.L().Info("Websocket connection closed due to context cancellation.")
@@ -85,12 +75,15 @@ func (h *Handler) Channel(c echo.Context) error {
 
 				return err
 			}
-		case <-ticker.C:
-			if err := wsutil.WriteClientMessage(conn, ws.OpPing, nil); err != nil {
-				cancel()
+			// TODO - Handle ping
+			// case <-ticker.C:
+			// 	if err := wsutil.WriteServerMessage(conn, ws.OpPing, nil); err != nil {
+			// 		logger.L().Error("Could not write server message", zap.Error(err))
 
-				return err
-			}
+			// 		cancel()
+
+			// 		return err
+			// 	}
 		}
 	}
 }

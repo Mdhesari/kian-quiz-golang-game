@@ -22,7 +22,8 @@
                         "bsonType": "string"
                     },
                     "email": {
-                        "bsonType": "string"
+                        "bsonType": "string",
+                        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
                     },
                     "mobile": {
                         "bsonType": "string"
@@ -36,5 +37,17 @@
                 }
             }
         }
+    },
+    {
+        "createIndexes": "users",
+        "indexes": [
+            {
+                "key": {
+                    "email": 1
+                },
+                "name": "email_unique",
+                "unique": true
+            }
+        ]
     }
 ]

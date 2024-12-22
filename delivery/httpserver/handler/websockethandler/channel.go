@@ -30,9 +30,6 @@ func (h *Handler) Channel(c echo.Context) error {
 	ch := pubsub.Channel()
 
 	go func() {
-		defer conn.Close()
-		defer pubsub.Close()
-
 		for {
 			msg, opCode, err := wsutil.ReadClientData(conn)
 			if err != nil {

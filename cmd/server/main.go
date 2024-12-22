@@ -16,6 +16,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/matchinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/websockethandler"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/matchingvalidator"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
 	"mdhesari/kian-quiz-golang-game/entity"
@@ -107,6 +108,7 @@ func main() {
 
 	handlers := []httpserver.Handler{
 		pinghandler.New(),
+		websockethandler.New(&redisAdap, srvs.authSrv, &cfg.Auth),
 		gamehandler.New(srvs.gameSrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, userValidator),
 		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, cfg.Auth),

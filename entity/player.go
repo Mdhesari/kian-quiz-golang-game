@@ -7,7 +7,7 @@ import (
 )
 
 type PlayerAnswer struct {
-	QuestionId primitive.ObjectID `bson:"question_id"`
+	QuestionID primitive.ObjectID `bson:"question_id"`
 	Answer     Answer             `bson:"answer"`
 	Score      int                `bson:"score"`
 	StartTime  time.Time          `bson:"start_time"`

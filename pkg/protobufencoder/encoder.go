@@ -11,9 +11,9 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func EncodeUsersMatchedEvent(e entity.PlayersMatched) string {
-	pbE := matching.UsersMatched{
-		UserIds: slice.MapFromPrimitiveObjectIDToHexString(e.Players),
+func EncodePlayersMatchedEvent(e entity.PlayersMatched) string {
+	pbE := matching.PlayersMatched{
+		PlayerIds: slice.MapFromPrimitiveObjectIDToHexString(e.PlayerIDs),
 		Category: &matching.Category{
 			ID:          e.Category.ID.Hex(),
 			Ttile:       e.Category.Title,

@@ -11,8 +11,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func DecodeUsersMatchedEvent(s string) entity.PlayersMatched {
-	var pbE matching.UsersMatched
+func DecodePlayersMatchedEvent(s string) entity.PlayersMatched {
+	var pbE matching.PlayersMatched
 
 	res, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
@@ -34,7 +34,7 @@ func DecodeUsersMatchedEvent(s string) entity.PlayersMatched {
 	}
 
 	return entity.PlayersMatched{
-		Players: slice.MapFromHexIDStringToPrimitiveObject(pbE.UserIds),
+		PlayerIDs: slice.MapFromHexIDStringToPrimitiveObject(pbE.PlayerIds),
 		Category: entity.Category{
 			ID:          categoryId,
 			Title:       pbE.Category.Ttile,

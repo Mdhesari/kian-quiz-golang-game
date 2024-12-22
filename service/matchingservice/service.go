@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -142,13 +144,13 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 	// match the list by oldest request and publish matched message to the broker
 	for i := 1; i < len(finalList); i += 2 {
 		e := entity.PlayersMatched{
-			Players:  []primitive.ObjectID{finalList[i].UserId, finalList[i-1].UserId},
-			Category: category,
+			PlayerIDs: []primitive.ObjectID{finalList[i].UserId, finalList[i-1].UserId},
+			Category:  category,
 		}
 
-		s.pub.Publish(ctx, string(entity.UsersMatchedEvent), protobufencoder.EncodeUsersMatchedEvent(e))
+		s.pub.Publish(ctx, string(entity.PlayersMatchedEvent), protobufencoder.EncodePlayersMatchedEvent(e))
 
-		usersToBeRemoved = append(usersToBeRemoved, slice.MapFromPrimitiveObjectIDToHexString(e.Players)...)
+		usersToBeRemoved = append(usersToBeRemoved, slice.MapFromPrimitiveObjectIDToHexString(e.PlayerIDs)...)
 	}
 
 	// remove the users from waiting list
@@ -172,5 +174,6 @@ func (s Service) removeUsersFromWaitingList(category entity.Category, userIds []
 
 	if err := s.repo.RemoveUsersFromWaitingList(removeUsersCtx, category, userIds); err != nil {
 		// TODO - update metrics
+		logger.L().Error("Could not remove users from waiting list.", zap.Error(err), zap.Any("category", category), zap.Any("userId", userIds))
 	}
 }

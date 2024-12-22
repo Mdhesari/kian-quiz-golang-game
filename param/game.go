@@ -7,7 +7,7 @@ import (
 )
 
 type GameCreateRequest struct {
-	Players   []primitive.ObjectID `json:"players"`
+	PlayerIDs []primitive.ObjectID `json:"player_ids"`
 	Questions []entity.Question    `json:"questions"`
 	Category  entity.Category      `json:"category"`
 }

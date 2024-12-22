@@ -94,7 +94,7 @@ func main() {
 	var srvs services = setupServices(&cfg)
 
 	// TODO - Shall we move this to a service or something like that?
-	pubsubManager.Subscribe(string(entity.UsersMatchedEvent), setupGameAndPublishGameStartedEvent)
+	pubsubManager.Subscribe(string(entity.PlayersMatchedEvent), setupGameAndPublishGameStartedEvent)
 
 	// TODO - Seperate cmd for presence server
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
@@ -196,7 +196,7 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 	questionRepo := mongoquestion.New(mongoCli)
 	questionSrv := questionservice.New(questionRepo)
 
-	playersMatched := protobufdecoder.DecodeUsersMatchedEvent(payload)
+	playersMatched := protobufdecoder.DecodePlayersMatchedEvent(payload)
 
 	questionRes, err := questionSrv.GetRandomQuestions(context.Background(), param.QuestionGetRequest{
 		CategoryId: playersMatched.Category.ID,
@@ -208,7 +208,7 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 	}
 
 	game, err := gameSrv.Create(context.Background(), param.GameCreateRequest{
-		Players:   playersMatched.Players,
+		PlayerIDs: playersMatched.PlayerIDs,
 		Category:  playersMatched.Category,
 		Questions: questionRes.Items,
 	})

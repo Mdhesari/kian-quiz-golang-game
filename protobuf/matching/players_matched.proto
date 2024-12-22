@@ -4,8 +4,8 @@ package matching;
 
 option go_package = "protobuf/golang/matching";
 
-message UsersMatched {
-    repeated string userIds = 1;
+message PlayersMatched {
+    repeated string playerIds = 1;
     Category category = 2;
 }
 

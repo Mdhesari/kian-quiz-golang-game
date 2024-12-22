@@ -37,10 +37,15 @@ func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param
 	}
 
 	game, err := s.repo.Create(ctx, entity.Game{
-		PlayerIDs:   req.Players,
-		CategoryID:  req.Category.ID,
-		QuestionIDs: questionIds,
-		StartTime:   time.Now(),
+		ID:             [12]byte{},
+		CategoryID:     req.Category.ID,
+		QuestionIDs:    questionIds,
+		PlayerIDs:      req.PlayerIDs,
+		WinnerPlayerID: [12]byte{},
+		StartTime:      time.Now(),
+		EndTime:        time.Time{},
+		CreatedAt:      time.Time{},
+		UpdatedAt:      time.Time{},
 	})
 	if err != nil {
 

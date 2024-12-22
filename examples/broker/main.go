@@ -19,15 +19,15 @@ func init() {
 
 func main() {
 	redisAdap := redisadapter.New(cfg.Redis)
-	subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.UsersMatchedEvent))
+	subscriber := redisAdap.Cli().Subscribe(context.Background(), string(entity.PlayersMatchedEvent))
 
 	for {
 		msg, err := subscriber.ReceiveMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
 		}
-		
-		playersMatched := protobufdecoder.DecodeUsersMatchedEvent(msg.Payload)
+
+		playersMatched := protobufdecoder.DecodePlayersMatchedEvent(msg.Payload)
 		fmt.Println("new message %v\n", playersMatched)
 	}
 }

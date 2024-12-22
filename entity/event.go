@@ -3,6 +3,6 @@ package entity
 type Event string
 
 const (
-	UsersMatchedEvent Event = "matching.users_matched"
-	GameStartedEvent  Event = "game.started"
+	PlayersMatchedEvent Event = "matching.players_matched"
+	GameStartedEvent    Event = "game.started"
 )

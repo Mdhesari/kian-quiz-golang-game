@@ -4,6 +4,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/delivery/grpcserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/websockethandler"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
@@ -14,8 +15,9 @@ import (
 )
 
 type Application struct {
-	GracefulShutdownTimeout time.Duration `koanf:"graceful_shutdown_timeout"`
-	Game                    Game          `koanf:"game"`
+	GracefulShutdownTimeout time.Duration           `koanf:"graceful_shutdown_timeout"`
+	Game                    Game                    `koanf:"game"`
+	Websocket               websockethandler.Config `koanf:"websocket"`
 }
 
 type Game struct {

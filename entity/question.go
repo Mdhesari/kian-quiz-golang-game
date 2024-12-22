@@ -1,6 +1,10 @@
 package entity
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Answer struct {
 	Title     string `bson:"title"`
@@ -14,6 +18,8 @@ type Question struct {
 	CategoryID  primitive.ObjectID `bson:"category_id"`
 	Answers     []Answer           `bson:"answers"`
 	Difficulty  QuestionDifficulty `bson:"difficulty"`
+	CreatedAt   time.Time          `bson:"created_at"`
+	UpdatedAt   time.Time          `bson:"updated_at"`
 }
 
 type QuestionDifficulty int

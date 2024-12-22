@@ -10,7 +10,7 @@ type Game struct {
 	ID             primitive.ObjectID   `bson:"_id,omitempty"`
 	CategoryID     primitive.ObjectID   `bson:"category_id"`
 	QuestionIDs    []primitive.ObjectID `bson:"question_ids"`
-	PlayerIds      []primitive.ObjectID `bson:"player_ids"`
+	PlayerIDs      []primitive.ObjectID `bson:"player_ids"`
 	WinnerPlayerID primitive.ObjectID   `bson:"winner_player_id"`
 	StartTime      time.Time            `bson:"start_time"`
 	EndTime        time.Time            `bson:"end_time"`

@@ -10,5 +10,6 @@ type User struct {
 	Name     string              `bson:"name"`
 	Email    string              `bson:"email"`
 	Mobile   string              `bson:"mobile"`
+	Score    int                 `bson:"score"`
 	Password Password            `bson:"password"`
 }

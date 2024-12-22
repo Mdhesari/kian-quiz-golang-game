@@ -14,62 +14,50 @@
                 "title": "Game Object Validation",
                 "required": [
                     "category_id",
-                    "player_ids"
+                    "question_ids",
+                    "player_ids",
+                    "start_time",
+                    "created_at",
+                    "updated_at"
                 ],
                 "properties": {
                     "category_id": {
-                        "bsonType": "objectId"
+                        "bsonType": "objectId",
+                        "description": "The ID of the category this game belongs to"
                     },
                     "question_ids": {
                         "bsonType": "array",
+                        "description": "Array of question IDs for this game",
                         "items": {
                             "bsonType": "objectId"
                         }
                     },
                     "player_ids": {
                         "bsonType": "array",
+                        "description": "Array of player IDs participating in this game",
                         "items": {
                             "bsonType": "objectId"
                         }
                     },
-                    "rounds": {
-                        "bsonType": "array",
-                        "items": {
-                            "bsonType": "object",
-                            "required": [
-                                "question_id",
-                                "player_id",
-                                "answer"
-                            ],
-                            "properties": {
-                                "question_id": {
-                                    "bsonType": "objectId"
-                                },
-                                "player_id": {
-                                    "bsonType": "objectId"
-                                },
-                                "answer": {
-                                    "bsonType": "object",
-                                    "properties": {
-                                        "value": {
-                                            "bsonType": "string"
-                                        },
-                                        "correct": {
-                                            "bsonType": "bool"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
                     "winner_id": {
-                        "bsonType": "objectId"
+                        "bsonType": "objectId",
+                        "description": "The ID of the winning player (if the game has ended)"
                     },
                     "start_time": {
-                        "bsonType": "date"
+                        "bsonType": "date",
+                        "description": "The time when the game started"
                     },
                     "end_time": {
-                        "bsonType": "date"
+                        "bsonType": "date",
+                        "description": "The time when the game ended (if it has ended)"
+                    },
+                    "created_at": {
+                        "bsonType": "date",
+                        "description": "The timestamp when this game was created"
+                    },
+                    "updated_at": {
+                        "bsonType": "date",
+                        "description": "The timestamp when this game was last updated"
                     }
                 }
             }

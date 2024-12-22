@@ -14,20 +14,78 @@
                 "title": "Player Object Validation",
                 "required": [
                     "user_id",
-                    "game_id"
+                    "game_id",
+                    "created_at",
+                    "updated_at"
                 ],
                 "properties": {
                     "user_id": {
-                        "bsonType": "objectId"
+                        "bsonType": "objectId",
+                        "description": "The ID of the user associated with this player instance"
                     },
                     "game_id": {
-                        "bsonType": "objectId"
+                        "bsonType": "objectId",
+                        "description": "The ID of the game this player is participating in"
                     },
-                    "answer_ids": {
-                        "bsonType": "array"
+                    "answers": {
+                        "bsonType": "array",
+                        "description": "Array of player answers",
+                        "items": {
+                            "bsonType": "object",
+                            "required": [
+                                "question_id",
+                                "answer",
+                                "start_time",
+                                "end_time"
+                            ],
+                            "properties": {
+                                "question_id": {
+                                    "bsonType": "objectId",
+                                    "description": "The ID of the question being answered"
+                                },
+                                "answer": {
+                                    "bsonType": "object",
+                                    "required": [
+                                        "title",
+                                        "is_correct"
+                                    ],
+                                    "properties": {
+                                        "title": {
+                                            "bsonType": "string",
+                                            "description": "The text of the answer"
+                                        },
+                                        "is_correct": {
+                                            "bsonType": "bool",
+                                            "description": "Whether this answer is correct"
+                                        }
+                                    }
+                                },
+                                "score": {
+                                    "bsonType": "int",
+                                    "description": "The player's score in this game"
+                                },
+                                "start_time": {
+                                    "bsonType": "date",
+                                    "description": "The time when the player started answering this question"
+                                },
+                                "end_time": {
+                                    "bsonType": "date",
+                                    "description": "The time when the player finished answering this question"
+                                }
+                            }
+                        }
                     },
                     "score": {
-                        "bsonType": "double"
+                        "bsonType": "int",
+                        "description": "The player's score in this game"
+                    },
+                    "created_at": {
+                        "bsonType": "date",
+                        "description": "The timestamp when this player instance was created"
+                    },
+                    "updated_at": {
+                        "bsonType": "date",
+                        "description": "The timestamp when this player instance was last updated"
                     }
                 }
             }

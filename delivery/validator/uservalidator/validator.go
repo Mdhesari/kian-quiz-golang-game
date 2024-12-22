@@ -81,12 +81,7 @@ func (v Validator) ValidateRegisterRequest(req param.RegisterRequest) (Validatio
 	err := validation.ValidateStruct(&req,
 		validation.Field(&req.Name, validation.Required),
 		validation.Field(&req.Email, validation.Required, validation.By(v.checkEmailUniqueness)),
-		validation.Field(&req.Mobile,
-			validation.Required,
-			validation.Match(regexp.MustCompile("^09[0-9]{9}$")),
-			validation.By(v.checkPhoneNumberUniqueness),
-		),
-		validation.Field(&req.Password, validation.Match(regexp.MustCompile(`^[A-Za-z0-9!@#%^&*]{8,}$`))),
+		validation.Field(&req.Password, validation.Match(regexp.MustCompile(`^[A-Za-z0-9!@#%^&*]{8,}$`)).Error(errmsg.ErrWeakPassword)),
 	)
 
 	if err != nil {

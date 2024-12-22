@@ -34,6 +34,7 @@ func New(c Config, h []Handler) Server {
 }
 
 func (s Server) Serve() {
+	s.Router.Use(middleware.CORS())
 	s.Router.Use(echoprometheus.NewMiddleware("echo"))
 	s.Router.Use(middleware.RequestID())
 	s.Router.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{

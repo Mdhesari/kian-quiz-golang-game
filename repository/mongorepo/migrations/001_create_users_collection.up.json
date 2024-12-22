@@ -14,8 +14,7 @@
                 "title": "User Object Validation",
                 "required": [
                     "name",
-                    "email",
-                    "mobile"
+                    "email"
                 ],
                 "properties": {
                     "name": {
@@ -25,6 +24,9 @@
                         "bsonType": "string"
                     },
                     "mobile": {
+                        "bsonType": "string"
+                    },
+                    "avatar": {
                         "bsonType": "string"
                     },
                     "score": {

@@ -3,6 +3,7 @@ package userservice
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -49,12 +50,15 @@ func (s Service) Register(uf UserForm) (*param.RegisterResponse, error) {
 
 		return nil, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
 	}
+	// TODO - Avatar generator
+	avatar := fmt.Sprintf("https://api.dicebear.com/7.x/avataaars/svg?seed=%s", uf.Email)
 	user := entity.User{
 		Name:     uf.Name,
 		Email:    uf.Email,
 		Mobile:   uf.Mobile,
 		Password: password,
 		RoleID:   uf.RoleID,
+		Avatar:   avatar,
 	}
 
 	user, err = s.repo.Register(context.Background(), user)

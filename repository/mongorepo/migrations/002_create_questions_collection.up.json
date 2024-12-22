@@ -17,23 +17,63 @@
                     "difficulty"
                 ],
                 "properties": {
+                    "category_id": {
+                        "bsonType": "objectId"
+                    },
                     "title": {
                         "bsonType": "string"
                     },
                     "description": {
                         "bsonType": "string"
                     },
-                    "category_id": {
-                        "bsonType": "objectId"
-                    },
                     "answers": {
-                        "bsonType": "array"
+                        "bsonType": "array",
+                        "items": {
+                            "bsonType": "object",
+                            "required": [
+                                "title",
+                                "is_correct"
+                            ],
+                            "properties": {
+                                "title": {
+                                    "bsonType": "string",
+                                    "minLength": 1
+                                },
+                                "is_correct": {
+                                    "bsonType": "bool"
+                                }
+                            }
+                        }
                     },
                     "difficulty": {
                         "bsonType": "int"
+                    },
+                    "created_at": {
+                        "bsonType": "date"
+                    },
+                    "updated_at": {
+                        "bsonType": "date"
                     }
                 }
             }
         }
+    },
+    {
+        "createIndexes": "questions",
+        "indexes": [
+            {
+                "key": {
+                    "title": 1
+                },
+                "name": "title_unique",
+                "unique": true
+            },
+            {
+                "key": {
+                    "category_id": 1
+                },
+                "name": "category_id_index"
+            }
+        ]
     }
 ]

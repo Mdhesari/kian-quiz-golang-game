@@ -28,7 +28,7 @@
                         "bsonType": "string"
                     },
                     "score": {
-                        "bsonType": "integer"
+                        "bsonType": "int"
                     },
                     "role_id": {
                         "bsonType": "objectId"

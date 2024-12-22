@@ -1,4 +1,4 @@
-package playerrepo
+package mongoplayer
 
 import (
 	"context"
@@ -15,7 +15,7 @@ type MongoRepository struct {
 	collection *mongo.Collection
 }
 
-func NewMongoRepository(db *mongo.Database) *MongoRepository {
+func New(db *mongo.Database) *MongoRepository {
 	return &MongoRepository{
 		collection: db.Collection("players"),
 	}

@@ -8,6 +8,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
+	"mdhesari/kian-quiz-golang-game/service/playerservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"time"
 )
@@ -45,4 +46,5 @@ type Config struct {
 	Redis       redisadapter.Config    `koanf:"redis"`
 	Auth        authservice.Config     `koanf:"auth"`
 	Matching    matchingservice.Config `koanf:"matching"`
+	Player      playerservice.Config   `koanf:"player"`
 }

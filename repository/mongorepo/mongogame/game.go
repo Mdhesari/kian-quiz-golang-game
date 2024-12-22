@@ -56,3 +56,38 @@ func (d *DB) GetGameById(ctx context.Context, id primitive.ObjectID) (entity.Gam
 
 	return game, nil
 }
+
+func (d *DB) Update(ctx context.Context, game entity.Game) error {
+	ctx, cancel := context.WithTimeout(context.Background(), d.cli.QueryTimeout)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			"category_id":  game.CategoryID,
+			"question_ids": game.QuestionIDs,
+			"player_ids":   game.PlayerIDs,
+			"start_time":   game.StartTime,
+			"updated_at":   game.UpdatedAt,
+		},
+	}
+
+	result, err := d.cli.Conn().Collection("games").UpdateOne(
+		ctx,
+		bson.M{"_id": game.ID},
+		update,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if result.MatchedCount == 0 {
+		return errors.New(errmsg.ErrGameNotFound)
+	}
+
+	if result.ModifiedCount == 0 {
+		return errors.New(errmsg.ErrGameNotModified)
+	}
+
+	return nil
+}

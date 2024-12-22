@@ -15,7 +15,6 @@
                 "required": [
                     "category_id",
                     "question_ids",
-                    "player_ids",
                     "start_time",
                     "created_at",
                     "updated_at"

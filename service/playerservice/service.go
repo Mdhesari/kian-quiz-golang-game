@@ -48,7 +48,6 @@ func (s Service) CreatePlayer(ctx context.Context, req param.PlayerCreateRequest
 
 	createdPlayer, err := s.repo.Create(ctx, player)
 	if err != nil {
-		logger.L().Error("Failed to create player", zap.Error(err), zap.Any("player", player))
 
 		return param.PlayerCreateResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
 	}
@@ -63,7 +62,6 @@ func (s Service) GetPlayerByID(ctx context.Context, req param.PlayerGetRequest) 
 
 	player, err := s.repo.GetByID(ctx, req.ID)
 	if err != nil {
-		logger.L().Error("Failed to get player", zap.Error(err))
 
 		return param.PlayerGetResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindNotFound)
 	}
@@ -90,7 +88,7 @@ func (s Service) UpdatePlayer(ctx context.Context, req param.PlayerUpdateRequest
 
 	err = s.repo.Update(ctx, player)
 	if err != nil {
-		logger.L().Error("Failed to update player", zap.Error(err))
+
 		return richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
 	}
 
@@ -102,7 +100,7 @@ func (s Service) DeletePlayer(ctx context.Context, req param.PlayerDeleteRequest
 
 	err := s.repo.Delete(ctx, req.ID)
 	if err != nil {
-		logger.L().Error("Failed to delete player", zap.Error(err))
+
 		return richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
 	}
 

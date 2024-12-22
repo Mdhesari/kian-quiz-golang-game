@@ -8,30 +8,30 @@ import (
 )
 
 type PlayerCreateRequest struct {
-	UserID    primitive.ObjectID
-	GameID    primitive.ObjectID
-	CreatedAt time.Time
+	UserID    primitive.ObjectID `json:"user_id"`
+	GameID    primitive.ObjectID `json:"game_id"`
+	CreatedAt time.Time          `json:"created_at"`
 }
 
 type PlayerCreateResponse struct {
-	Player entity.Player
+	Player entity.Player `json:"player"`
 }
 
 type PlayerGetRequest struct {
-	ID primitive.ObjectID
+	ID primitive.ObjectID `json:"id"`
 }
 
 type PlayerGetResponse struct {
-	Player entity.Player
+	Player entity.Player `json:"player"`
 }
 
 type PlayerUpdateRequest struct {
-	ID        primitive.ObjectID
-	Answers   []entity.PlayerAnswer
-	Score     int
-	UpdatedAt time.Time
+	ID        primitive.ObjectID    `json:"id"`
+	Answers   []entity.PlayerAnswer `json:"answers"`
+	Score     int                   `json:"score"`
+	UpdatedAt time.Time             `json:"updated_at"`
 }
 
 type PlayerDeleteRequest struct {
-	ID primitive.ObjectID
+	ID primitive.ObjectID `json:"id"`
 }

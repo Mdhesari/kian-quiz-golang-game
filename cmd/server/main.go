@@ -28,6 +28,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongogame"
+	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongoplayer"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongoquestion"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
@@ -38,16 +39,19 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/categoryservice"
 	"mdhesari/kian-quiz-golang-game/service/gameservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
+	"mdhesari/kian-quiz-golang-game/service/playerservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/questionservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
+	"time"
 
 	"os"
 	"os/signal"
 	"sync"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -193,12 +197,15 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 	gameRepo := mongogame.New(mongoCli)
 	gameSrv := gameservice.New(gameRepo)
 
+	playerRepo := mongoplayer.New(mongoCli.Conn())
+	playerSrv := playerservice.New(cfg.Player, playerRepo)
+
 	questionRepo := mongoquestion.New(mongoCli)
 	questionSrv := questionservice.New(questionRepo)
 
 	playersMatched := protobufdecoder.DecodePlayersMatchedEvent(payload)
 
-	questionRes, err := questionSrv.GetRandomQuestions(context.Background(), param.QuestionGetRequest{
+	questionRes, err := questionSrv.GetRandomQuestions(ctx, param.QuestionGetRequest{
 		CategoryId: playersMatched.Category.ID,
 		Count:      cfg.Application.Game.QuestionsCount,
 	})
@@ -208,16 +215,43 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 	}
 
 	game, err := gameSrv.Create(context.Background(), param.GameCreateRequest{
-		PlayerIDs: playersMatched.PlayerIDs,
 		Category:  playersMatched.Category,
 		Questions: questionRes.Items,
 	})
 	if err != nil {
-
 		logger.L().Error(err.Error(), zap.Error(err), zap.Any("game", game))
+
+		return err
 	}
 
-	logger.L().Info("A new game created.", zap.Any("game", game.Game.ID))
+	var playerIDs []primitive.ObjectID
+	for _, userId := range playersMatched.PlayerIDs {
+		res, err := playerSrv.CreatePlayer(ctx, param.PlayerCreateRequest{
+			UserID:    userId,
+			GameID:    game.Game.ID,
+			CreatedAt: time.Now(),
+		})
+		if err != nil {
+			logger.L().Error("Failed to create player", zap.Error(err), zap.Any("userID", userId))
+
+			return err
+		}
+
+		playerIDs = append(playerIDs, res.Player.ID)
+	}
+
+	// Update the game with player IDs
+	updateErr := gameSrv.Update(ctx, param.GameUpdateRequest{
+		ID:        game.Game.ID,
+		PlayerIDs: playerIDs,
+	})
+	if updateErr != nil {
+		logger.L().Error("Failed to update game with player IDs", zap.Error(updateErr), zap.Any("gameID", game.Game.ID))
+
+		return updateErr
+	}
+
+	logger.L().Info("A new game created and updated with player IDs.", zap.Any("game", game.Game.ID))
 
 	gameStartedPayload := protobufencoder.EncodeGameStartedEvent(entity.GameStarted{
 		PlayerIds: game.Game.PlayerIDs,

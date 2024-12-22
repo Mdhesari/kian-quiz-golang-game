@@ -12,4 +12,6 @@ const (
 	ErrCategoryNotFound   string = "Category not found."
 	ErrGameNotCreated     string = "Game not created."
 	ErrGameIDNotConverted string = "Game ID not converted."
+	ErrGameNotFound       string = "Game not found."
+	ErrGameNotModified    string = "Game not modified."
 )

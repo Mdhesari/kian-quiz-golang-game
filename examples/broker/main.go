@@ -7,7 +7,10 @@ import (
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
+
+	"go.uber.org/zap"
 )
 
 var cfg config.Config
@@ -28,6 +31,6 @@ func main() {
 		}
 
 		playersMatched := protobufdecoder.DecodePlayersMatchedEvent(msg.Payload)
-		fmt.Println("new message %v\n", playersMatched)
+		logger.L().Info("Players matched.", zap.Any("playersMatched", playersMatched))
 	}
 }

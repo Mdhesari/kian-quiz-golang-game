@@ -94,8 +94,19 @@ KianQuiz is a quiz game designed for 1v1 player interactions. Players compete th
 #### Flow:
 
 1. Receive player matchmaking request.
-2. Query Redis for available players in the requested category.
+2. Query Redis for available players waiting lisat in the requested category.
 3. Pair players and publish a match event.
+4. Create game and publish game is ready event.
+5. A player subscribes to ws/games:{id} topic. and game_started event is published.
+6. Questions are served one by one to user.
+
+- Publish new question with timeout to user and go one by one till the end
+- User has a limited time to end the game or the game will be completed.
+
+7. After the last question or game timeout a new message will be published to game:{id} topic, send the results and close the ws connection.
+8. After the game, scores are calculated and leaderboard is updated
+6.
+
 
 ---
 

@@ -130,6 +130,4 @@ KianQuiz is a quiz game designed for 1v1 player interactions. Players compete th
 ## Future Enhancements
 
 - **Chat Service**: Allow players to chat during matches.
-- **AI Opponent**: Enable single-player games against an AI bot.
 - **Question Pool Optimization**: Implement object pooling or dynamic generation for scalable question handling.
-- **Mobile App**: Expand the platform to include a dedicated mobile app.

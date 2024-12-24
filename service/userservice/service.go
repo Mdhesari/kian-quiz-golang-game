@@ -115,6 +115,7 @@ func (s Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
 	}
 
 	return &param.LoginResponse{
+		User:  *user,
 		Token: token,
 	}, nil
 }

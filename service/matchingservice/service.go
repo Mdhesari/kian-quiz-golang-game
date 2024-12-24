@@ -154,7 +154,9 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 	}
 
 	// remove the users from waiting list
-	go s.removeUsersFromWaitingList(category, usersToBeRemoved)
+	if len(usersToBeRemoved) > 0 {
+		go s.removeUsersFromWaitingList(category, usersToBeRemoved)
+	}
 }
 
 func getPresenceItem(presenceList param.PresenceResponse, userId primitive.ObjectID) (int64, bool) {

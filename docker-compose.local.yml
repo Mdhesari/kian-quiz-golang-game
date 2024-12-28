@@ -47,24 +47,24 @@ services:
     volumes:
       - 'go:/go/pkg'
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - 9090:9090
-    restart: unless-stopped
-    volumes:
-      - ./docker/prometheus:/etc/prometheus
-      - prom_data:/prometheus
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - kian
+  # prometheus:
+    # image: prom/prometheus
+    # container_name: prometheus
+    # command:
+    #   - '--config.file=/etc/prometheus/prometheus.yml'
+    # ports:
+    #   - 9090:9090
+    # restart: unless-stopped
+    # volumes:
+    #   - ./docker/prometheus:/etc/prometheus
+    #   - prom_data:/prometheus
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    # networks:
+    #   - kian
 
 volumes:
-  prom_data:
+  # prom_data:
   mongo:
   redis:
   go:

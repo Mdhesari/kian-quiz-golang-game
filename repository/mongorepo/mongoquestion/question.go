@@ -19,7 +19,7 @@ func (d *DB) GetRandomByCategory(ctx context.Context, categoryId primitive.Objec
 	pipeline := mongo.Pipeline{
 		{{Key: "$sample", Value: bson.D{{Key: "size", Value: count}}}},
 	}
-	cursor, err := d.cli.Conn().Collection("questions").Aggregate(ctx, pipeline)
+	cursor, err := d.collection.Aggregate(ctx, pipeline)
 	if err != nil {
 
 		return questions, err

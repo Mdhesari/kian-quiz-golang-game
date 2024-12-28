@@ -27,7 +27,7 @@ func (d *DB) GetRoles(ctx context.Context) ([]entity.Role, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
-	cur, err := d.cli.Conn().Collection("roles").Find(ctx, bson.D{})
+	cur, err := d.roleCollection.Find(ctx, bson.D{})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 
@@ -47,7 +47,7 @@ func (d *DB) GetRole(ctx context.Context, name string) (*entity.Role, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
-	res := d.cli.Conn().Collection("roles").FindOne(ctx, bson.M{
+	res := d.roleCollection.FindOne(ctx, bson.M{
 		"name": name,
 	})
 	if res.Err() != nil {
@@ -69,7 +69,7 @@ func (d *DB) GetPermissionIds(ctx context.Context, perms ...string) ([]primitive
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
-	cur, err := d.cli.Conn().Collection("permissions").Find(ctx, bson.M{
+	cur, err := d.permissionCollection.Find(ctx, bson.M{
 		"name": bson.M{"$in": perms},
 	})
 	if err != nil {
@@ -94,7 +94,7 @@ func (d *DB) HasPermissions(ctx context.Context, roleID primitive.ObjectID, perm
 	defer cancel()
 
 	fmt.Println(roleID, permissionIDs)
-	cur, err := d.cli.Conn().Collection("access").Find(ctx, bson.M{
+	cur, err := d.accessCollection.Find(ctx, bson.M{
 		"role_id":       roleID,
 		"permission_id": bson.M{"$in": permissionIDs},
 	})

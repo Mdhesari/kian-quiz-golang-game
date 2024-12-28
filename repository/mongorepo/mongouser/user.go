@@ -16,7 +16,7 @@ func (d *DB) GetAll(ctx context.Context) ([]entity.User, error) {
 	defer cancel()
 
 	var users []entity.User
-	cur, err := d.cli.Conn().Collection("users").Find(ctx, bson.D{}, options.Find())
+	cur, err := d.collection.Find(ctx, bson.D{}, options.Find())
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (d DB) FindByEmail(ctx context.Context, email string) (*entity.User, error)
 
 	var user entity.User
 	filter := bson.M{"email": email}
-	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
+	res := d.collection.FindOne(ctx, filter)
 	if res.Err() != nil {
 		return nil, res.Err()
 	}
@@ -55,7 +55,7 @@ func (d DB) IsMobileUnique(mobile string) (bool, error) {
 	defer cancel()
 
 	filter := bson.M{"mobile": mobile}
-	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
+	res := d.collection.FindOne(ctx, filter)
 	if res.Err() != nil {
 		if res.Err() == mongo.ErrNoDocuments {
 
@@ -73,7 +73,7 @@ func (d DB) IsEmailUnique(email string) (bool, error) {
 	defer cancel()
 
 	filter := bson.M{"email": email}
-	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
+	res := d.collection.FindOne(ctx, filter)
 	if res.Err() != nil {
 		if res.Err() == mongo.ErrNoDocuments {
 
@@ -92,7 +92,7 @@ func (d DB) FindByID(id primitive.ObjectID) (*entity.User, error) {
 
 	var user entity.User
 	filter := bson.M{"_id": id}
-	res := d.cli.Conn().Collection("users").FindOne(ctx, filter)
+	res := d.collection.FindOne(ctx, filter)
 	if res.Err() != nil {
 
 		return nil, res.Err()
@@ -114,7 +114,7 @@ func (d DB) Register(ctx context.Context, u entity.User) (entity.User, error) {
 	// }
 	// u.Password = hash
 
-	result, err := d.cli.Conn().Collection("users").InsertOne(ctx, u)
+	result, err := d.collection.InsertOne(ctx, u)
 	if err != nil {
 		return entity.User{}, err
 	}

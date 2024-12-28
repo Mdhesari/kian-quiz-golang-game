@@ -197,7 +197,7 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 	gameRepo := mongogame.New(mongoCli)
 	gameSrv := gameservice.New(gameRepo)
 
-	playerRepo := mongoplayer.New(mongoCli.Conn())
+	playerRepo := mongoplayer.New(mongoCli)
 	playerSrv := playerservice.New(cfg.Player, playerRepo)
 
 	questionRepo := mongoquestion.New(mongoCli)

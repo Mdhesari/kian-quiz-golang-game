@@ -17,6 +17,7 @@ type Repository interface {
 	Create(ctx context.Context, game entity.Game) (entity.Game, error)
 	GetGameById(ctx context.Context, id primitive.ObjectID) (entity.Game, error)
 	Update(ctx context.Context, game entity.Game) error
+	GetAllGames(ctx context.Context, playerID primitive.ObjectID) ([]entity.Game, error)
 }
 
 type Service struct {
@@ -27,6 +28,12 @@ func New(repo Repository) Service {
 	return Service{
 		repo: repo,
 	}
+}
+
+func (s Service) GetAllGames(ctx context.Context, req param.GameGetAllRequest) (param.GameGetAllResponse, error) {
+	op := "Game Service: Get all games."
+
+	s.repo.GetAllGames(ctx,  )
 }
 
 func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param.GameCreateResponse, error) {

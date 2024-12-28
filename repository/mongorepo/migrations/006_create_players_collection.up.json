@@ -79,6 +79,10 @@
                         "bsonType": "int",
                         "description": "The player's score in this game"
                     },
+                    "is_winner": {
+                        "bsonType": "bool",
+                        "description": "The player's winner condition in this game"
+                    },
                     "created_at": {
                         "bsonType": "date",
                         "description": "The timestamp when this player instance was created"

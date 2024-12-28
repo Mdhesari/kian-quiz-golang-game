@@ -7,6 +7,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type GameGetAllRequest struct {
+	UserID     primitive.ObjectID `json:"user_id"`
+	CategoryID primitive.ObjectID `json:"category_id,omitempty"`
+}
+
+type GameGetAllResponse struct {
+	Items []entity.Game `json:"games"`
+}
+
 type GameCreateRequest struct {
 	PlayerIDs []primitive.ObjectID `json:"player_ids,omitempty"`
 	Questions []entity.Question    `json:"questions,omitempty"`

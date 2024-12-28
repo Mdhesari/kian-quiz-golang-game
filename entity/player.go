@@ -20,6 +20,7 @@ type Player struct {
 	GameID    primitive.ObjectID `bson:"game_id"`
 	Answers   []PlayerAnswer     `bson:"answers"`
 	Score     int                `bson:"score"`
+	IsWinner  bool               `bson:"is_winner,omitempty"`
 	CreatedAt time.Time          `bson:"created_at"`
 	UpdatedAt time.Time          `bson:"updated_at"`
 }

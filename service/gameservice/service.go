@@ -17,7 +17,7 @@ type Repository interface {
 	Create(ctx context.Context, game entity.Game) (entity.Game, error)
 	GetGameById(ctx context.Context, id primitive.ObjectID) (entity.Game, error)
 	Update(ctx context.Context, game entity.Game) error
-	GetAllGames(ctx context.Context, categoryID primitive.ObjectID, UserID primitive.ObjectID) ([]entity.Game, error)
+	GetAllGames(ctx context.Context, UserID primitive.ObjectID) ([]entity.Game, error)
 }
 
 type Service struct {
@@ -33,7 +33,8 @@ func New(repo Repository) Service {
 func (s Service) GetAllGames(ctx context.Context, req param.GameGetAllRequest) (param.GameGetAllResponse, error) {
 	op := "Game Service: Get all games."
 
-	games, err := s.repo.GetAllGames(ctx, req.CategoryID, req.UserID)
+	logger.L().Info("Trying to get all games")
+	games, err := s.repo.GetAllGames(ctx, req.UserID)
 	if err != nil {
 
 		return param.GameGetAllResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)

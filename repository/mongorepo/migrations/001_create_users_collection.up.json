@@ -51,6 +51,13 @@
                 },
                 "name": "email_unique",
                 "unique": true
+            },
+            {
+                "key": {
+                    "mobile": 1
+                },
+                "name": "mobile_unique",
+                "unique": true
             }
         ]
     }

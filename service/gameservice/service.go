@@ -47,21 +47,14 @@ func (s Service) GetAllGames(ctx context.Context, req param.GameGetAllRequest) (
 func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param.GameCreateResponse, error) {
 	op := "Game Service: Create a new game."
 
-	var questionIds []primitive.ObjectID
-	for _, q := range req.Questions {
-		questionIds = append(questionIds, q.ID)
+	game := entity.Game{
+		CategoryID: req.Category.ID,
+		Questions:  req.Questions,
+		StartTime:  time.Now(),
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
 	}
 
-	game := entity.Game{
-		CategoryID:  req.Category.ID,
-		QuestionIDs: questionIds,
-		StartTime:   time.Now(),
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
-	if req.PlayerIDs != nil {
-		game.PlayerIDs = req.PlayerIDs
-	}
 	game, err := s.repo.Create(ctx, game)
 	if err != nil {
 
@@ -91,37 +84,4 @@ func (s Service) GetGameById(ctx context.Context, req param.GameGetRequest) (par
 	return param.GameGetResponse{
 		Game: game,
 	}, nil
-}
-
-func (s Service) Update(ctx context.Context, req param.GameUpdateRequest) error {
-	op := "Game Service: Update game"
-
-	existingGame, err := s.repo.GetGameById(ctx, req.ID)
-	if err != nil {
-
-		return richerror.New(op, "Failed to get game for update").WithErr(err).WithKind(richerror.KindNotFound)
-	}
-
-	// Update the fields
-	if len(req.PlayerIDs) > 0 {
-		existingGame.PlayerIDs = req.PlayerIDs
-	}
-	if !req.Category.ID.IsZero() {
-		existingGame.CategoryID = req.Category.ID
-	}
-	if len(req.QuestionIDs) > 0 {
-		existingGame.QuestionIDs = req.QuestionIDs
-	}
-	if !req.StartTime.IsZero() {
-		existingGame.StartTime = req.StartTime
-	}
-	existingGame.UpdatedAt = time.Now()
-
-	err = s.repo.Update(ctx, existingGame)
-	if err != nil {
-
-		return richerror.New(op, "Failed to update game").WithErr(err).WithKind(richerror.KindUnexpected)
-	}
-
-	return nil
 }

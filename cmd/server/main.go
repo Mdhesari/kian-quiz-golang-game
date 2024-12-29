@@ -28,7 +28,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongogame"
-	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongoplayer"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongoquestion"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
@@ -39,7 +38,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/categoryservice"
 	"mdhesari/kian-quiz-golang-game/service/gameservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
-	"mdhesari/kian-quiz-golang-game/service/playerservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/questionservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
@@ -51,7 +49,6 @@ import (
 	"sync"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -97,7 +94,7 @@ func main() {
 
 	var srvs services = setupServices(&cfg)
 
-	// TODO - Shall we move this to a service or something like that?
+	// TODO - Shall we move this to another cmd or something like that?
 	pubsubManager.Subscribe(string(entity.PlayersMatchedEvent), setupGameAndPublishGameStartedEvent)
 
 	// TODO - Seperate cmd for presence server
@@ -197,8 +194,9 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 	gameRepo := mongogame.New(mongoCli)
 	gameSrv := gameservice.New(gameRepo)
 
-	playerRepo := mongoplayer.New(mongoCli)
-	playerSrv := playerservice.New(cfg.Player, playerRepo)
+	atuhSrv := authservice.New(cfg.Auth)
+	userRepo := mongouser.New(mongoCli)
+	userSrv := userservice.New(&atuhSrv, userRepo)
 
 	questionRepo := mongoquestion.New(mongoCli)
 	questionSrv := questionservice.New(questionRepo)
@@ -214,10 +212,28 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 		logger.L().Error("Could not get random questions for creating game.", zap.Error(err), zap.Any("Event", playersMatched))
 	}
 
+	var players []entity.Player
+	for _, id := range playersMatched.PlayerIDs {
+		res, err := userSrv.GetByID(id)
+		if err != nil {
+			logger.L().Error("Could not get user for creating game.", zap.Error(err), zap.Any("userID", id))
+
+			return err
+		}
+
+		players = append(players, entity.Player{
+			Name:      res.User.Name,
+			UserID:    res.User.ID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		})
+	}
+
 	// TODO - game questions should be nullable so that if in the starting game scenario we couldn't fetch questions finlally raise error to user.
 	game, err := gameSrv.Create(context.Background(), param.GameCreateRequest{
 		Category:  playersMatched.Category,
 		Questions: questionRes.Items,
+		Players:   players,
 	})
 	if err != nil {
 		logger.L().Error(err.Error(), zap.Error(err), zap.Any("game", game))
@@ -225,38 +241,12 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 		return err
 	}
 
-	var playerIDs []primitive.ObjectID
-	for _, userId := range playersMatched.PlayerIDs {
-		res, err := playerSrv.CreatePlayer(ctx, param.PlayerCreateRequest{
-			UserID:    userId,
-			GameID:    game.Game.ID,
-			CreatedAt: time.Now(),
-		})
-		if err != nil {
-			logger.L().Error("Failed to create player", zap.Error(err), zap.Any("userID", userId))
-
-			return err
-		}
-
-		playerIDs = append(playerIDs, res.Player.ID)
-	}
-
-	// Update the game with player IDs
-	updateErr := gameSrv.Update(ctx, param.GameUpdateRequest{
-		ID:        game.Game.ID,
-		PlayerIDs: playerIDs,
-	})
-	if updateErr != nil {
-		logger.L().Error("Failed to update game with player IDs", zap.Error(updateErr), zap.Any("gameID", game.Game.ID))
-
-		return updateErr
-	}
-
 	logger.L().Info("A new game created and updated with player IDs.", zap.Any("game", game.Game.ID))
 
 	gameStartedPayload := protobufencoder.EncodeGameStartedEvent(entity.GameStarted{
-		PlayerIds: game.Game.PlayerIDs,
+		GameID: game.Game.ID,
 	})
+
 	pubsubManager.Publish(context.Background(), string(entity.GameStartedEvent), gameStartedPayload)
 
 	return nil

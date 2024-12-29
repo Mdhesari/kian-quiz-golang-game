@@ -5,5 +5,5 @@ package game;
 option go_package = "protobuf/golang/game";
 
 message GameStarted {
-    repeated string playerIds = 1;
+    string gameid = 1;
 }

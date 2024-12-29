@@ -15,10 +15,8 @@ type PlayerAnswer struct {
 }
 
 type Player struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	Name      string             `bson:"name"`
 	UserID    primitive.ObjectID `bson:"user_id"`
-	GameID    primitive.ObjectID `bson:"game_id"`
 	Answers   []PlayerAnswer     `bson:"answers"`
 	Score     int                `bson:"score"`
 	IsWinner  bool               `bson:"is_winner,omitempty"`

@@ -34,7 +34,7 @@ func EncodePlayersMatchedEvent(e entity.PlayersMatched) string {
 
 func EncodeGameStartedEvent(e entity.GameStarted) string {
 	pbE := game.GameStarted{
-		PlayerIds: slice.MapFromPrimitiveObjectIDToHexString(e.PlayerIds),
+		Gameid: e.GameID.Hex(),
 	}
 
 	payload, err := protojson.Marshal(&pbE)

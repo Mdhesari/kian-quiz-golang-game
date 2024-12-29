@@ -66,11 +66,11 @@ func (d *DB) Update(ctx context.Context, game entity.Game) error {
 
 	update := bson.M{
 		"$set": bson.M{
-			"category_id":  game.CategoryID,
-			"question_ids": game.QuestionIDs,
-			"player_ids":   game.PlayerIDs,
-			"start_time":   game.StartTime,
-			"updated_at":   game.UpdatedAt,
+			"category_id": game.CategoryID,
+			"questions":   game.Questions,
+			"players":     game.Players,
+			"start_time":  game.StartTime,
+			"updated_at":  game.UpdatedAt,
 		},
 	}
 
@@ -95,42 +95,23 @@ func (d *DB) Update(ctx context.Context, game entity.Game) error {
 	return nil
 }
 
-func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]entity.Game, error) {
+func (d *DB) GetAllGames(ctx context.Context, UserID primitive.ObjectID) ([]entity.Game, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
-	pipeline := mongo.Pipeline{
-		{
-			{
-				"$lookup", bson.D{
-					{"from", "players"},
-					{"localField", "player_ids"},
-					{"foreignField", "_id"},
-					{"as", "players"},
-				},
-			},
-		},
-		{
-			{
-				"$match", bson.D{
-					{"players.user_id", userID},
-				},
-			},
-		},
-	}
-
-	cursor, err := d.collection.Aggregate(ctx, pipeline)
+	filter := bson.M{}
+	cursor, err := d.collection.Find(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute aggregation: %w", err)
 	}
 	defer cursor.Close(ctx)
 
-	var games []entity.Game
+	var games []bson.M
 	if err := cursor.All(ctx, &games); err != nil {
 		return nil, fmt.Errorf("failed to decode games: %w", err)
 	}
 
 	logger.L().Info("test", zap.Any("game", games))
 
-	return games, nil
+	return nil, nil
 }

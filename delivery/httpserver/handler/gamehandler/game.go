@@ -4,6 +4,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
+	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -34,7 +35,10 @@ func (h Handler) GetGames(c echo.Context) error {
 }
 
 func (h Handler) GetAllGames(c echo.Context) error {
+	userId := authservice.GetClaims(c).UserID
+
 	var req param.GameGetAllRequest
+	req.UserID  = userId
 	if err := c.Bind(&req); err != nil {
 		logger.L().Error("Could not bind game request.", zap.Error(err))
 

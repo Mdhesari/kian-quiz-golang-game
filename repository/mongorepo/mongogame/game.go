@@ -117,15 +117,6 @@ func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]enti
 				},
 			},
 		},
-		{
-			{
-				"$project", bson.D{
-					{"_id", 1},
-					{"category_id", 1},
-					{"player_ids", 1},
-				},
-			},
-		},
 	}
 
 	cursor, err := d.collection.Aggregate(ctx, pipeline)
@@ -134,12 +125,12 @@ func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]enti
 	}
 	defer cursor.Close(ctx)
 
-	var games []bson.M
+	var games []entity.Game
 	if err := cursor.All(ctx, &games); err != nil {
 		return nil, fmt.Errorf("failed to decode games: %w", err)
 	}
 
 	logger.L().Info("test", zap.Any("game", games))
 
-	return []entity.Game{}, nil
+	return games, nil
 }

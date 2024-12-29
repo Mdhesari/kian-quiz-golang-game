@@ -33,7 +33,6 @@ func New(repo Repository) Service {
 func (s Service) GetAllGames(ctx context.Context, req param.GameGetAllRequest) (param.GameGetAllResponse, error) {
 	op := "Game Service: Get all games."
 
-	logger.L().Info("Trying to get all games")
 	games, err := s.repo.GetAllGames(ctx, req.UserID)
 	if err != nil {
 

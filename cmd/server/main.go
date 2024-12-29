@@ -214,6 +214,7 @@ func setupGameAndPublishGameStartedEvent(ctx context.Context, topic string, payl
 		logger.L().Error("Could not get random questions for creating game.", zap.Error(err), zap.Any("Event", playersMatched))
 	}
 
+	// TODO - game questions should be nullable so that if in the starting game scenario we couldn't fetch questions finlally raise error to user.
 	game, err := gameSrv.Create(context.Background(), param.GameCreateRequest{
 		Category:  playersMatched.Category,
 		Questions: questionRes.Items,

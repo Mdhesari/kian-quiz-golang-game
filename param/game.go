@@ -35,7 +35,7 @@ type GameCreateResponse struct {
 }
 
 type GameGetRequest struct {
-	GameId primitive.ObjectID `param:"game_id"`
+	GameId primitive.ObjectID `param:"game_id,omitempty"`
 }
 
 type GameGetResponse struct {

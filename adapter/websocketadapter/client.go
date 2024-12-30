@@ -46,7 +46,9 @@ func (c Client) ReadPump() {
 	c.conn.SetReadLimit(c.cfg.MaxMessageSize)
 	c.conn.SetReadDeadline(time.Now().Add(c.cfg.ReadTimeout))
 	c.conn.SetPongHandler(func(string) error {
-		c.conn.SetReadDeadline(time.Now().Add(c.cfg.ReadTimeout))
+		if err := c.conn.SetReadDeadline(time.Now().Add(c.cfg.ReadTimeout)); err != nil {
+			return err
+		}
 		return nil
 	})
 
@@ -59,6 +61,9 @@ func (c Client) ReadPump() {
 
 			break
 		}
+
+		logger.L().Info("new msg from cli", zap.Any("msg", message))
+
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		c.hub.broadcast <- message
 	}
@@ -98,12 +103,13 @@ func (c Client) WritePump() {
 				logger.L().Error("Error closing writer.", zap.Error(err))
 			}
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(c.cfg.WriteTimeout))
-			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+			if err := c.conn.WriteMessage(websocket.PingMessage, []byte("")); err != nil {
 				logger.L().Error("Error sending ping.", zap.Error(err))
 
 				return
 			}
+
+			logger.L().Info("ping")
 		}
 	}
 }

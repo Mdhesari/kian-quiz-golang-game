@@ -2,10 +2,6 @@ type: yml
 
 application:
   graceful_shutdown_timeout: "2s"
-  websocket:
-    read_timeout: "30s"
-    write_timeout: "10s"
-    ping_period: "60s"
   game:
     questions_count: 6
 
@@ -16,6 +12,12 @@ presence:
 server:
   http_server:
     port: 80
+  websocket_server:
+    client:
+      read_timeout: "30s"
+      write_timeout: "10s"
+      ping_period: "60s"
+      max_message_size: 512
 
 auth:
   secret: "secret"

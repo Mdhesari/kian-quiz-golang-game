@@ -7,6 +7,7 @@ import (
 	"log"
 	"mdhesari/kian-quiz-golang-game/adapter/presenceadapter"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
+	"mdhesari/kian-quiz-golang-game/adapter/websocketadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/delivery/grpcserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
@@ -63,13 +64,14 @@ var (
 )
 
 type services struct {
-	authSrv     *authservice.Service
-	userSrv     *userservice.Service
-	matchingSrv *matchingservice.Service
-	categorySrv *categoryservice.Service
-	presenceSrv *presenceservice.Service
-	rbacSrv     *rbacservice.Service
-	gameSrv     *gameservice.Service
+	authSrv       *authservice.Service
+	userSrv       *userservice.Service
+	matchingSrv   *matchingservice.Service
+	categorySrv   *categoryservice.Service
+	presenceSrv   *presenceservice.Service
+	rbacSrv       *rbacservice.Service
+	gameSrv       *gameservice.Service
+	websocketAdap *websocketadapter.Adapter
 }
 
 func init() {
@@ -101,6 +103,8 @@ func main() {
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
 	go presenceserver.Start()
 
+	go srvs.websocketAdap.Run()
+
 	userRepo := mongouser.New(mongoCli)
 	userValidator := uservalidator.New(userRepo)
 
@@ -109,7 +113,7 @@ func main() {
 
 	handlers := []httpserver.Handler{
 		pinghandler.New(),
-		websockethandler.New(&redisAdap, srvs.authSrv, &cfg.Auth),
+		websockethandler.New(srvs.websocketAdap, srvs.authSrv, &cfg.Auth),
 		gamehandler.New(srvs.gameSrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, userValidator),
 		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, cfg.Auth),
@@ -179,14 +183,18 @@ func setupServices(cfg *config.Config) services {
 	gameRepo := mongogame.New(mongoCli)
 	gameSrv := gameservice.New(gameRepo)
 
+	fmt.Println(cfg.Server.Websocket)
+	websocketAdap := websocketadapter.New(cfg.Server.Websocket)
+
 	return services{
-		authSrv:     &authSrv,
-		userSrv:     &userSrv,
-		matchingSrv: &matchingSrv,
-		categorySrv: &categorySrv,
-		presenceSrv: &presenceSrv,
-		rbacSrv:     &rbacSrv,
-		gameSrv:     &gameSrv,
+		authSrv:       &authSrv,
+		userSrv:       &userSrv,
+		matchingSrv:   &matchingSrv,
+		categorySrv:   &categorySrv,
+		presenceSrv:   &presenceSrv,
+		rbacSrv:       &rbacSrv,
+		gameSrv:       &gameSrv,
+		websocketAdap: websocketAdap,
 	}
 }
 

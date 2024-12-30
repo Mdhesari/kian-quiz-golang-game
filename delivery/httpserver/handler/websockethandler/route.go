@@ -7,7 +7,7 @@ import (
 )
 
 func (h Handler) SetRoutes(r *echo.Echo) {
-	group := r.Group("/websocket")
+	group := r.Group("/ws")
 
-	group.GET("/:channel", h.Channel)
+	group.GET("", h.Websocket)
 }

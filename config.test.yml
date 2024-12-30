@@ -12,6 +12,8 @@ presence:
 server:
   http_server:
     port: 80
+  grpc_server:
+    port: 8088
   websocket_server:
     client:
       read_timeout: "30s"

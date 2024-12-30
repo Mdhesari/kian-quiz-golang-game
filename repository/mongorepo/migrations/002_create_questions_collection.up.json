@@ -73,6 +73,13 @@
                     "category_id": 1
                 },
                 "name": "category_id_index"
+            },
+            {
+                "key": {
+                    "players.user_id": 1
+                },
+                "name": "players_user_id_index",
+                "unique": false
             }
         ]
     }

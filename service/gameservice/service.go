@@ -50,6 +50,7 @@ func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param
 	game := entity.Game{
 		CategoryID: req.Category.ID,
 		Questions:  req.Questions,
+		Players:    req.Players,
 		StartTime:  time.Now(),
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),

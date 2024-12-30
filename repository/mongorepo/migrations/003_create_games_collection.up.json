@@ -14,7 +14,7 @@
                 "title": "Game Object Validation",
                 "required": [
                     "category_id",
-                    "question_ids",
+                    "questions",
                     "start_time",
                     "created_at",
                     "updated_at"

@@ -7,19 +7,19 @@ import (
 )
 
 type Answer struct {
-	Title     string `bson:"title"`
-	IsCorrect bool   `bson:"is_correct"`
+    Title     string `bson:"title" json:"title"`
+    IsCorrect bool   `bson:"is_correct" json:"-"`
 }
 
 type Question struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty"`
-	Title       string             `bson:"title"`
-	Description string             `bson:"description"`
-	CategoryID  primitive.ObjectID `bson:"category_id"`
-	Answers     []Answer           `bson:"answers"`
-	Difficulty  QuestionDifficulty `bson:"difficulty"`
-	CreatedAt   time.Time          `bson:"created_at"`
-	UpdatedAt   time.Time          `bson:"updated_at"`
+    ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+    Title       string             `bson:"title" json:"title"`
+    Description string             `bson:"description" json:"description"`
+    CategoryID  primitive.ObjectID `bson:"category_id" json:"category_id"`
+    Answers     []Answer           `bson:"answers" json:"answers"`
+    Difficulty  QuestionDifficulty `bson:"difficulty" json:"difficulty"`
+    CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+    UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 type QuestionDifficulty int

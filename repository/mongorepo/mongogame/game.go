@@ -5,13 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"mdhesari/kian-quiz-golang-game/entity"
-	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.uber.org/zap"
 )
 
 func (d *DB) Create(ctx context.Context, game entity.Game) (entity.Game, error) {
@@ -95,23 +93,25 @@ func (d *DB) Update(ctx context.Context, game entity.Game) error {
 	return nil
 }
 
-func (d *DB) GetAllGames(ctx context.Context, UserID primitive.ObjectID) ([]entity.Game, error) {
+func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]entity.Game, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
-	filter := bson.M{}
+	filter := bson.M{
+		"players": bson.M{
+			"$elemMatch": bson.M{"user_id": userID},
+		},
+	}
 	cursor, err := d.collection.Find(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute aggregation: %w", err)
 	}
 	defer cursor.Close(ctx)
 
-	var games []bson.M
+	var games []entity.Game
 	if err := cursor.All(ctx, &games); err != nil {
 		return nil, fmt.Errorf("failed to decode games: %w", err)
 	}
 
-	logger.L().Info("test", zap.Any("game", games))
-
-	return nil, nil
+	return games, nil
 }

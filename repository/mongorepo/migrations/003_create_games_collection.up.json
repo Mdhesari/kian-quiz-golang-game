@@ -24,19 +24,13 @@
                         "bsonType": "objectId",
                         "description": "The ID of the category this game belongs to"
                     },
-                    "question_ids": {
+                    "questions": {
                         "bsonType": "array",
-                        "description": "Array of question IDs for this game",
-                        "items": {
-                            "bsonType": "objectId"
-                        }
+                        "description": "Array of question IDs for this game"
                     },
-                    "player_ids": {
+                    "players": {
                         "bsonType": "array",
-                        "description": "Array of player IDs participating in this game",
-                        "items": {
-                            "bsonType": "objectId"
-                        }
+                        "description": "Array of player IDs participating in this game"
                     },
                     "winner_id": {
                         "bsonType": "objectId",

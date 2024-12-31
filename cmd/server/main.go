@@ -99,6 +99,8 @@ func main() {
 	// TODO - Shall we move this to another cmd or something like that?
 	pubsubManager.Subscribe(string(entity.PlayersMatchedEvent), setupGameAndPublishGameStartedEvent)
 
+	
+
 	// TODO - Seperate cmd for presence server
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
 	go presenceserver.Start()

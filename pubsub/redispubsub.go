@@ -25,16 +25,14 @@ func NewPubSubManager(redisAdap redisadapter.Adapter) *PubSubManager {
 }
 
 func (p *PubSubManager) Subscribe(topic string, handler EventHandler) {
-	go func() {
-		subscriber := p.redisClient.Subscribe(p.ctx, topic)
-		ch := subscriber.Channel()
+	subscriber := p.redisClient.Subscribe(p.ctx, topic)
+	ch := subscriber.Channel()
 
-		for msg := range ch {
-			if err := handler(p.ctx, topic, msg.Payload); err != nil {
-				logger.L().Error("Could not call subscribed handler.", zap.Error(err), zap.String("topic", topic), zap.String("payload", msg.Payload))
-			}
+	for msg := range ch {
+		if err := handler(p.ctx, topic, msg.Payload); err != nil {
+			logger.L().Error("Could not call subscribed handler.", zap.Error(err), zap.String("topic", topic), zap.String("payload", msg.Payload))
 		}
-	}()
+	}
 }
 
 func (p *PubSubManager) Publish(ctx context.Context, topic string, payload string) {

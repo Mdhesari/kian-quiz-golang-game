@@ -10,16 +10,13 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
+	"mdhesari/kian-quiz-golang-game/service/questionservice"
 	"time"
 )
 
 type Application struct {
-	GracefulShutdownTimeout time.Duration           `koanf:"graceful_shutdown_timeout"`
-	Game                    Game                    `koanf:"game"`
-}
-
-type Game struct {
-	QuestionsCount int `koanf:"questions_count"`
+	GracefulShutdownTimeout time.Duration          `koanf:"graceful_shutdown_timeout"`
+	Question                questionservice.Config `koanf:"question"`
 }
 
 type Database struct {
@@ -35,7 +32,7 @@ type JWT struct {
 type Server struct {
 	HttpServer httpserver.Config       `koanf:"http_server"`
 	GrpcServer grpcserver.Config       `koanf:"grpc_server"`
-	Websocket websocketadapter.Config `koanf:"websocket_server"`
+	Websocket  websocketadapter.Config `koanf:"websocket_server"`
 }
 
 type Config struct {

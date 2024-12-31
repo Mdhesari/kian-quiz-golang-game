@@ -180,11 +180,7 @@ func getCategoriesOpenTdbMap(mongoCli *mongorepo.MongoDB) map[primitive.ObjectID
 }
 
 func getMongoCli() *mongorepo.MongoDB {
-	mongoCli, err := mongorepo.New(cfg.Database.MongoDB)
-	if err != nil {
-
-		panic("could not connect to mongodb.")
-	}
+	mongoCli := mongorepo.New(cfg.Database.MongoDB)
 
 	return mongoCli
 }

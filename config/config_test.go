@@ -48,7 +48,7 @@ func TestConfigLoad(t *testing.T) {
 		},
 		{
 			6,
-			cfg.Application.Game.QuestionsCount,
+			cfg.Application.Question.QuestionsCount,
 		},
 		{
 			80,

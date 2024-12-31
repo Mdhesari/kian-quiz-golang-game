@@ -25,27 +25,27 @@ type MongoDB struct {
 	QueryTimeout time.Duration
 }
 
-func New(c Config) (*MongoDB, error) {
+func New(c Config) *MongoDB {
 	url := fmt.Sprintf("mongodb://%s:%s@%s:%d/", c.Username, c.Password, c.Host, c.Port)
 	clientOptions := options.Client().ApplyURI(url)
 
 	cli, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 
-		return nil, err
+		panic("Could not connect to mongodb.")
 	}
 
 	err = cli.Ping(context.Background(), nil)
 	if err != nil {
 
-		return nil, err
+		panic("Could not ping mongodb.")
 	}
 
 	return &MongoDB{
 		conn:         cli.Database(c.DBName),
 		QueryTimeout: time.Duration(c.DurationSeconds * int(time.Second)),
 		config:       c,
-	}, nil
+	}
 }
 
 func (m *MongoDB) Conn() *mongo.Database {

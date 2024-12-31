@@ -27,12 +27,7 @@ func init() {
 }
 
 func main() {
-	cli, err := mongorepo.New(cfg.Database.MongoDB)
-	if err != nil {
-
-		panic("could not connect to mongodb.")
-	}
-
+	cli := mongorepo.New(cfg.Database.MongoDB)
 	mongoConf := &mongodb.Config{
 		DatabaseName:         cfg.Database.MongoDB.DBName,
 		MigrationsCollection: cfg.Database.MongoDB.Migrations,

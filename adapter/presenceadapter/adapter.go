@@ -2,6 +2,7 @@ package presenceadapter
 
 import (
 	"context"
+	"fmt"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufmapper"
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
@@ -14,7 +15,13 @@ type Client struct {
 	presenceSrv presence.PresenceServiceClient
 }
 
-func New(conn *grpc.ClientConn) Client {
+func New(addr string) Client {
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+
+		panic(fmt.Sprintf("Could not connect to grpc server: %v", err))
+	}
+
 	return Client{
 		presenceSrv: presence.NewPresenceServiceClient(conn),
 	}

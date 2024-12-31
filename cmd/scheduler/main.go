@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"mdhesari/kian-quiz-golang-game/adapter/presenceadapter"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
@@ -13,8 +12,6 @@ import (
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"sync"
-
-	"google.golang.org/grpc"
 )
 
 var (
@@ -32,19 +29,11 @@ func main() {
 	redisAdap := redisadapter.New(cfg.Redis)
 	matchingRepo := redismatching.New(redisAdap)
 
-	cli, err := mongorepo.New(cfg.Database.MongoDB)
-	if err != nil {
-
-		panic("could not connect to mongodb.")
-	}
+	cli := mongorepo.New(cfg.Database.MongoDB)
 	mongocategory := mongocategory.New(cli)
 
 	address := fmt.Sprintf(":%d", cfg.Server.GrpcServer.Port)
-	grpConn, err := grpc.Dial(address, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("Grpc could not dial %v\n", err)
-	}
-	presenceCli := presenceadapter.New(grpConn)
+	presenceCli := presenceadapter.New(address)
 	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, mongocategory, presenceCli, redisAdap)
 
 	scheduler := scheduler.New(cfg.Scheduler, &matchingSrv)

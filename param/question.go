@@ -8,7 +8,6 @@ import (
 
 type QuestionGetRequest struct {
 	CategoryId primitive.ObjectID `json:"category_id"`
-	Count      int                `json:"count"`
 }
 
 type QuestionGetResponse struct {

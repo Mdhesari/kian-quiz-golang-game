@@ -24,9 +24,15 @@ func NewPubSubManager(redisAdap redisadapter.Adapter) *PubSubManager {
 	}
 }
 
-func (p *PubSubManager) Subscribe(topic string, handler EventHandler) {
+func (p *PubSubManager) SubscribeAndGetChannel(topic string) <-chan *redis.Message {
 	subscriber := p.redisClient.Subscribe(p.ctx, topic)
 	ch := subscriber.Channel()
+
+	return ch
+}
+
+func (p *PubSubManager) Subscribe(topic string, handler EventHandler) {
+	ch := p.SubscribeAndGetChannel(topic)
 
 	for msg := range ch {
 		if err := handler(p.ctx, topic, msg.Payload); err != nil {

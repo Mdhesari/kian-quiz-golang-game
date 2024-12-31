@@ -2,6 +2,7 @@ package websocketadapter
 
 import (
 	"bytes"
+	"encoding/json"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"time"
 
@@ -62,10 +63,20 @@ func (c Client) ReadPump() {
 			break
 		}
 
+		var msg struct {
+			Type    string      `json:"type"`
+			Payload interface{} `json:"payload"`
+		}
+
+		if err = json.Unmarshal(message, msg); err != nil {
+			logger.L().Error("Could not unmarshal message.", zap.Error(err))
+
+			break
+		}
+
 		logger.L().Info("new msg from cli", zap.Any("msg", message))
 
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		// c.hub.broadcast <- message
 	}
 }
 

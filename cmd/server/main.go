@@ -93,7 +93,7 @@ func main() {
 
 	handlers := []httpserver.Handler{
 		pinghandler.New(),
-		websockethandler.New(srvs.websocketAdap, srvs.authSrv, &cfg.Auth),
+		websockethandler.New(srvs.websocketAdap, srvs.presenceSrv, srvs.authSrv, &cfg.Auth),
 		gamehandler.New(srvs.gameSrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, *srvs.userValidator),
 		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, cfg.Auth),

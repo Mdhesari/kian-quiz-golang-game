@@ -1,4 +1,4 @@
-package matchmaking
+package game
 
 import (
 	"context"
@@ -16,15 +16,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type Matchmaking struct {
+type Game struct {
 	pubsubManager *pubsub.PubSubManager
 	gameSrv       *gameservice.Service
 	userSrv       *userservice.Service
 	questionSrv   *questionservice.Service
 }
 
-func New(pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, userSrv *userservice.Service, questionSrv *questionservice.Service) Matchmaking {
-	return Matchmaking{
+func New(pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, userSrv *userservice.Service, questionSrv *questionservice.Service) Game {
+	return Game{
 		pubsubManager: pubsubManager,
 		gameSrv:       gameSrv,
 		userSrv:       userSrv,
@@ -32,11 +32,11 @@ func New(pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, user
 	}
 }
 
-func (m Matchmaking) SubscribeEventHandlers() {
-	go m.pubsubManager.Subscribe(string(entity.PlayersMatchedEvent), m.HandleGameStartedEvent)
+func (m Game) SubscribeEventHandlers() {
+	go m.pubsubManager.Subscribe(string(entity.PlayersMatchedEvent), m.HandlePlayersMatched)
 }
 
-func (m Matchmaking) HandleGameStartedEvent(ctx context.Context, topic string, payload string) error {
+func (m Game) HandlePlayersMatched(ctx context.Context, topic string, payload string) error {
 	playersMatched := protobufdecoder.DecodePlayersMatchedEvent(payload)
 
 	questionRes, err := m.questionSrv.GetRandomQuestions(ctx, param.QuestionGetRequest{
@@ -53,7 +53,7 @@ func (m Matchmaking) HandleGameStartedEvent(ctx context.Context, topic string, p
 		if err != nil {
 			logger.L().Error("Could not get user for creating game.", zap.Error(err), zap.Any("userID", id))
 
-			return err
+			continue
 		}
 
 		players = append(players, entity.Player{
@@ -71,7 +71,7 @@ func (m Matchmaking) HandleGameStartedEvent(ctx context.Context, topic string, p
 		Players:   players,
 	})
 	if err != nil {
-		logger.L().Error(err.Error(), zap.Error(err), zap.Any("game", game))
+		logger.L().Error("Could not setup a game.", zap.Error(err), zap.Any("game", game))
 
 		return err
 	}

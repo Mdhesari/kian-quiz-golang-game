@@ -24,8 +24,8 @@ func NewPubSubManager(redisAdap redisadapter.Adapter) *PubSubManager {
 	}
 }
 
-func (p *PubSubManager) SubscribeAndGetChannel(topic string) <-chan *redis.Message {
-	subscriber := p.redisClient.Subscribe(p.ctx, topic)
+func (p *PubSubManager) SubscribeAndGetChannel(topics ...string) <-chan *redis.Message {
+	subscriber := p.redisClient.Subscribe(p.ctx, topics...)
 	ch := subscriber.Channel()
 
 	return ch

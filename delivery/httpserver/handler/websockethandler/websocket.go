@@ -1,6 +1,8 @@
 package websockethandler
 
 import (
+	"encoding/json"
+	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/claim"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -30,7 +33,9 @@ func (h Handler) Websocket(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
-	go func(conn *websocket.Conn) {
+	ch := h.pubsubManager.SubscribeAndGetChannel(string(entity.GameStartedEvent))
+
+	go func(conn *websocket.Conn, ch <-chan *redis.Message) {
 		defer conn.Close()
 
 		ticker := time.NewTicker(60 * time.Second)
@@ -41,6 +46,12 @@ func (h Handler) Websocket(c echo.Context) error {
 
 		for {
 			select {
+			case msg := <-ch:
+				if err := conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload)); err != nil {
+					logger.L().Error("Error writing message to websocket.", zap.Error(err), zap.String("msg", msg.Payload))
+
+					return
+				}
 			case <-ticker.C:
 				if err := conn.WriteMessage(websocket.PingMessage, []byte("")); err != nil {
 					logger.L().Error("Error sending ping.", zap.Error(err))
@@ -51,7 +62,7 @@ func (h Handler) Websocket(c echo.Context) error {
 				logger.L().Info("ping")
 			}
 		}
-	}(conn)
+	}(conn, ch)
 
 	go func(conn *websocket.Conn) {
 		defer conn.Close()
@@ -85,6 +96,17 @@ func (h Handler) Websocket(c echo.Context) error {
 				break
 			}
 			logger.L().Info("new msg from cli", zap.Any("msg", msg))
+
+			var decodedMsg entity.WebsocketMsg
+			if err := json.Unmarshal(msg, &decodedMsg); err != nil {
+				logger.L().Error("Could not unmarshal cli message.", zap.Error(err))
+			}
+
+			switch decodedMsg.Type {
+			case "answer":
+				// send answer to game and proceed to new questoin
+
+			}
 		}
 	}(conn)
 

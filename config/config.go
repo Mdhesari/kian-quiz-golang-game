@@ -2,7 +2,6 @@ package config
 
 import (
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
-	"mdhesari/kian-quiz-golang-game/adapter/websocketadapter"
 	"mdhesari/kian-quiz-golang-game/delivery/grpcserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
@@ -32,7 +31,6 @@ type JWT struct {
 type Server struct {
 	HttpServer httpserver.Config       `koanf:"http_server"`
 	GrpcServer grpcserver.Config       `koanf:"grpc_server"`
-	Websocket  websocketadapter.Config `koanf:"websocket_server"`
 }
 
 type Config struct {

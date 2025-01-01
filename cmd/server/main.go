@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"mdhesari/kian-quiz-golang-game/adapter/presenceadapter"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
-	"mdhesari/kian-quiz-golang-game/adapter/websocketadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/delivery/grpcserver"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver"
@@ -20,7 +19,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/validator/matchingvalidator"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
 	"mdhesari/kian-quiz-golang-game/logger"
-	"mdhesari/kian-quiz-golang-game/matchmaking"
+	"mdhesari/kian-quiz-golang-game/game"
 	"mdhesari/kian-quiz-golang-game/pubsub"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
@@ -64,8 +63,6 @@ type services struct {
 	rbacSrv     *rbacservice.Service
 	gameSrv     *gameservice.Service
 
-	websocketAdap *websocketadapter.Adapter
-
 	pubsubManager *pubsub.PubSubManager
 
 	userValidator     *uservalidator.Validator
@@ -83,17 +80,15 @@ func main() {
 
 	var srvs services = setupServices(&cfg)
 
-	mm := matchmaking.New(srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv)
+	mm := game.New(srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv)
 	mm.SubscribeEventHandlers()
 
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
 	go presenceserver.Start()
 
-	go srvs.websocketAdap.Run()
-
 	handlers := []httpserver.Handler{
 		pinghandler.New(),
-		websockethandler.New(srvs.websocketAdap, srvs.presenceSrv, srvs.authSrv, &cfg.Auth),
+		websockethandler.New(srvs.pubsubManager, srvs.presenceSrv, srvs.authSrv, &cfg.Auth),
 		gamehandler.New(srvs.gameSrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, *srvs.userValidator),
 		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, cfg.Auth),
@@ -168,9 +163,6 @@ func setupServices(cfg *config.Config) services {
 	gameRepo := mongogame.New(mongoCli)
 	gameSrv := gameservice.New(gameRepo)
 
-	fmt.Println(cfg.Server.Websocket)
-	websocketAdap := websocketadapter.New(cfg.Server.Websocket)
-
 	return services{
 		questionSrv:       &questionSrv,
 		authSrv:           &authSrv,
@@ -180,7 +172,6 @@ func setupServices(cfg *config.Config) services {
 		presenceSrv:       &presenceSrv,
 		rbacSrv:           &rbacSrv,
 		gameSrv:           &gameSrv,
-		websocketAdap:     websocketAdap,
 		pubsubManager:     pubsubManager,
 		userValidator:     &userValidator,
 		matchingValidator: &matchingValidator,

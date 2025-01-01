@@ -53,7 +53,7 @@ func (m Game) HandlePlayersMatched(ctx context.Context, topic string, payload st
 		if err != nil {
 			logger.L().Error("Could not get user for creating game.", zap.Error(err), zap.Any("userID", id))
 
-			continue
+			return err
 		}
 
 		players = append(players, entity.Player{

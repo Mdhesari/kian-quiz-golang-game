@@ -26,14 +26,18 @@ func (h Handler) Websocket(c echo.Context) error {
 		// TODO - check origin
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
-	conn, err := upgrader.Upgrade(c.Response().Writer, c.Request(), c.Response().Header())
+	conn, err := upgrader.Upgrade(c.Response().Writer, c.Request(), nil)
 	if err != nil {
 		logger.L().Error("Could not upgrade http to websocket.", zap.Error(err))
 
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
-	ch := h.pubsubManager.SubscribeAndGetChannel(string(entity.GameStartedEvent))
+	var ch <-chan *redis.Message
+
+	go func() {
+		ch = h.pubsubManager.SubscribeAndGetChannel(string(entity.GameStartedEvent))
+	}()
 
 	go func(conn *websocket.Conn, ch <-chan *redis.Message) {
 		defer conn.Close()

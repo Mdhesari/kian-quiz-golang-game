@@ -18,8 +18,8 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/websockethandler"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/matchingvalidator"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
-	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/game"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pubsub"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongocategory"
@@ -38,6 +38,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/questionservice"
 	"mdhesari/kian-quiz-golang-game/service/rbacservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
+	"mdhesari/kian-quiz-golang-game/websockethub"
 
 	"os"
 	"os/signal"
@@ -86,9 +87,12 @@ func main() {
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
 	go presenceserver.Start()
 
+	hub := websockethub.NewHub()
+	go hub.Start()
+
 	handlers := []httpserver.Handler{
 		pinghandler.New(),
-		websockethandler.New(srvs.pubsubManager, srvs.presenceSrv, srvs.authSrv, &cfg.Auth),
+		websockethandler.New(&hub, srvs.presenceSrv, srvs.authSrv, &cfg.Auth),
 		gamehandler.New(srvs.gameSrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, *srvs.userValidator),
 		backpanelhandler.New(srvs.userSrv, srvs.rbacSrv, srvs.authSrv, cfg.Auth),

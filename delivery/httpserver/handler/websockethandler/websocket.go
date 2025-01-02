@@ -1,6 +1,7 @@
 package websockethandler
 
 import (
+	"context"
 	"encoding/json"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
@@ -76,16 +77,16 @@ func (h Handler) Websocket(c echo.Context) error {
 				return err
 			}
 
-			userId := claims.UserID
-			_, err := h.presenceSrv.Upsert(c.Request().Context(), param.PresenceUpsertRequest{
-				UserId:    userId,
-				Timestamp: timestamp.Now(),
-			})
-			if err != nil {
-				logger.L().Error("Error upserting presence after pong.")
-
-				return err
-			}
+			go func() {
+				userId := claims.UserID
+				_, err := h.presenceSrv.Upsert(context.Background(), param.PresenceUpsertRequest{
+					UserId:    userId,
+					Timestamp: timestamp.Now(),
+				})
+				if err != nil {
+					logger.L().Error("Error upserting presence after pong.", zap.Error(err))
+				}
+			}()
 
 			return nil
 		})

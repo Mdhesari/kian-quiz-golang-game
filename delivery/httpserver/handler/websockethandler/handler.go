@@ -15,7 +15,7 @@ type Handler struct {
 
 func New(pubsubMgr *pubsub.PubSubManager, presenceSrv *presenceservice.Service, authSrv *authservice.Service, authCfg *authservice.Config) Handler {
 	return Handler{
-		pubsubManager: &pubsub.PubSubManager{},
+		pubsubManager: pubsubMgr,
 		presenceSrv:   presenceSrv,
 		authSrv:       authSrv,
 		authCfg:       authCfg,

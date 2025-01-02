@@ -44,7 +44,7 @@ func (s Server) Start() {
 	address := fmt.Sprintf(":%d", s.config.Port)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatal("Colud not open listener.")
+		panic(err)
 	}
 
 	grpcServer := grpc.NewServer()

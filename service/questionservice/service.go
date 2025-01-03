@@ -3,10 +3,12 @@ package questionservice
 import (
 	"context"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -31,6 +33,8 @@ func New(cfg Config, repo Repository) Service {
 
 func (s *Service) GetRandomQuestions(ctx context.Context, req param.QuestionGetRequest) (param.QuestionGetResponse, error) {
 	op := "Question service: get random questions."
+
+	logger.L().Info("Getting random questions.", zap.Int("count", s.cfg.QuestionsCount))
 
 	items, err := s.repo.GetRandomByCategory(ctx, req.CategoryId, s.cfg.QuestionsCount)
 	if err != nil {

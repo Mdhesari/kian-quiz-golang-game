@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package websocket;
+
+option go_package = "protobuf/golang/websocket";
+
+message WebsocketMsg {
+    string Type = 1;
+    string Payload = 2;
+}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
+	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -26,7 +27,7 @@ const (
 )
 
 type Hub struct {
-	clients    map[primitive.ObjectID]*Client
+	clients    map[string]*Client
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan *Message
@@ -40,21 +41,41 @@ type Client struct {
 }
 
 type Message struct {
-	UserID primitive.ObjectID
+	Type   string
+	UserID string
 	Body   []byte
 }
 
 func NewHub() Hub {
 	return Hub{
-		clients:    map[primitive.ObjectID]*Client{},
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		broadcast:  make(chan *Message),
+		clients:    map[string]*Client{},
+		register:   make(chan *Client, 1000),
+		unregister: make(chan *Client, 1000),
+		broadcast:  make(chan *Message, 1000),
+	}
+}
+
+func (h *Hub) RegisterClient(cli *Client) {
+	select {
+	case h.register <- cli:
+	default:
+		logger.L().Warn("Could not register client.", zap.Any("client", cli))
 	}
 }
 
 func (h *Hub) BroadcastMessage(msg *Message) {
-	h.broadcast <- msg
+	if msg == nil {
+		logger.L().Error("Attempted to broadcast a nil message")
+		return
+	}
+
+	select {
+	case h.broadcast <- msg:
+	default:
+		logger.L().Warn("Broadcast is full.")
+	}
+
+	logger.L().Info("done broadcast.")
 }
 
 func (h *Hub) Start() {
@@ -63,32 +84,43 @@ func (h *Hub) Start() {
 		case cli := <-h.register:
 			logger.L().Info("Registering cli", zap.Any("cli", cli))
 
-			h.clients[cli.userID] = cli
+			h.clients[cli.userID.Hex()] = cli
 
 			logger.L().Info("Registered cli")
 		case cli := <-h.unregister:
 			logger.L().Info("Unregistering cli", zap.Any("cli", cli))
 
-			delete(h.clients, cli.userID)
+			delete(h.clients, cli.userID.Hex())
 			cli.cleanUp()
 
 			logger.L().Info("done unregistering cli")
 		case msg := <-h.broadcast:
-			if !msg.UserID.IsZero() {
-				cli := h.clients[msg.UserID]
-				select {
-				case cli.send <- msg.Body:
-				default:
-					close(cli.send)
-					delete(h.clients, cli.userID)
+			finalMsg := protobufencoder.EncodeWebSocketMsg(entity.WebsocketMsg{
+				Type:    msg.Type,
+				Payload: msg.Body,
+			})
+
+			if msg.UserID != "" {
+				cli, ok := h.clients[msg.UserID]
+				if !ok {
+					logger.L().Error("Client is not available.", zap.String("userId", msg.UserID), zap.Any("clients", h.clients))
+
+					continue
 				}
 
-				break
+				select {
+				case cli.send <- []byte(finalMsg):
+				default:
+					close(cli.send)
+					delete(h.clients, cli.userID.Hex())
+				}
+
+				continue
 			}
 
 			for userID, cli := range h.clients {
 				select {
-				case cli.send <- msg.Body:
+				case cli.send <- []byte(finalMsg):
 				default:
 					close(cli.send)
 					delete(h.clients, userID)

@@ -31,6 +31,8 @@ func (h Handler) Websocket(c echo.Context) error {
 	cli := websockethub.NewClient(conn, claims.UserID)
 	cli.Start()
 
+	h.hub.RegisterClient(&cli)
+
 	logger.L().Info("Successfuly started websocket.", zap.Any("gorutoines", runtime.NumGoroutine()))
 
 	return nil

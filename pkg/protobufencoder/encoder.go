@@ -4,10 +4,13 @@ import (
 	"encoding/base64"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
+	"mdhesari/kian-quiz-golang-game/pkg/jsonencoder"
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/game"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/matching"
+	"mdhesari/kian-quiz-golang-game/protobuf/golang/websocket"
 
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -46,4 +49,20 @@ func EncodeGameStartedEvent(e entity.GameStarted) string {
 	}
 
 	return base64.StdEncoding.EncodeToString(payload)
+}
+
+func EncodeWebSocketMsg(msg entity.WebsocketMsg) string {
+	pbE := websocket.WebsocketMsg{
+		Type:    msg.Type,
+		Payload: jsonencoder.EncodeMessage(msg.Payload),
+	}
+
+	res, err := protojson.Marshal(&pbE)
+	if err != nil {
+		logger.L().Error("Could not encoder ptobuf to json.", zap.Error(err))
+
+		return ""
+	}
+
+	return base64.StdEncoding.EncodeToString(res)
 }

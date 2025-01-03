@@ -11,20 +11,23 @@ import (
 	"mdhesari/kian-quiz-golang-game/service/gameservice"
 	"mdhesari/kian-quiz-golang-game/service/questionservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
+	"mdhesari/kian-quiz-golang-game/websockethub"
 	"time"
 
 	"go.uber.org/zap"
 )
 
 type Game struct {
+	hub           *websockethub.Hub
 	pubsubManager *pubsub.PubSubManager
 	gameSrv       *gameservice.Service
 	userSrv       *userservice.Service
 	questionSrv   *questionservice.Service
 }
 
-func New(pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, userSrv *userservice.Service, questionSrv *questionservice.Service) Game {
+func New(hub *websockethub.Hub, pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, userSrv *userservice.Service, questionSrv *questionservice.Service) Game {
 	return Game{
+		hub:           hub,
 		pubsubManager: pubsubManager,
 		gameSrv:       gameSrv,
 		userSrv:       userSrv,
@@ -34,6 +37,30 @@ func New(pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, user
 
 func (m Game) SubscribeEventHandlers() {
 	go m.pubsubManager.Subscribe(string(entity.PlayersMatchedEvent), m.HandlePlayersMatched)
+
+	go m.pubsubManager.Subscribe(string(entity.GameStartedEvent), m.HandleHubGameStarted)
+}
+
+func (m Game) HandleHubGameStarted(ctx context.Context, topic string, payload string) error {
+	gse := protobufdecoder.DecodeGameStartedEvent(payload)
+	game, err := m.gameSrv.GetGameById(ctx, param.GameGetRequest{
+		GameId: gse.GameID,
+	})
+	if err != nil {
+		logger.L().Error("Handler game started: Could not get game.", zap.Error(err), zap.String("gameID", gse.GameID.Hex()))
+
+		return err
+	}
+
+	for _, player := range game.Game.Players {
+		m.hub.BroadcastMessage(&websockethub.Message{
+			Type:   topic,
+			UserID: player.UserID.Hex(),
+			Body:   []byte(payload),
+		})
+	}
+
+	return nil
 }
 
 func (m Game) HandlePlayersMatched(ctx context.Context, topic string, payload string) error {
@@ -43,8 +70,9 @@ func (m Game) HandlePlayersMatched(ctx context.Context, topic string, payload st
 		CategoryId: playersMatched.Category.ID,
 	})
 	if err != nil {
-
 		logger.L().Error("Could not get random questions for creating game.", zap.Error(err), zap.Any("Event", playersMatched))
+
+		return err
 	}
 
 	var players []entity.Player

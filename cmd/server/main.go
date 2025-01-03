@@ -81,14 +81,14 @@ func main() {
 
 	var srvs services = setupServices(&cfg)
 
-	mm := game.New(srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv)
+	hub := websockethub.NewHub()
+	go hub.Start()
+
+	mm := game.New(&hub, srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv)
 	mm.SubscribeEventHandlers()
 
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
 	go presenceserver.Start()
-
-	hub := websockethub.NewHub()
-	go hub.Start()
 
 	handlers := []httpserver.Handler{
 		pinghandler.New(),

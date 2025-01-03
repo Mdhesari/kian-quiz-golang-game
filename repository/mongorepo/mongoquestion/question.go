@@ -17,6 +17,7 @@ func (d *DB) GetRandomByCategory(ctx context.Context, categoryId primitive.Objec
 
 	// TODO - The $sample stage is efficient but may not scale well for large datasets, as MongoDB loads documents into memory to perform the sampling.
 	pipeline := mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{{Key: "category_id", Value: categoryId}}}},
 		{{Key: "$sample", Value: bson.D{{Key: "size", Value: count}}}},
 	}
 	cursor, err := d.collection.Aggregate(ctx, pipeline)

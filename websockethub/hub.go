@@ -95,11 +95,19 @@ func (h *Hub) Start() {
 				Type:    msg.Type,
 				Payload: msg.Body,
 			})
+
 			var clients map[string]*Client = make(map[string]*Client)
 
 			if len(msg.UserIDs) > 0 {
 				for _, userID := range msg.UserIDs {
-					clients[userID] = h.clients[userID]
+					var ok bool
+					clients[userID], ok = h.clients[userID]
+					if !ok {
+						// TODO - Send msg to queue
+						logger.L().Warn("Could not find user id in clients.", zap.Any("userID", userID))
+
+						delete(clients, userID)
+					}
 				}
 
 				logger.L().Info("Broadcasting to specific clients.", zap.Any("userIDs", msg.UserIDs))
@@ -211,6 +219,10 @@ func (c *Client) writePump() {
 			if err := w.Close(); err != nil {
 				return
 			}
+		case <-c.stop:
+			ticker.Stop()
+
+			return
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {

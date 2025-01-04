@@ -36,14 +36,18 @@ func New(hub *websockethub.Hub, pubsubManager *pubsub.PubSubManager, gameSrv *ga
 }
 
 func (m Game) SubscribeEventHandlers() {
+	logger.L().Info("Subscribing event listeners.")
+
 	go m.pubsubManager.Subscribe(string(entity.PlayersMatchedEvent), m.HandlePlayersMatched)
 
 	go m.pubsubManager.Subscribe(string(entity.GameStartedEvent), m.HandleHubGameStarted)
+
+	logger.L().Info("event listeneres are subscribed.")
 }
 
 func (m Game) HandleHubGameStarted(ctx context.Context, topic string, payload string) error {
 	gse := protobufdecoder.DecodeGameStartedEvent(payload)
-	game, err := m.gameSrv.GetGameById(ctx, param.GameGetRequest{
+	gameRes, err := m.gameSrv.GetGameById(ctx, param.GameGetRequest{
 		GameId: gse.GameID,
 	})
 	if err != nil {
@@ -52,10 +56,12 @@ func (m Game) HandleHubGameStarted(ctx context.Context, topic string, payload st
 		return err
 	}
 
-	var userIDs []string = make([]string, len(game.Game.Players))
-	for _, player := range game.Game.Players {
+	var userIDs []string
+	for _, player := range gameRes.Game.Players {
 		userIDs = append(userIDs, player.UserID.Hex())
 	}
+
+	logger.L().Info("Broadcasting..", zap.Any("userIds", userIDs))
 
 	m.hub.BroadcastMessage(&websockethub.Message{
 		Type:    topic,

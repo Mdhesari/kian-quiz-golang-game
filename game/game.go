@@ -52,13 +52,16 @@ func (m Game) HandleHubGameStarted(ctx context.Context, topic string, payload st
 		return err
 	}
 
+	var userIDs []string = make([]string, len(game.Game.Players))
 	for _, player := range game.Game.Players {
-		m.hub.BroadcastMessage(&websockethub.Message{
-			Type:   topic,
-			UserID: player.UserID.Hex(),
-			Body:   []byte(payload),
-		})
+		userIDs = append(userIDs, player.UserID.Hex())
 	}
+
+	m.hub.BroadcastMessage(&websockethub.Message{
+		Type:    topic,
+		UserIDs: userIDs,
+		Body:    []byte(payload),
+	})
 
 	return nil
 }

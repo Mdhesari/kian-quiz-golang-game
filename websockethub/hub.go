@@ -41,9 +41,9 @@ type Client struct {
 }
 
 type Message struct {
-	Type   string
-	UserID string
-	Body   []byte
+	Type    string
+	UserIDs []string
+	Body    []byte
 }
 
 func NewHub() Hub {
@@ -69,11 +69,7 @@ func (h *Hub) BroadcastMessage(msg *Message) {
 		return
 	}
 
-	select {
-	case h.broadcast <- msg:
-	default:
-		logger.L().Warn("Broadcast is full.")
-	}
+	h.broadcast <- msg
 
 	logger.L().Info("done broadcast.")
 }
@@ -99,26 +95,21 @@ func (h *Hub) Start() {
 				Type:    msg.Type,
 				Payload: msg.Body,
 			})
+			var clients map[string]*Client = make(map[string]*Client)
 
-			if msg.UserID != "" {
-				cli, ok := h.clients[msg.UserID]
-				if !ok {
-					logger.L().Error("Client is not available.", zap.String("userId", msg.UserID), zap.Any("clients", h.clients))
-
-					continue
+			if len(msg.UserIDs) > 0 {
+				for _, userID := range msg.UserIDs {
+					clients[userID] = h.clients[userID]
 				}
 
-				select {
-				case cli.send <- []byte(finalMsg):
-				default:
-					close(cli.send)
-					delete(h.clients, cli.userID.Hex())
-				}
+				logger.L().Info("Broadcasting to specific clients.", zap.Any("userIDs", msg.UserIDs))
+			} else {
+				clients = h.clients
 
-				continue
+				logger.L().Info("Broadcasting to all clients.")
 			}
 
-			for userID, cli := range h.clients {
+			for userID, cli := range clients {
 				select {
 				case cli.send <- []byte(finalMsg):
 				default:

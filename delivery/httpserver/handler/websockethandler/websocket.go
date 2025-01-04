@@ -26,7 +26,7 @@ func (h Handler) Websocket(c echo.Context) error {
 		logger.L().Error("Could not upgrade http to websocket.", zap.Error(err))
 
 		return echo.NewHTTPError(http.StatusInternalServerError)
-	}
+}
 
 	cli := websockethub.NewClient(conn, claims.UserID)
 	cli.Start()

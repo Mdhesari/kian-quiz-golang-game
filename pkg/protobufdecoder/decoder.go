@@ -8,6 +8,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/game"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/matching"
+	"mdhesari/kian-quiz-golang-game/protobuf/golang/websocket"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
@@ -51,7 +52,7 @@ func DecodeGameStartedEvent(s string) entity.GameStarted {
 
 	res, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
-		logger.L().Error("Handle hub: could not decode game started payload.", zap.Error(err))
+		logger.L().Error("could not decode game started payload.", zap.Error(err))
 	}
 
 	if err := protojson.Unmarshal(res, &pbE); err != nil {
@@ -65,5 +66,27 @@ func DecodeGameStartedEvent(s string) entity.GameStarted {
 
 	return entity.GameStarted{
 		GameID: gameId,
+	}
+}
+
+func DecodeWebSocketMsg(s string) entity.WebsocketMsg {
+	var pbE websocket.WebsocketMsg
+
+	res, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		logger.L().Error("could not decode websocket msg payload.", zap.Error(err))
+
+		return entity.WebsocketMsg{}
+	}
+
+	if err := protojson.Unmarshal(res, &pbE); err != nil {
+		logger.L().Error("could not decode protobuf to json.", zap.Error(err))
+
+		return entity.WebsocketMsg{}
+	}
+
+	return entity.WebsocketMsg{
+		Type:    pbE.Type,
+		Payload: pbE.Payload,
 	}
 }

@@ -1,9 +1,9 @@
 package websockethub
 
 import (
-	"encoding/json"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
+	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"time"
 
@@ -175,15 +175,9 @@ func (c *Client) readPump() {
 			return
 		}
 
-		logger.L().Info("decoded", zap.Any("message", string(msg)))
-		var websocketMsg entity.WebsocketMsg
-		if err := json.Unmarshal(msg, &websocketMsg); err != nil {
-			logger.L().Error("Could not decode websocket msg.", zap.Error(err))
+		websocketMsg := protobufdecoder.DecodeWebSocketMsg(string(msg))
 
-			return
-		}
-
-		logger.L().Info("message successfully recieved.", zap.Any("message", websocketMsg))
+		logger.L().Info("message successfully recieved.", zap.Any("message", websocketMsg.Payload))
 
 		// TODO - Handle cli messages (game answer, game ending, etc)
 	}

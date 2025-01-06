@@ -68,6 +68,7 @@ func EncodeWebSocketMsg(msg entity.WebsocketMsg) string {
 
 func EncodePlayerAnswered(e entity.PlayerAnswered) string {
 	pbE := game.PlayerAnswered{
+		UserId:     e.UserID.Hex(),
 		QuestionId: e.QuestionID.Hex(),
 		Answer:     e.Answer.Title,
 		GameId:     e.GameID.Hex(),

@@ -16,9 +16,9 @@ type GameGetAllResponse struct {
 }
 
 type GameCreateRequest struct {
-	Players   []entity.Player   `json:"players,omitempty"`
-	Questions []entity.Question `json:"questions,omitempty"`
-	Category  entity.Category   `json:"category,omitempty"`
+	Players   map[string]entity.Player `json:"players,omitempty"`
+	Questions []entity.Question        `json:"questions,omitempty"`
+	Category  entity.Category          `json:"category,omitempty"`
 }
 
 type GameCreateResponse struct {
@@ -31,4 +31,14 @@ type GameGetRequest struct {
 
 type GameGetResponse struct {
 	Game entity.Game `json:"game"`
+}
+
+type GameAnswerQuestionRequest struct {
+	UserId       primitive.ObjectID  `json:"user_id"`
+	GameId       primitive.ObjectID  `json:"game_id"`
+	PlayerAnswer entity.PlayerAnswer `json:"player_answer"`
+}
+
+type GameAnswerQuestionResponse struct {
+	PlayerAnswer entity.PlayerAnswer `json:"player_answer"`
 }

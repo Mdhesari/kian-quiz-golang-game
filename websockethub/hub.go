@@ -1,6 +1,7 @@
 package websockethub
 
 import (
+	"context"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
@@ -26,7 +27,12 @@ const (
 	maxMessageSize = 512
 )
 
+type Publsiher interface {
+	Publish(ctx context.Context, topic string, payload string)
+}
+
 type Hub struct {
+	pub        Publsiher
 	clients    map[string]*Client
 	register   chan *Client
 	unregister chan *Client
@@ -47,13 +53,18 @@ type Message struct {
 	Body    string
 }
 
-func NewHub() Hub {
+func NewHub(pub Publsiher) Hub {
 	return Hub{
+		pub:        pub,
 		clients:    map[string]*Client{},
-		register:   make(chan *Client, 1000),
-		unregister: make(chan *Client, 1000),
-		broadcast:  make(chan *Message, 1000),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+		broadcast:  make(chan *Message),
 	}
+}
+
+func (h *Hub) Publish(ctx context.Context, topic string, payload string) {
+	h.pub.Publish(ctx, topic, payload)
 }
 
 func (h *Hub) RegisterClient(cli *Client) {
@@ -135,6 +146,7 @@ func (h *Hub) Start() {
 func NewClient(conn *websocket.Conn, hub *Hub, userID primitive.ObjectID) Client {
 	return Client{
 		conn:   conn,
+		hub:    hub,
 		userID: userID,
 		send:   make(chan []byte),
 		stop:   make(chan struct{}),
@@ -188,11 +200,7 @@ func (c *Client) readPump() {
 
 			logger.L().Info("Game started.", zap.Any("playersMatched", playersMatched))
 		case string(entity.GamePlayerAnsweredEvent):
-			gamePlayerAnswered := protobufdecoder.DecodeGamePlayerAnswerEvent(websocketMsg.Payload)
-
-			logger.L().Info("Game player answered.", zap.Any("gamePlayerAnswered", gamePlayerAnswered))
-
-			c.hub.PublishEvent()
+			c.hub.Publish(context.Background(), string(entity.GamePlayerAnsweredEvent), websocketMsg.Payload)
 		}
 	}
 }

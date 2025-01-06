@@ -17,7 +17,8 @@ type Repository interface {
 	Create(ctx context.Context, game entity.Game) (entity.Game, error)
 	GetGameById(ctx context.Context, id primitive.ObjectID) (entity.Game, error)
 	Update(ctx context.Context, game entity.Game) error
-	GetAllGames(ctx context.Context, UserID primitive.ObjectID) ([]entity.Game, error)
+	GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]entity.Game, error)
+	CreateQuestionAnswer(ctx context.Context, userId primitive.ObjectID, gameId primitive.ObjectID, playerAnswer entity.PlayerAnswer) (entity.PlayerAnswer, error)
 }
 
 type Service struct {
@@ -88,5 +89,20 @@ func (s Service) GetGameById(ctx context.Context, req param.GameGetRequest) (par
 
 	return param.GameGetResponse{
 		Game: game,
+	}, nil
+}
+
+func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestionRequest) (param.GameAnswerQuestionResponse, error) {
+	op := "Game service: answer question."
+
+	playerAw, err := s.repo.CreateQuestionAnswer(ctx, req.UserId, req.GameId, req.PlayerAnswer)
+	if err != nil {
+		logger.L().Error(err.Error(), zap.Error(err), zap.String("game_id", req.GameId.Hex()), zap.String("question_id", req.PlayerAnswer.QuestionID.Hex()))
+
+		return param.GameAnswerQuestionResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
+	}
+
+	return param.GameAnswerQuestionResponse{
+		PlayerAnswer: playerAw,
 	}, nil
 }

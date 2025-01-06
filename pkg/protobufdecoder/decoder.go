@@ -93,7 +93,7 @@ func DecodeWebSocketMsg(s string) entity.WebsocketMsg {
 	}
 }
 
-func DecodeGamePlayerAnswerEvent(s string) entity.PlayerAnswered {
+func DecodeGamePlayerAnsweredEvent(s string) entity.PlayerAnswered {
 	var pbE game.PlayerAnswered
 
 	res := base64decoder.Decode(s)
@@ -104,6 +104,7 @@ func DecodeGamePlayerAnswerEvent(s string) entity.PlayerAnswered {
 	}
 
 	return entity.PlayerAnswered{
+		UserID:     mongoutils.HexToObjectID(pbE.UserId),
 		GameID:     mongoutils.HexToObjectID(pbE.GameId),
 		QuestionID: mongoutils.HexToObjectID(pbE.QuestionId),
 		Answer: entity.Answer{

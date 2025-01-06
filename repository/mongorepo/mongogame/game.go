@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 )
 
 func (d *DB) Create(ctx context.Context, game entity.Game) (entity.Game, error) {
@@ -114,4 +116,27 @@ func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]enti
 	}
 
 	return games, nil
+}
+
+func (d *DB) CreateQuestionAnswer(ctx context.Context, userId primitive.ObjectID, gameId primitive.ObjectID, playerAnswer entity.PlayerAnswer) (entity.PlayerAnswer, error) {
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	res, err := d.collection.UpdateByID(ctx, gameId, bson.M{
+		"$push": bson.M{
+			fmt.Sprintf("players.%s.answers", userId.Hex()): playerAnswer,
+		},
+	})
+	if err != nil {
+
+		return playerAnswer, err
+	}
+	if res.MatchedCount == 0 {
+
+		return playerAnswer, errors.New(errmsg.ErrGameNotFound)
+	}
+
+	logger.L().Info("update res", zap.Any("res", res))
+
+	return playerAnswer, nil
 }

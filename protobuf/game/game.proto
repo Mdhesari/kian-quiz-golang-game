@@ -9,7 +9,8 @@ message GameStarted {
 }
 
 message PlayerAnswered {
-    string GameId = 1;
-    string QuestionId = 2;
-    string Answer = 3;
+    string UserId = 1;
+    string GameId = 2;
+    string QuestionId = 3;
+    string Answer = 4;
 }

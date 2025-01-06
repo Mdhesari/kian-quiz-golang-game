@@ -18,7 +18,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/websockethandler"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/matchingvalidator"
 	"mdhesari/kian-quiz-golang-game/delivery/validator/uservalidator"
-	"mdhesari/kian-quiz-golang-game/game"
+	"mdhesari/kian-quiz-golang-game/events"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pubsub"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
@@ -81,10 +81,10 @@ func main() {
 
 	var srvs services = setupServices(&cfg)
 
-	hub := websockethub.NewHub()
+	hub := websockethub.NewHub(srvs.pubsubManager)
 	go hub.Start()
 
-	mm := game.New(&hub, srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv)
+	mm := events.New(&hub, srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv)
 	mm.SubscribeEventHandlers()
 
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)

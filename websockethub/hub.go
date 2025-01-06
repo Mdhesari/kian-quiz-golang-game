@@ -105,8 +105,6 @@ func (h *Hub) Start() {
 					if !ok {
 						// TODO - Send msg to queue
 						logger.L().Warn("Could not find user id in clients.", zap.Any("userID", userID))
-
-						delete(clients, userID)
 					}
 				}
 
@@ -179,7 +177,12 @@ func (c *Client) readPump() {
 
 		logger.L().Info("message successfully recieved.", zap.Any("message", websocketMsg.Payload))
 
-		// TODO - Handle cli messages (game answer, game ending, etc)
+		switch websocketMsg.Type {
+		case string(entity.GameStartedEvent):
+			playersMatched := protobufdecoder.DecodePlayersMatchedEvent(websocketMsg.Payload.(string))
+
+			logger.L().Info("Game started.", zap.Any("playersMatched", playersMatched))
+		}
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
-	"mdhesari/kian-quiz-golang-game/pkg/jsonencoder"
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/game"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/matching"
@@ -54,7 +53,7 @@ func EncodeGameStartedEvent(e entity.GameStarted) string {
 func EncodeWebSocketMsg(msg entity.WebsocketMsg) string {
 	pbE := websocket.WebsocketMsg{
 		Type:    msg.Type,
-		Payload: jsonencoder.EncodeMessage(msg.Payload),
+		Payload: msg.Payload,
 	}
 
 	res, err := protojson.Marshal(&pbE)

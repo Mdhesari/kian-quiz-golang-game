@@ -43,7 +43,7 @@ type Client struct {
 type Message struct {
 	Type    string
 	UserIDs []string
-	Body    []byte
+	Body    string
 }
 
 func NewHub() Hub {
@@ -101,10 +101,12 @@ func (h *Hub) Start() {
 			if len(msg.UserIDs) > 0 {
 				for _, userID := range msg.UserIDs {
 					var ok bool
-					clients[userID], ok = h.clients[userID]
+					userId, ok := h.clients[userID]
 					if !ok {
 						// TODO - Send msg to queue
-						logger.L().Warn("Could not find user id in clients.", zap.Any("userID", userID))
+						logger.L().Warn("Could not find user id in clients.", zap.Any("userID", userId))
+					} else {
+						clients[userID] = userId
 					}
 				}
 
@@ -114,6 +116,8 @@ func (h *Hub) Start() {
 
 				logger.L().Info("Broadcasting to all clients.")
 			}
+
+			logger.L().Info("send to clients.", zap.Any("clients", clients))
 
 			for userID, cli := range clients {
 				select {
@@ -179,7 +183,7 @@ func (c *Client) readPump() {
 
 		switch websocketMsg.Type {
 		case string(entity.GameStartedEvent):
-			playersMatched := protobufdecoder.DecodePlayersMatchedEvent(websocketMsg.Payload.(string))
+			playersMatched := protobufdecoder.DecodeGameStartedEvent(websocketMsg.Payload)
 
 			logger.L().Info("Game started.", zap.Any("playersMatched", playersMatched))
 		}
@@ -211,7 +215,10 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
-			w.Write(msg)
+			logger.L().Info("Writing message.", zap.Any("message", msg))
+			if _, err := w.Write(msg); err != nil {
+				logger.L().Error("Could not write msg.", zap.Any("msg", msg))
+			}
 
 			if err := w.Close(); err != nil {
 				return

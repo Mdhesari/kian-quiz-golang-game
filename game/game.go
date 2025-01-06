@@ -56,6 +56,8 @@ func (m Game) HandleHubGameStarted(ctx context.Context, topic string, payload st
 		return err
 	}
 
+	logger.L().Info("Decoded game started event.", zap.Any("game", payload))
+
 	var userIDs []string
 	for _, player := range gameRes.Game.Players {
 		userIDs = append(userIDs, player.UserID.Hex())
@@ -66,7 +68,7 @@ func (m Game) HandleHubGameStarted(ctx context.Context, topic string, payload st
 	m.hub.BroadcastMessage(&websockethub.Message{
 		Type:    topic,
 		UserIDs: userIDs,
-		Body:    []byte(payload),
+		Body:    payload,
 	})
 
 	return nil

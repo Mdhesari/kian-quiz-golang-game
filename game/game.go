@@ -63,8 +63,6 @@ func (m Game) HandleHubGameStarted(ctx context.Context, topic string, payload st
 		userIDs = append(userIDs, player.UserID.Hex())
 	}
 
-	logger.L().Info("Broadcasting..", zap.Any("userIds", userIDs))
-
 	m.hub.BroadcastMessage(&websockethub.Message{
 		Type:    topic,
 		UserIDs: userIDs,

@@ -35,6 +35,7 @@ type Hub struct {
 
 type Client struct {
 	conn   *websocket.Conn
+	hub    *Hub
 	userID primitive.ObjectID
 	send   chan []byte
 	stop   chan struct{}
@@ -131,7 +132,7 @@ func (h *Hub) Start() {
 	}
 }
 
-func NewClient(conn *websocket.Conn, userID primitive.ObjectID) Client {
+func NewClient(conn *websocket.Conn, hub *Hub, userID primitive.ObjectID) Client {
 	return Client{
 		conn:   conn,
 		userID: userID,
@@ -186,6 +187,12 @@ func (c *Client) readPump() {
 			playersMatched := protobufdecoder.DecodeGameStartedEvent(websocketMsg.Payload)
 
 			logger.L().Info("Game started.", zap.Any("playersMatched", playersMatched))
+		case string(entity.GamePlayerAnsweredEvent):
+			gamePlayerAnswered := protobufdecoder.DecodeGamePlayerAnswerEvent(websocketMsg.Payload)
+
+			logger.L().Info("Game player answered.", zap.Any("gamePlayerAnswered", gamePlayerAnswered))
+
+			c.hub.PublishEvent()
 		}
 	}
 }

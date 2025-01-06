@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package game;
+
+option go_package = "protobuf/golang/game";
+
+message GameStarted {
+    string GameId = 1;
+}
+
+message PlayerAnswered {
+    string GameId = 1;
+    string QuestionId = 2;
+    string Answer = 3;
+}

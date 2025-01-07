@@ -10,11 +10,11 @@ import (
 
 func main() {
 	e := entity.PlayerAnswered{
-		UserID:     mongoutils.HexToObjectID("6778de7c7dc0f926b37702ae"),
-		GameID:     mongoutils.HexToObjectID("677bc3ff5a3adad24fcff543"),
-		QuestionID: mongoutils.HexToObjectID("6778de90f0766018d7eb7bac"),
+		UserID:     mongoutils.HexToObjectID("6778de7c7dc0f926b37702ad"),
+		GameID:     mongoutils.HexToObjectID("677cf8cbd393163176d9b29b"),
+		QuestionID: mongoutils.HexToObjectID("6778de90f0766018d7eb7b94"),
 		Answer: entity.Answer{
-			Title: "Cancer",
+			Title: "Uno",
 		},
 	}
 	s := protobufencoder.EncodePlayerAnswered(e)

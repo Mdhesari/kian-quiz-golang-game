@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	MaxQuestionTimeout  time.Duration = time.Second * 15
+	MaxQuestionTimeout  time.Duration = time.Second * 1500
 	MaxScorePerQuestion uint8         = 5
 )
 
@@ -162,11 +162,11 @@ func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQues
 
 		return param.GameGetNextQuestionResponse{}, richerror.New(op, errmsg.ErrGameNotFound).WithErr(err)
 	}
-
-	player := gameRes.Game.Players[req.UserId.Hex()]
+	game := gameRes.Game
+	player := game.Players[req.UserId.Hex()]
 
 	var nextQuestion entity.Question
-	for _, q := range gameRes.Game.Questions {
+	for _, q := range game.Questions {
 		if !player.HasAnsweredQuestion(q.ID) {
 			nextQuestion = q
 
@@ -174,8 +174,12 @@ func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQues
 		}
 	}
 
+	player.LastQuestionID = nextQuestion.ID
+	player.LastQuestionStartTime = time.Now()
+	game.Players[req.UserId.Hex()] = player
+	s.repo.Update(ctx, game)
+
 	return param.GameGetNextQuestionResponse{
-		Game:     gameRes.Game,
 		Question: nextQuestion,
 	}, nil
 }

@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 )
 
@@ -102,7 +103,8 @@ func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]enti
 	filter := bson.M{
 		fmt.Sprintf("players.%s", userID.Hex()): bson.M{"$exists": true},
 	}
-	cursor, err := d.collection.Find(ctx, filter)
+	opts := options.Find().SetSort(bson.D{{Key: "start_time", Value: -1}})
+	cursor, err := d.collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute aggregation: %w", err)
 	}

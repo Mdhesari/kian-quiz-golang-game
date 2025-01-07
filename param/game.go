@@ -49,6 +49,5 @@ type GameGetNextQuestionRequest struct {
 }
 
 type GameGetNextQuestionResponse struct {
-	Game     entity.Game     `json:"game"`
 	Question entity.Question `json:"question"`
 }

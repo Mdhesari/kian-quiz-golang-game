@@ -2,7 +2,6 @@ package events
 
 import (
 	"context"
-	"errors"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -16,11 +15,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-)
-
-const (
-	MaxQuestionTimeout  time.Duration = time.Second * 15
-	MaxScorePerQuestion uint8         = 5
 )
 
 type EventManager struct {
@@ -64,42 +58,6 @@ func (e EventManager) HandleGamePlayerAnswered(ctx context.Context, topic string
 		Answer:     playerAnswered.Answer,
 		StartTime:  time.Now().Add(-10 * time.Second),
 		EndTime:    time.Now(),
-	}
-
-	gameRes, err := e.gameSrv.GetGameById(ctx, param.GameGetRequest{
-		GameId: playerAnswered.GameID,
-	})
-	if err != nil {
-		logger.L().Error("Could not find the game.", zap.Error(err), zap.String("gameId", playerAnswered.GameID.Hex()))
-
-		return err
-	}
-
-	var question entity.Question
-	for _, q := range gameRes.Game.Questions {
-		if q.ID.Hex() == playerAnswered.QuestionID.Hex() {
-			question = q
-			break
-		}
-	}
-	if question.ID.IsZero() {
-		logger.L().Error("Could not find the question.", zap.String("questionId", playerAnswered.QuestionID.Hex()))
-
-		return errors.New("question not found")
-	}
-
-	var correctAns entity.Answer
-	for _, a := range question.Answers {
-		if a.IsCorrect {
-			correctAns = a
-			break
-		}
-	}
-	if correctAns.Title != "" && playerAnswer.Answer.Title != "" && correctAns.Title == playerAnswered.Answer.Title && playerAnswer.EndTime.Sub(playerAnswer.StartTime) <= MaxQuestionTimeout {
-		logger.L().Info("Player answered correctly.", zap.String("questionId", playerAnswered.QuestionID.Hex()))
-
-		playerAnswer.Answer.IsCorrect = true
-		playerAnswer.Score = MaxScorePerQuestion
 	}
 
 	res, err := e.gameSrv.AnswerQuestion(ctx, param.GameAnswerQuestionRequest{

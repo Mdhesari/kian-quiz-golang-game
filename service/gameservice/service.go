@@ -2,6 +2,7 @@ package gameservice
 
 import (
 	"context"
+	"errors"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -11,6 +12,11 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
+)
+
+const (
+	MaxQuestionTimeout  time.Duration = time.Second * 15
+	MaxScorePerQuestion uint8         = 5
 )
 
 type Repository interface {
@@ -94,6 +100,42 @@ func (s Service) GetGameById(ctx context.Context, req param.GameGetRequest) (par
 
 func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestionRequest) (param.GameAnswerQuestionResponse, error) {
 	op := "Game service: answer question."
+
+	gameRes, err := s.GetGameById(ctx, param.GameGetRequest{
+		GameId: req.GameId,
+	})
+	if err != nil {
+		logger.L().Error("Could not find the game.", zap.Error(err), zap.String("gameId", req.GameId.Hex()))
+
+		return param.GameAnswerQuestionResponse{}, err
+	}
+
+	var question entity.Question
+	for _, q := range gameRes.Game.Questions {
+		if q.ID.Hex() == req.PlayerAnswer.QuestionID.Hex() {
+			question = q
+			break
+		}
+	}
+	if question.ID.IsZero() {
+		logger.L().Error("Could not find the question.", zap.String("questionId", req.PlayerAnswer.QuestionID.Hex()))
+
+		return param.GameAnswerQuestionResponse{}, errors.New("question not found")
+	}
+
+	var correctAns entity.Answer
+	for _, a := range question.Answers {
+		if a.IsCorrect {
+			correctAns = a
+			break
+		}
+	}
+	if correctAns.Title != "" && req.PlayerAnswer.Answer.Title != "" && correctAns.Title == req.PlayerAnswer.Answer.Title && req.PlayerAnswer.EndTime.Sub(req.PlayerAnswer.StartTime) <= MaxQuestionTimeout {
+		logger.L().Info("Player answered correctly.", zap.String("questionId", req.PlayerAnswer.QuestionID.Hex()))
+
+		req.PlayerAnswer.Answer.IsCorrect = true
+		req.PlayerAnswer.Score = MaxScorePerQuestion
+	}
 
 	playerAw, err := s.repo.CreateQuestionAnswer(ctx, req.UserId, req.GameId, req.PlayerAnswer)
 	if err != nil {

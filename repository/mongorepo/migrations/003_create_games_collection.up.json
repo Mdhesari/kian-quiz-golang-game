@@ -24,6 +24,10 @@
                         "bsonType": "objectId",
                         "description": "The ID of the category this game belongs to"
                     },
+                    "status": {
+                        "bsonType": "integer",
+                        "description": "The status of the game (0: aborted, 1: in progress, 2: completed)"
+                    },
                     "questions": {
                         "bsonType": "array",
                         "description": "Array of question IDs for this game"

@@ -19,4 +19,5 @@ const (
 	ErrGamePlayerNotFound string = "Player not found in the game."
 	ErrQuestionNotFound   string = "Question not found."
 	ErrNoCorrectAnswer    string = "No correct answer found."
+	ErrGameNotInProgress  string = "Game is not in progress."
 )

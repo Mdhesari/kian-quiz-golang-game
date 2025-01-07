@@ -61,6 +61,7 @@ func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param
 		CategoryID: req.Category.ID,
 		Questions:  req.Questions,
 		Players:    req.Players,
+		Status:     entity.GameStatusInProgress,
 		StartTime:  time.Now(),
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
@@ -109,6 +110,12 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 		return param.GameAnswerQuestionResponse{}, err
 	}
 
+	game := gameRes.Game
+	if !game.IsInProgress() {
+
+		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrGameNotInProgress).WithKind(richerror.KindForbidden)
+	}
+
 	playerAnswer := entity.PlayerAnswer{
 		QuestionID: req.QuestionId,
 		Answer: entity.Answer{
@@ -117,7 +124,7 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 		EndTime: time.Now(),
 	}
 
-	player, ok := gameRes.Game.Players[req.UserId.Hex()]
+	player, ok := game.Players[req.UserId.Hex()]
 	if !ok {
 		logger.L().Error("Player not found in the game.", zap.String("userId", req.UserId.Hex()))
 
@@ -133,7 +140,7 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 	playerAnswer.StartTime = player.LastQuestionStartTime
 
 	// TODO - Maybe better to handle this in repo
-	var question entity.Question = gameRes.Game.GetQuestion(playerAnswer.QuestionID)
+	var question entity.Question = game.GetQuestion(playerAnswer.QuestionID)
 	if question.ID.IsZero() {
 		logger.L().Error("Could not find the question.", zap.String("questionId", playerAnswer.QuestionID.Hex()))
 
@@ -179,7 +186,13 @@ func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQues
 
 		return param.GameGetNextQuestionResponse{}, richerror.New(op, errmsg.ErrGameNotFound).WithErr(err)
 	}
+
 	game := gameRes.Game
+	if !game.IsInProgress() {
+
+		return param.GameGetNextQuestionResponse{}, richerror.New(op, errmsg.ErrGameNotInProgress).WithKind(richerror.KindForbidden)
+	}
+
 	player := game.Players[req.UserId.Hex()]
 
 	var nextQuestion entity.Question

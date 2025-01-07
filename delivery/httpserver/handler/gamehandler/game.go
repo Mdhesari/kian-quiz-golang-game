@@ -77,3 +77,39 @@ func (h *Handler) GetNextQuestion(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, res)
 }
+
+func (h *Handler) AnswerQuestion(c echo.Context) error {
+	userId := authservice.GetClaims(c).UserID
+
+	var req param.GameAnswerQuestionRequest
+	req.UserId = userId
+	if err := c.Bind(&req); err != nil {
+		logger.L().Error("Could not bind game request.", zap.Error(err))
+
+		return echo.NewHTTPError(http.StatusBadGateway)
+	}
+
+	if fields, err := h.gameValidator.ValidateAnswerQuestion(req); err != nil {
+		msg, code := richerror.Error(err)
+
+		return c.JSON(code, echo.Map{
+			"message": msg,
+			"errors":  fields,
+		})
+	}
+
+	logger.L().Info("req binded", zap.Any("req", req))
+
+	res, err := h.gameSrv.AnswerQuestion(c.Request().Context(), req)
+	if err != nil {
+		logger.L().Error("Could not answer question.", zap.Error(err), zap.Any("param", req))
+
+		msg, code := richerror.Error(err)
+
+		return c.JSON(code, echo.Map{
+			"Message": msg,
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}

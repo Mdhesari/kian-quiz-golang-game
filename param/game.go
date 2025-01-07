@@ -34,13 +34,15 @@ type GameGetResponse struct {
 }
 
 type GameAnswerQuestionRequest struct {
-	UserId       primitive.ObjectID  `json:"user_id"`
-	GameId       primitive.ObjectID  `json:"game_id"`
-	PlayerAnswer entity.PlayerAnswer `json:"player_answer"`
+	UserId     primitive.ObjectID `json:"user_id"`
+	GameId     primitive.ObjectID `json:"game_id" param:"game_id"`
+	QuestionId primitive.ObjectID `json:"question_id" form:"question_id"`
+	Answer     string             `json:"answer" form:"answer"`
 }
 
 type GameAnswerQuestionResponse struct {
-	PlayerAnswer entity.PlayerAnswer `json:"player_answer"`
+	Answer        entity.PlayerAnswer `json:"answer"`
+	CorrectAnswer entity.Answer       `json:"correct_answer"`
 }
 
 type GameGetNextQuestionRequest struct {

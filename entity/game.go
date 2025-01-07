@@ -17,3 +17,13 @@ type Game struct {
 	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt    time.Time          `bson:"updated_at" json:"updated_at"`
 }
+
+func (g *Game) GetQuestion(qId primitive.ObjectID) Question {
+	for _, q := range g.Questions {
+		if q.ID.Hex() == qId.Hex() {
+			return q
+		}
+	}
+
+	return Question{}
+}

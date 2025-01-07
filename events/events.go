@@ -42,37 +42,7 @@ func (e EventManager) SubscribeEventHandlers() {
 
 	go e.pubsubManager.Subscribe(string(entity.GameStartedEvent), e.HandleHubGameStarted)
 
-	go e.pubsubManager.Subscribe(string(entity.GamePlayerAnsweredEvent), e.HandleGamePlayerAnswered)
-
 	logger.L().Info("event listeneres are subscribed.")
-}
-
-func (e EventManager) HandleGamePlayerAnswered(ctx context.Context, topic string, payload string) error {
-	logger.L().Info("Handling game player answered event.")
-
-	playerAnswered := protobufdecoder.DecodeGamePlayerAnsweredEvent(payload)
-	logger.L().Info("event player answered recieved", zap.Any("playeransw", playerAnswered))
-
-	playerAnswer := entity.PlayerAnswer{
-		QuestionID: playerAnswered.QuestionID,
-		Answer:     playerAnswered.Answer,
-		EndTime:    time.Now(),
-	}
-
-	res, err := e.gameSrv.AnswerQuestion(ctx, param.GameAnswerQuestionRequest{
-		UserId:       playerAnswered.UserID,
-		GameId:       playerAnswered.GameID,
-		PlayerAnswer: playerAnswer,
-	})
-	if err != nil {
-		logger.L().Error("Could not answer question.", zap.Error(err), zap.Any("playeransw", playerAnswered))
-
-		return err
-	}
-
-	logger.L().Info("Answer question successfully proceed.", zap.Any("res", res))
-
-	return nil
 }
 
 func (e EventManager) HandleHubGameStarted(ctx context.Context, topic string, payload string) error {

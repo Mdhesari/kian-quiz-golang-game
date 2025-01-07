@@ -5,8 +5,6 @@ import (
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
-	"mdhesari/kian-quiz-golang-game/pkg/base64decoder"
-	"mdhesari/kian-quiz-golang-game/pkg/mongoutils"
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/game"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/matching"
@@ -90,25 +88,5 @@ func DecodeWebSocketMsg(s string) entity.WebsocketMsg {
 	return entity.WebsocketMsg{
 		Type:    pbE.Type,
 		Payload: pbE.Payload,
-	}
-}
-
-func DecodeGamePlayerAnsweredEvent(s string) entity.PlayerAnswered {
-	var pbE game.PlayerAnswered
-
-	res := base64decoder.Decode(s)
-	if err := protojson.Unmarshal(res, &pbE); err != nil {
-		logger.L().Error("could not decode protobuf to json.", zap.Error(err))
-
-		return entity.PlayerAnswered{}
-	}
-
-	return entity.PlayerAnswered{
-		UserID:     mongoutils.HexToObjectID(pbE.UserId),
-		GameID:     mongoutils.HexToObjectID(pbE.GameId),
-		QuestionID: mongoutils.HexToObjectID(pbE.QuestionId),
-		Answer: entity.Answer{
-			Title: pbE.Answer,
-		},
 	}
 }

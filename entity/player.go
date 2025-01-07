@@ -25,13 +25,6 @@ type Player struct {
 	UpdatedAt             time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
-type PlayerAnswered struct {
-	UserID     primitive.ObjectID `bson:"user_id" json:"user_id"`
-	GameID     primitive.ObjectID `bson:"game_id" json:"game_id"`
-	QuestionID primitive.ObjectID `bson:"question_id" json:"question_id"`
-	Answer     Answer             `bson:"answer" json:"answer"`
-}
-
 func (p *Player) HasAnsweredQuestion(questionID primitive.ObjectID) bool {
 	for _, answer := range p.Answers {
 		if answer.QuestionID == questionID {
@@ -40,4 +33,8 @@ func (p *Player) HasAnsweredQuestion(questionID primitive.ObjectID) bool {
 	}
 
 	return false
+}
+
+func (pa *PlayerAnswer) IsTimeLimitReached(t time.Duration) bool {
+	return pa.EndTime.Sub(pa.StartTime) <= t
 }

@@ -2,7 +2,6 @@ package gameservice
 
 import (
 	"context"
-	"errors"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -110,45 +109,63 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 		return param.GameAnswerQuestionResponse{}, err
 	}
 
-	req.PlayerAnswer.StartTime = gameRes.Game.Players[req.UserId.Hex()].LastQuestionStartTime
-
-	var question entity.Question
-	for _, q := range gameRes.Game.Questions {
-		if q.ID.Hex() == req.PlayerAnswer.QuestionID.Hex() {
-			question = q
-			break
-		}
+	playerAnswer := entity.PlayerAnswer{
+		QuestionID: req.QuestionId,
+		Answer: entity.Answer{
+			Title: req.Answer,
+		},
+		EndTime: time.Now(),
 	}
+
+	player, ok := gameRes.Game.Players[req.UserId.Hex()]
+	if !ok {
+		logger.L().Error("Player not found in the game.", zap.String("userId", req.UserId.Hex()))
+
+		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrGamePlayerNotFound).WithErr(err).WithKind(richerror.KindForbidden)
+	}
+
+	if player.HasAnsweredQuestion(playerAnswer.QuestionID) {
+		logger.L().Info("Player has already answered this question.", zap.String("questionId", playerAnswer.QuestionID.Hex()))
+
+		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrAlreadyAnswered).WithErr(err).WithKind(richerror.KindForbidden)
+	}
+
+	playerAnswer.StartTime = player.LastQuestionStartTime
+
+	// TODO - Maybe better to handle this in repo
+	var question entity.Question = gameRes.Game.GetQuestion(playerAnswer.QuestionID)
 	if question.ID.IsZero() {
-		logger.L().Error("Could not find the question.", zap.String("questionId", req.PlayerAnswer.QuestionID.Hex()))
+		logger.L().Error("Could not find the question.", zap.String("questionId", playerAnswer.QuestionID.Hex()))
 
-		return param.GameAnswerQuestionResponse{}, errors.New("question not found")
+		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrQuestionNotFound).WithKind(richerror.KindNotFound)
 	}
 
-	var correctAns entity.Answer
-	for _, a := range question.Answers {
-		if a.IsCorrect {
-			correctAns = a
-			break
-		}
-	}
-	if correctAns.Title != "" && req.PlayerAnswer.Answer.Title != "" && correctAns.Title == req.PlayerAnswer.Answer.Title && req.PlayerAnswer.EndTime.Sub(req.PlayerAnswer.StartTime) <= MaxQuestionTimeout {
-		logger.L().Info("Player answered correctly.", zap.String("questionId", req.PlayerAnswer.QuestionID.Hex()))
+	var correctAns entity.Answer = question.GetCorrectAnswer()
+	if s.isCorrectAnswer(playerAnswer, correctAns) {
+		logger.L().Info("Player answered correctly.", zap.String("questionId", playerAnswer.QuestionID.Hex()))
 
-		req.PlayerAnswer.Answer.IsCorrect = true
-		req.PlayerAnswer.Score = MaxScorePerQuestion
+		playerAnswer.Answer.IsCorrect = true
+		playerAnswer.Score = MaxScorePerQuestion
+		player.Score += playerAnswer.Score
 	}
 
-	playerAw, err := s.repo.CreateQuestionAnswer(ctx, req.UserId, req.GameId, req.PlayerAnswer)
+	ans, err := s.repo.CreateQuestionAnswer(ctx, req.UserId, req.GameId, playerAnswer)
 	if err != nil {
-		logger.L().Error(err.Error(), zap.Error(err), zap.String("game_id", req.GameId.Hex()), zap.String("question_id", req.PlayerAnswer.QuestionID.Hex()))
+		logger.L().Error(err.Error(), zap.Error(err), zap.String("game_id", req.GameId.Hex()), zap.String("question_id", playerAnswer.QuestionID.Hex()))
 
 		return param.GameAnswerQuestionResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
 	}
 
 	return param.GameAnswerQuestionResponse{
-		PlayerAnswer: playerAw,
+		Answer:        ans,
+		CorrectAnswer: correctAns,
 	}, nil
+}
+
+func (s *Service) isCorrectAnswer(ans entity.PlayerAnswer, correctAns entity.Answer) bool {
+	return correctAns.IsValid() &&
+		correctAns.Title == ans.Answer.Title &&
+		!ans.IsTimeLimitReached(MaxQuestionTimeout)
 }
 
 func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQuestionRequest) (param.GameGetNextQuestionResponse, error) {

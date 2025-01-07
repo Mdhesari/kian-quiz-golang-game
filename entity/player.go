@@ -31,3 +31,13 @@ type PlayerAnswered struct {
 	QuestionID primitive.ObjectID `bson:"question_id" json:"question_id"`
 	Answer     Answer             `bson:"answer" json:"answer"`
 }
+
+func (p *Player) HasAnsweredQuestion(questionID primitive.ObjectID) bool {
+	for _, answer := range p.Answers {
+		if answer.QuestionID == questionID {
+			return true
+		}
+	}
+
+	return false
+}

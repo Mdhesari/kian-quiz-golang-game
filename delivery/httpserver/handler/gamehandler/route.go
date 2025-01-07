@@ -10,5 +10,6 @@ func (h Handler) SetRoutes(r *echo.Echo) {
 	g := r.Group("/games")
 
 	g.GET("", h.GetAllGames, middleware.Auth(h.authSrv, h.authCfg), middleware.Presence(h.presenceSrv))
-	g.GET("/:game_id", h.GetGames, middleware.Auth(h.authSrv, h.authCfg), middleware.Presence(h.presenceSrv))
+	g.GET("/:game_id", h.GetGame, middleware.Auth(h.authSrv, h.authCfg), middleware.Presence(h.presenceSrv))
+	g.GET("/:game_id/next-question", h.GetNextQuestion, middleware.Auth(h.authSrv, h.authCfg), middleware.Presence(h.presenceSrv))
 }

@@ -100,9 +100,7 @@ func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]enti
 	defer cancel()
 
 	filter := bson.M{
-		"players": bson.M{
-			"$elemMatch": bson.M{"user_id": userID},
-		},
+		fmt.Sprintf("players.%s", userID.Hex()): bson.M{"$exists": true},
 	}
 	cursor, err := d.collection.Find(ctx, filter)
 	if err != nil {

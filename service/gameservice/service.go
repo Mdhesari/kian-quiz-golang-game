@@ -150,3 +150,32 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 		PlayerAnswer: playerAw,
 	}, nil
 }
+
+func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQuestionRequest) (param.GameGetNextQuestionResponse, error) {
+	op := "Game service: get next question."
+
+	gameRes, err := s.GetGameById(ctx, param.GameGetRequest{
+		GameId: req.GameId,
+	})
+	if err != nil {
+		logger.L().Error("Could not find the game.", zap.Error(err), zap.String("gameId", req.GameId.Hex()))
+
+		return param.GameGetNextQuestionResponse{}, richerror.New(op, errmsg.ErrGameNotFound).WithErr(err)
+	}
+
+	player := gameRes.Game.Players[req.UserId.Hex()]
+
+	var nextQuestion entity.Question
+	for _, q := range gameRes.Game.Questions {
+		if !player.HasAnsweredQuestion(q.ID) {
+			nextQuestion = q
+
+			break
+		}
+	}
+
+	return param.GameGetNextQuestionResponse{
+		Game:     gameRes.Game,
+		Question: nextQuestion,
+	}, nil
+}

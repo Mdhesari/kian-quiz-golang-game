@@ -26,7 +26,7 @@ type GameCreateResponse struct {
 }
 
 type GameGetRequest struct {
-	GameId primitive.ObjectID `param:"game_id,omitempty"`
+	GameId primitive.ObjectID `json:"game_id,omitempty" param:"game_id"`
 }
 
 type GameGetResponse struct {
@@ -41,4 +41,14 @@ type GameAnswerQuestionRequest struct {
 
 type GameAnswerQuestionResponse struct {
 	PlayerAnswer entity.PlayerAnswer `json:"player_answer"`
+}
+
+type GameGetNextQuestionRequest struct {
+	UserId primitive.ObjectID `json:"user_id"`
+	GameId primitive.ObjectID `json:"game_id" param:"game_id"`
+}
+
+type GameGetNextQuestionResponse struct {
+	Game     entity.Game     `json:"game"`
+	Question entity.Question `json:"question"`
 }

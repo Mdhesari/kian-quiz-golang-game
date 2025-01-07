@@ -110,6 +110,8 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 		return param.GameAnswerQuestionResponse{}, err
 	}
 
+	req.PlayerAnswer.StartTime = gameRes.Game.Players[req.UserId.Hex()].LastQuestionStartTime
+
 	var question entity.Question
 	for _, q := range gameRes.Game.Questions {
 		if q.ID.Hex() == req.PlayerAnswer.QuestionID.Hex() {

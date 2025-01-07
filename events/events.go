@@ -56,7 +56,6 @@ func (e EventManager) HandleGamePlayerAnswered(ctx context.Context, topic string
 	playerAnswer := entity.PlayerAnswer{
 		QuestionID: playerAnswered.QuestionID,
 		Answer:     playerAnswered.Answer,
-		StartTime:  time.Now().Add(-10 * time.Second),
 		EndTime:    time.Now(),
 	}
 

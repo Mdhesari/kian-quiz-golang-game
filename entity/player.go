@@ -15,12 +15,14 @@ type PlayerAnswer struct {
 }
 
 type Player struct {
-	Name      string         `bson:"name" json:"name"`
-	Answers   []PlayerAnswer `bson:"answers" json:"answers"`
-	Score     uint8          `bson:"score" json:"score"`
-	IsWinner  bool           `bson:"is_winner,omitempty" json:"is_winner,omitempty"`
-	CreatedAt time.Time      `bson:"created_at" json:"created_at"`
-	UpdatedAt time.Time      `bson:"updated_at" json:"updated_at"`
+	Name                  string             `bson:"name" json:"name"`
+	Answers               []PlayerAnswer     `bson:"answers" json:"answers"`
+	Score                 uint8              `bson:"score" json:"score"`
+	IsWinner              bool               `bson:"is_winner,omitempty" json:"is_winner,omitempty"`
+	LastQuestionID        primitive.ObjectID `bson:"last_question_id,omitempty" json:"last_question_id,omitempty"`
+	LastQuestionStartTime time.Time          `bson:"last_question_start_time,omitempty" json:"last_question_start_time,omitempty"`
+	CreatedAt             time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt             time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 type PlayerAnswered struct {

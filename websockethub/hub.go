@@ -194,14 +194,18 @@ func (c *Client) readPump() {
 
 		logger.L().Info("message successfully recieved.", zap.Any("message", websocketMsg.Payload))
 
-		switch websocketMsg.Type {
-		case string(entity.GameStartedEvent):
-			playersMatched := protobufdecoder.DecodeGameStartedEvent(websocketMsg.Payload)
+		c.handleWebsocketMsg(websocketMsg)
+	}
+}
 
-			logger.L().Info("Game started.", zap.Any("playersMatched", playersMatched))
-		case string(entity.GamePlayerAnsweredEvent):
-			c.hub.Publish(context.Background(), string(entity.GamePlayerAnsweredEvent), websocketMsg.Payload)
-		}
+func (c *Client) handleWebsocketMsg(msg entity.WebsocketMsg) {
+	switch msg.Type {
+	case string(entity.GameStartedEvent):
+		playersMatched := protobufdecoder.DecodeGameStartedEvent(msg.Payload)
+
+		logger.L().Info("Game started.", zap.Any("playersMatched", playersMatched))
+	case string(entity.GamePlayerAnsweredEvent):
+		c.hub.Publish(context.Background(), string(entity.GamePlayerAnsweredEvent), msg.Payload)
 	}
 }
 

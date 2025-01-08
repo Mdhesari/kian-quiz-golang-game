@@ -149,11 +149,8 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 
 	var correctAns entity.Answer = question.GetCorrectAnswer()
 	if s.isCorrectAnswer(playerAnswer, correctAns) {
-		logger.L().Info("Player answered correctly.", zap.String("questionId", playerAnswer.QuestionID.Hex()))
-
 		playerAnswer.Answer.IsCorrect = true
 		playerAnswer.Score = MaxScorePerQuestion
-		player.Score += playerAnswer.Score
 	}
 
 	ans, err := s.repo.CreateQuestionAnswer(ctx, req.UserId, req.GameId, playerAnswer)

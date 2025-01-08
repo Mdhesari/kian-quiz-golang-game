@@ -53,3 +53,11 @@ type GameGetNextQuestionRequest struct {
 type GameGetNextQuestionResponse struct {
 	Question entity.Question `json:"question"`
 }
+
+type GameFinishRequest struct {
+	GameId primitive.ObjectID `json:"game_id" param:"game_id"`
+}
+
+type GameFinishResponse struct {
+	//
+}

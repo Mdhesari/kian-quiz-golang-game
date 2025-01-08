@@ -86,7 +86,7 @@ func main() {
 	hub := websockethub.NewHub(srvs.pubsubManager)
 	go hub.Start()
 
-	mm := events.New(&hub, srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv)
+	mm := events.New(&hub, srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv, &cfg.Game)
 	mm.SubscribeEventHandlers()
 
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)

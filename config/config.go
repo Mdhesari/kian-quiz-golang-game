@@ -7,6 +7,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
+	"mdhesari/kian-quiz-golang-game/service/gameservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/questionservice"
@@ -29,8 +30,8 @@ type JWT struct {
 }
 
 type Server struct {
-	HttpServer httpserver.Config       `koanf:"http_server"`
-	GrpcServer grpcserver.Config       `koanf:"grpc_server"`
+	HttpServer httpserver.Config `koanf:"http_server"`
+	GrpcServer grpcserver.Config `koanf:"grpc_server"`
 }
 
 type Config struct {
@@ -42,4 +43,5 @@ type Config struct {
 	Redis       redisadapter.Config    `koanf:"redis"`
 	Auth        authservice.Config     `koanf:"auth"`
 	Matching    matchingservice.Config `koanf:"matching"`
+	Game        gameservice.Config     `koanf:"game"`
 }

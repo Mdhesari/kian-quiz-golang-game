@@ -7,6 +7,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -59,6 +60,33 @@ func (d *DB) GetGameById(ctx context.Context, id primitive.ObjectID) (entity.Gam
 	res.Decode(&game)
 
 	return game, nil
+}
+
+func (d *DB) UpdateGameEndtime(ctx context.Context, gameId primitive.ObjectID, endTime time.Time) error {
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			"end_time": endTime,
+		},
+	}
+	res, err := d.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": gameId},
+		update,
+	)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return errors.New(errmsg.ErrGameNotFound)
+	}
+	if res.ModifiedCount == 0 {
+		return errors.New(errmsg.ErrGameNotModified)
+	}
+
+	return nil
 }
 
 func (d *DB) Update(ctx context.Context, game entity.Game) error {
@@ -139,4 +167,58 @@ func (d *DB) CreateQuestionAnswer(ctx context.Context, userId primitive.ObjectID
 	logger.L().Info("update res", zap.Any("res", res))
 
 	return playerAnswer, nil
+}
+
+func (d *DB) UpdatePlayer(ctx context.Context, gameId primitive.ObjectID, userId primitive.ObjectID, player entity.Player) error {
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			fmt.Sprintf("players.%s", userId.Hex()): player,
+		},
+	}
+	result, err := d.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": gameId},
+		update,
+	)
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return errors.New(errmsg.ErrGameNotFound)
+	}
+	if result.ModifiedCount == 0 {
+		return errors.New(errmsg.ErrPlayerNotFound)
+	}
+
+	return nil
+}
+
+func (d *DB) UpdateGameStatus(ctx context.Context, gameId primitive.ObjectID, status entity.GameStatus) error {
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			"status": status,
+		},
+	}
+	result, err := d.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": gameId},
+		update,
+	)
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return errors.New(errmsg.ErrGameNotFound)
+	}
+	if result.ModifiedCount == 0 {
+		return errors.New(errmsg.ErrGameNotModified)
+	}
+
+	return nil
 }

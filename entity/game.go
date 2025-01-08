@@ -11,7 +11,7 @@ type GameStatus uint8
 const (
 	GameStatusAborted GameStatus = iota
 	GameStatusInProgress
-	GameStatusCompleted
+	GameStatusFinished
 )
 
 type Game struct {
@@ -32,7 +32,7 @@ func (g *Game) IsInProgress() bool {
 }
 
 func (g *Game) IsCompleted() bool {
-	return g.Status == GameStatusCompleted
+	return g.Status == GameStatusFinished
 }
 
 func (g *Game) IsAborted() bool {

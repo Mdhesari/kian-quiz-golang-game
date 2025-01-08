@@ -7,6 +7,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
+	"mdhesari/kian-quiz-golang-game/pkg/slice"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,12 +19,18 @@ const (
 	MaxScorePerQuestion uint8         = 5
 )
 
+type Config struct {
+	GameTimeout time.Duration `koanf:"game_timeout"`
+}
+
 type Repository interface {
 	Create(ctx context.Context, game entity.Game) (entity.Game, error)
 	GetGameById(ctx context.Context, id primitive.ObjectID) (entity.Game, error)
-	Update(ctx context.Context, game entity.Game) error
+	UpdatePlayer(ctx context.Context, gameId primitive.ObjectID, userId primitive.ObjectID, player entity.Player) error
 	GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]entity.Game, error)
 	CreateQuestionAnswer(ctx context.Context, userId primitive.ObjectID, gameId primitive.ObjectID, playerAnswer entity.PlayerAnswer) (entity.PlayerAnswer, error)
+	UpdateGameStatus(ctx context.Context, gameId primitive.ObjectID, status entity.GameStatus) error
+	UpdateGameEndtime(ctx context.Context, gameId primitive.ObjectID, endTime time.Time) error
 }
 
 type Service struct {
@@ -175,6 +182,8 @@ func (s *Service) isCorrectAnswer(ans entity.PlayerAnswer, correctAns entity.Ans
 func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQuestionRequest) (param.GameGetNextQuestionResponse, error) {
 	op := "Game service: get next question."
 
+	var nextQuestion entity.Question
+
 	gameRes, err := s.GetGameById(ctx, param.GameGetRequest{
 		GameId: req.GameId,
 	})
@@ -191,8 +200,6 @@ func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQues
 	}
 
 	player := game.Players[req.UserId.Hex()]
-
-	var nextQuestion entity.Question
 	for _, q := range game.Questions {
 		if !player.HasAnsweredQuestion(q.ID) {
 			nextQuestion = q
@@ -201,12 +208,27 @@ func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQues
 		}
 	}
 
-	player.LastQuestionID = nextQuestion.ID
-	player.LastQuestionStartTime = time.Now()
-	game.Players[req.UserId.Hex()] = player
-	s.repo.Update(ctx, game)
+	s.repo.UpdatePlayer(ctx, req.GameId, req.UserId, player)
 
 	return param.GameGetNextQuestionResponse{
 		Question: nextQuestion,
 	}, nil
+}
+
+func (s *Service) FinishGame(ctx context.Context, req param.GameFinishRequest) (param.GameFinishResponse, error) {
+	op := "Game service: finish game."
+
+	if err := s.repo.UpdateGameStatus(ctx, req.GameId, entity.GameStatusFinished); err != nil {
+		logger.L().Error(errmsg.ErrGameNotUpdated, zap.Error(err), zap.String("game_id", req.GameId.Hex()), zap.String("status", slice.GetGameStatusLabel(entity.GameStatusFinished)))
+
+		return param.GameFinishResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
+	}
+
+	if err := s.repo.UpdateGameEndtime(ctx, req.GameId, time.Now()); err != nil {
+		logger.L().Error(errmsg.ErrGameNotModified)
+
+		return param.GameFinishResponse{}, err
+	}
+
+	return param.GameFinishResponse{}, nil
 }

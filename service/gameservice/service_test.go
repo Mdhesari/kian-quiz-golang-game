@@ -24,8 +24,8 @@ func (m *MockRepository) Create(ctx context.Context, game entity.Game) (entity.G
 	return args.Get(0).(entity.Game), args.Error(1)
 }
 
-func (m *MockRepository) Update(ctx context.Context, game entity.Game) error {
-	args := m.Called(ctx, game)
+func (m *MockRepository) UpdatePlayer(ctx context.Context, gameId primitive.ObjectID, userId primitive.ObjectID, player entity.Player) error {
+	args := m.Called(ctx, ctx, gameId, userId, player)
 	return args.Error(0)
 }
 
@@ -43,6 +43,11 @@ func (m *MockRepository) GetGameById(ctx context.Context, id primitive.ObjectID)
 func (m *MockRepository) CreateQuestionAnswer(ctx context.Context, userId primitive.ObjectID, gameId primitive.ObjectID, playerAnswer entity.PlayerAnswer) (entity.PlayerAnswer, error) {
 	args := m.Called(ctx, userId, gameId, playerAnswer)
 	return args.Get(0).(entity.PlayerAnswer), args.Error(1)
+}
+
+func (m *MockRepository) UpdateGameStatus(ctx context.Context, gameId primitive.ObjectID, status entity.GameStatus) error {
+	args := m.Called(ctx, gameId, status)
+	return args.Error(1)
 }
 
 // Implement other methods of the Repository interface as needed
@@ -128,7 +133,7 @@ func TestService_AnswerQuestion_GameNotInProgress(t *testing.T) {
 
 	game := entity.Game{
 		ID:     gameID,
-		Status: entity.GameStatusCompleted,
+		Status: entity.GameStatusFinished,
 	}
 
 	mockRepo.On("GetGameById", ctx, gameID).Return(game, nil)

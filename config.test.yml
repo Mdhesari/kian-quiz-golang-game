@@ -31,6 +31,9 @@ scheduler:
 matching:
   matching_timeout_seconds: 300
 
+game:
+  game_timeout: "15m"
+
 redis:
   host: redis
 

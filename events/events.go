@@ -14,6 +14,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/websockethub"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
@@ -23,15 +24,17 @@ type EventManager struct {
 	gameSrv       *gameservice.Service
 	userSrv       *userservice.Service
 	questionSrv   *questionservice.Service
+	gameCfg       *gameservice.Config
 }
 
-func New(hub *websockethub.Hub, pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, userSrv *userservice.Service, questionSrv *questionservice.Service) EventManager {
+func New(hub *websockethub.Hub, pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, userSrv *userservice.Service, questionSrv *questionservice.Service, gameCfg *gameservice.Config) EventManager {
 	return EventManager{
 		hub:           hub,
 		pubsubManager: pubsubManager,
 		gameSrv:       gameSrv,
 		userSrv:       userSrv,
 		questionSrv:   questionSrv,
+		gameCfg:       gameCfg,
 	}
 }
 
@@ -55,6 +58,18 @@ func (e EventManager) HandleHubGameStarted(ctx context.Context, topic string, pa
 
 		return err
 	}
+
+	// TODO - Temporary - need queue
+	go func(ctx context.Context, gameSrv *gameservice.Service, gameId primitive.ObjectID, d time.Duration) {
+		time.Sleep(d)
+
+		logger.L().Info("Finishing the game...")
+
+		gameSrv.FinishGame(ctx, param.GameFinishRequest{
+			GameId: gameId,
+		})
+
+	}(ctx, e.gameSrv, gse.GameID, e.gameCfg.GameTimeout)
 
 	logger.L().Info("Decoded game started event.", zap.Any("game", payload))
 

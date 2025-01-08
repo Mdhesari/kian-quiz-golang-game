@@ -16,4 +16,7 @@ var defaultConfig = map[string]interface{}{
 	"auth": map[string]interface{}{
 		"expires_in_minutes": 60,
 	},
+	"game": map[string]interface{}{
+		"game_timeout": 15 * time.Minute,
+	},
 }

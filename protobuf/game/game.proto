@@ -14,3 +14,7 @@ message PlayerAnswered {
     string QuestionId = 3;
     string Answer = 4;
 }
+
+message GameFinished {
+    string GameId = 1;
+}

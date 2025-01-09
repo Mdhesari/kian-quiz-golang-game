@@ -6,6 +6,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
+	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
 	"time"
@@ -33,13 +34,19 @@ type Repository interface {
 	UpdateGameEndtime(ctx context.Context, gameId primitive.ObjectID, endTime time.Time) error
 }
 
-type Service struct {
-	repo Repository
+type Publisher interface {
+	Publish(ctx context.Context, topic string, payload string)
 }
 
-func New(repo Repository) Service {
+type Service struct {
+	repo Repository
+	pub  Publisher
+}
+
+func New(repo Repository, pub Publisher) Service {
 	return Service{
 		repo: repo,
+		pub:  pub,
 	}
 }
 
@@ -229,6 +236,11 @@ func (s *Service) FinishGame(ctx context.Context, req param.GameFinishRequest) (
 
 		return param.GameFinishResponse{}, err
 	}
+
+	payload := protobufencoder.EncodeGameFinishedEvent(entity.GameFinished{
+		GameID: req.GameId,
+	})
+	s.pub.Publish(ctx, string(entity.GameStatusFinishedEvent), payload)
 
 	return param.GameFinishResponse{}, nil
 }

@@ -168,7 +168,7 @@ func setupServices(cfg *config.Config) services {
 
 	gameValidator := gamevalidator.New()
 	gameRepo := mongogame.New(mongoCli)
-	gameSrv := gameservice.New(gameRepo)
+	gameSrv := gameservice.New(gameRepo, pubsubManager)
 
 	return services{
 		questionSrv:       &questionSrv,

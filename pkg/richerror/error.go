@@ -8,6 +8,7 @@ const (
 	KindUnAthorized
 	KindNotFound
 	KindUnexpected
+	KindConflict
 )
 
 type RichError struct {

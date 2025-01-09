@@ -27,6 +27,10 @@ type Game struct {
 	UpdatedAt    time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
+type GameFinished struct {
+	GameID primitive.ObjectID `bson:"game_id" json:"game_id"`
+}
+
 func (g *Game) IsInProgress() bool {
 	return g.Status == GameStatusInProgress
 }

@@ -19,6 +19,14 @@ type MockRepository struct {
 	mock.Mock
 }
 
+type MockPub struct {
+	mock.Mock
+}
+
+func (mpub *MockPub) Publish(ctx context.Context, topic string, payload string) {
+	mpub.Called(ctx, topic, payload)
+}
+
 func (m *MockRepository) Create(ctx context.Context, game entity.Game) (entity.Game, error) {
 	args := m.Called(ctx, game)
 	return args.Get(0).(entity.Game), args.Error(1)
@@ -50,11 +58,17 @@ func (m *MockRepository) UpdateGameStatus(ctx context.Context, gameId primitive.
 	return args.Error(1)
 }
 
+func (m *MockRepository) UpdateGameEndtime(ctx context.Context, gameId primitive.ObjectID, endTime time.Time) error {
+	args := m.Called(ctx, gameId, endTime)
+	return args.Error(1)
+}
+
 // Implement other methods of the Repository interface as needed
 
 func TestService_AnswerQuestion_Successful(t *testing.T) {
 	mockRepo := new(MockRepository)
-	service := New(mockRepo)
+	mockPub := new(MockPub)
+	service := New(mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -97,7 +111,8 @@ func TestService_AnswerQuestion_Successful(t *testing.T) {
 
 func TestService_AnswerQuestion_GameNotFound(t *testing.T) {
 	mockRepo := new(MockRepository)
-	service := New(mockRepo)
+	mockPub := new(MockPub)
+	service := New(mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -124,7 +139,8 @@ func TestService_AnswerQuestion_GameNotFound(t *testing.T) {
 
 func TestService_AnswerQuestion_GameNotInProgress(t *testing.T) {
 	mockRepo := new(MockRepository)
-	service := New(mockRepo)
+	mockPub := new(MockPub)
+	service := New(mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -154,7 +170,8 @@ func TestService_AnswerQuestion_GameNotInProgress(t *testing.T) {
 
 func TestService_AnswerQuestion_PlayerNotFound(t *testing.T) {
 	mockRepo := new(MockRepository)
-	service := New(mockRepo)
+	mockPub := new(MockPub)
+	service := New(mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -185,7 +202,8 @@ func TestService_AnswerQuestion_PlayerNotFound(t *testing.T) {
 
 func TestService_AnswerQuestion_AlreadyAnswered(t *testing.T) {
 	mockRepo := new(MockRepository)
-	service := New(mockRepo)
+	mockPub := new(MockPub)
+	service := New(mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -222,7 +240,8 @@ func TestService_AnswerQuestion_AlreadyAnswered(t *testing.T) {
 
 func TestService_GetNextQuestion_Successful(t *testing.T) {
 	mockRepo := new(MockRepository)
-	service := New(mockRepo)
+	mockPub := new(MockPub)
+	service := New(mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()

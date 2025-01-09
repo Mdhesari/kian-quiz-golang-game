@@ -87,41 +87,6 @@ func (d *DB) UpdateGameEndtime(ctx context.Context, gameId primitive.ObjectID, e
 	return nil
 }
 
-func (d *DB) Update(ctx context.Context, game entity.Game) error {
-	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
-	defer cancel()
-
-	update := bson.M{
-		"$set": bson.M{
-			"category_id": game.CategoryID,
-			"questions":   game.Questions,
-			"players":     game.Players,
-			"start_time":  game.StartTime,
-			"updated_at":  game.UpdatedAt,
-		},
-	}
-
-	result, err := d.collection.UpdateOne(
-		ctx,
-		bson.M{"_id": game.ID},
-		update,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	if result.MatchedCount == 0 {
-		return errors.New(errmsg.ErrGameNotFound)
-	}
-
-	if result.ModifiedCount == 0 {
-		return errors.New(errmsg.ErrGameNotModified)
-	}
-
-	return nil
-}
-
 func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]entity.Game, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
@@ -185,9 +150,6 @@ func (d *DB) UpdatePlayer(ctx context.Context, gameId primitive.ObjectID, userId
 	if result.MatchedCount == 0 {
 		return errors.New(errmsg.ErrGameNotFound)
 	}
-	if result.ModifiedCount == 0 {
-		return errors.New(errmsg.ErrPlayerNotFound)
-	}
 
 	return nil
 }
@@ -211,9 +173,6 @@ func (d *DB) UpdateGameStatus(ctx context.Context, gameId primitive.ObjectID, st
 	}
 	if result.MatchedCount == 0 {
 		return errors.New(errmsg.ErrGameNotFound)
-	}
-	if result.ModifiedCount == 0 {
-		return errors.New(errmsg.ErrGameNotModified)
 	}
 
 	return nil
@@ -240,10 +199,6 @@ func (d *DB) UpdateGameWinner(ctx context.Context, gameId primitive.ObjectID, wi
 
 		return errors.New(errmsg.ErrGameNotFound)
 	}
-	if result.ModifiedCount == 0 {
-
-		return errors.New(errmsg.ErrGameNotModified)
-	}
 
 	return nil
 }
@@ -268,10 +223,6 @@ func (d *DB) IncPlayerScore(ctx context.Context, gameId primitive.ObjectID, user
 	if result.MatchedCount == 0 {
 
 		return errors.New(errmsg.ErrGameNotFound)
-	}
-	if result.ModifiedCount == 0 {
-
-		return errors.New(errmsg.ErrPlayerNotFound)
 	}
 
 	return nil

@@ -217,6 +217,8 @@ func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQues
 		}
 	}
 
+	player.LastQuestionID = nextQuestion.ID
+	player.LastQuestionStartTime = time.Now()
 	s.repo.UpdatePlayer(ctx, req.GameId, req.UserId, player)
 
 	return param.GameGetNextQuestionResponse{

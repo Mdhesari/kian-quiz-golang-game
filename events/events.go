@@ -45,7 +45,15 @@ func (e EventManager) SubscribeEventHandlers() {
 
 	go e.pubsubManager.Subscribe(string(entity.GameStartedEvent), e.HandleHubGameStarted)
 
+	go e.pubsubManager.Subscribe(string(entity.GameStatusFinishedEvent), e.HandleHubGameFinished)
+
 	logger.L().Info("event listeneres are subscribed.")
+}
+
+func (e EventManager) HandleHubGameFinished(ctx context.Context, topic string, payload string) error {
+	logger.L().Info("game status finished.", zap.String("topic", topic), zap.String("payload", payload))
+
+	return nil
 }
 
 func (e EventManager) HandleHubGameStarted(ctx context.Context, topic string, payload string) error {
@@ -60,16 +68,19 @@ func (e EventManager) HandleHubGameStarted(ctx context.Context, topic string, pa
 	}
 
 	// TODO - Temporary - need queue or just leave it to other processes
-	go func(ctx context.Context, gameSrv *gameservice.Service, gameId primitive.ObjectID, d time.Duration) {
+	go func(gameSrv *gameservice.Service, gameId primitive.ObjectID, d time.Duration) {
 		time.Sleep(d)
 
 		logger.L().Info("Finishing the game...")
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 
 		gameSrv.FinishGame(ctx, param.GameFinishRequest{
 			GameId: gameId,
 		})
 
-	}(ctx, e.gameSrv, gse.GameID, e.gameCfg.GameTimeout)
+	}(e.gameSrv, gse.GameID, e.gameCfg.GameTimeout)
 
 	logger.L().Info("Decoded game started event.", zap.Any("game", payload))
 
@@ -83,6 +94,8 @@ func (e EventManager) HandleHubGameStarted(ctx context.Context, topic string, pa
 		UserIDs: userIDs,
 		Body:    payload,
 	})
+
+	logger.L().Info("Broadcasted message", zap.String("topic", topic))
 
 	return nil
 }

@@ -48,6 +48,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"go.uber.org/zap"
 
+	"net/http"
 	_ "net/http/pprof"
 )
 
@@ -80,6 +81,12 @@ func init() {
 
 func main() {
 	logger.L().Info("Welcome to KianQuiz.")
+
+	go func() {
+		if err := http.ListenAndServe(":6060", nil); err != nil {
+			logger.L().Error("Could not pprof")
+		}
+	}()
 
 	var srvs services = setupServices(&cfg)
 

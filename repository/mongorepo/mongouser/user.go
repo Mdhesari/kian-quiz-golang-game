@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -34,7 +35,7 @@ func (d *DB) GetAll(ctx context.Context) ([]entity.User, error) {
 	return users, nil
 }
 
-func (d DB) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (d *DB) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
@@ -50,7 +51,7 @@ func (d DB) FindByEmail(ctx context.Context, email string) (*entity.User, error)
 	return &user, nil
 }
 
-func (d DB) IsMobileUnique(mobile string) (bool, error) {
+func (d *DB) IsMobileUnique(mobile string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), d.cli.QueryTimeout)
 	defer cancel()
 
@@ -68,7 +69,7 @@ func (d DB) IsMobileUnique(mobile string) (bool, error) {
 	return false, nil
 }
 
-func (d DB) IsEmailUnique(email string) (bool, error) {
+func (d *DB) IsEmailUnique(email string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), d.cli.QueryTimeout)
 	defer cancel()
 
@@ -86,7 +87,7 @@ func (d DB) IsEmailUnique(email string) (bool, error) {
 	return false, nil
 }
 
-func (d DB) FindByID(id primitive.ObjectID) (*entity.User, error) {
+func (d *DB) FindByID(id primitive.ObjectID) (*entity.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), d.cli.QueryTimeout)
 	defer cancel()
 
@@ -103,7 +104,7 @@ func (d DB) FindByID(id primitive.ObjectID) (*entity.User, error) {
 	return &user, nil
 }
 
-func (d DB) Register(ctx context.Context, u entity.User) (entity.User, error) {
+func (d *DB) Register(ctx context.Context, u entity.User) (entity.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
@@ -131,4 +132,24 @@ func (d DB) Register(ctx context.Context, u entity.User) (entity.User, error) {
 	}
 
 	return u, nil
+}
+
+func (d *DB) IncrementScore(ctx context.Context, id primitive.ObjectID, score entity.Score) error {
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	filter := bson.M{"_id": id}
+	update := bson.M{"$inc": bson.M{"score": score}}
+	res, err := d.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+
+		return errors.New(errmsg.ErrUserNotFound)
+	}
+
+	return nil
 }

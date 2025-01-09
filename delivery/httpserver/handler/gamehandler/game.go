@@ -98,8 +98,6 @@ func (h *Handler) AnswerQuestion(c echo.Context) error {
 		})
 	}
 
-	logger.L().Info("req binded", zap.Any("req", req))
-
 	res, err := h.gameSrv.AnswerQuestion(c.Request().Context(), req)
 	if err != nil {
 		logger.L().Error("Could not answer question.", zap.Error(err), zap.Any("param", req))
@@ -110,6 +108,13 @@ func (h *Handler) AnswerQuestion(c echo.Context) error {
 			"Message": msg,
 		})
 	}
+
+	h.gameSrv.IncPlayerScore(c.Request().Context(), param.GamePlayerIncScoreRequest{
+		GameId: req.GameId,
+		UserId: userId,
+		Score:  res.Answer.Score,
+	})
+	// TODO - Error handling for inc score
 
 	return c.JSON(http.StatusOK, res)
 }

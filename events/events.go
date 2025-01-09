@@ -5,6 +5,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
+	"mdhesari/kian-quiz-golang-game/pkg/mongoutils"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufdecoder"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"mdhesari/kian-quiz-golang-game/pubsub"
@@ -52,6 +53,35 @@ func (e EventManager) SubscribeEventHandlers() {
 
 func (e EventManager) HandleHubGameFinished(ctx context.Context, topic string, payload string) error {
 	logger.L().Info("game status finished.", zap.String("topic", topic), zap.String("payload", payload))
+
+	gse := protobufdecoder.DecodeGameStatusFinishedEvent(payload)
+	gameRes, err := e.gameSrv.GetGameById(ctx, param.GameGetRequest{
+		GameId: gse.GameID,
+	})
+	if err != nil {
+		logger.L().Error("Handler game finished: Could not get game.", zap.Error(err), zap.String("gameID", gse.GameID.Hex()))
+
+		return err
+	}
+
+	players := gameRes.Game.Players
+	var winner entity.Player = entity.Player{}
+	for userId, player := range players {
+		e.userSrv.IncScore(ctx, param.UserIncrementScoreRequest{
+			UserId: mongoutils.HexToObjectID(userId),
+			Score:  player.Score,
+		})
+		// Ignore err
+
+		if winner.Score < player.Score {
+			winner = player
+		}
+	}
+
+	e.gameSrv.UpdateWinner(ctx, param.GameUpdateWinnerRequest{
+		GameId: gse.GameID,
+		Player: winner,
+	})
 
 	return nil
 }

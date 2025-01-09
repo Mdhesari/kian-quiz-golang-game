@@ -23,4 +23,5 @@ const (
 	ErrNoCorrectAnswer     string = "No correct answer found."
 	ErrGameNotInProgress   string = "Game is not in progress."
 	ErrGameAlreadyFinished string = "Game is already finished."
+	ErrUserNotFound        string = "User not found."
 )

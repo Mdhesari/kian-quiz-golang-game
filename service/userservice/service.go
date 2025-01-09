@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
@@ -13,6 +14,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,6 +30,7 @@ type Repository interface {
 	GetAll(ctx context.Context) ([]entity.User, error)
 	FindByEmail(ctx context.Context, email string) (*entity.User, error)
 	FindByID(id primitive.ObjectID) (*entity.User, error)
+	IncrementScore(ctx context.Context, id primitive.ObjectID, score entity.Score) error
 }
 
 type UserForm struct {
@@ -118,6 +121,18 @@ func (s Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
 		User:  *user,
 		Token: token,
 	}, nil
+}
+
+func (s Service) IncScore(ctx context.Context, req param.UserIncrementScoreRequest) error {
+	op := "User Service Increment Score"
+
+	if err := s.repo.IncrementScore(ctx, req.UserId, req.Score); err != nil {
+		logger.L().Error("Could not increment score.", zap.Error(err), zap.String("user_id", req.UserId.Hex()))
+
+		return richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
+	}
+
+	return nil
 }
 
 func (s Service) Update() {

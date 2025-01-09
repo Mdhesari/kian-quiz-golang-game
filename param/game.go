@@ -61,3 +61,22 @@ type GameFinishRequest struct {
 type GameFinishResponse struct {
 	//
 }
+
+type GameUpdateWinnerRequest struct {
+	GameId primitive.ObjectID `json:"game_id"`
+	Player entity.Player      `json:"player"`
+}
+
+type GameUpdateWinnerResponse struct {
+	//
+}
+
+type GamePlayerIncScoreRequest struct {
+	GameId primitive.ObjectID `json:"game_id"`
+	UserId primitive.ObjectID `json:"user_id"`
+	Score  entity.Score       `json:"score"`
+}
+
+type GamePlayerIncScoreResponse struct {
+	//
+}

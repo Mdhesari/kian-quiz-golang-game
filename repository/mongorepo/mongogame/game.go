@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"mdhesari/kian-quiz-golang-game/entity"
-	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.uber.org/zap"
 )
 
 func (d *DB) Create(ctx context.Context, game entity.Game) (entity.Game, error) {
@@ -164,8 +162,6 @@ func (d *DB) CreateQuestionAnswer(ctx context.Context, userId primitive.ObjectID
 		return playerAnswer, errors.New(errmsg.ErrGameNotFound)
 	}
 
-	logger.L().Info("update res", zap.Any("res", res))
-
 	return playerAnswer, nil
 }
 
@@ -218,6 +214,64 @@ func (d *DB) UpdateGameStatus(ctx context.Context, gameId primitive.ObjectID, st
 	}
 	if result.ModifiedCount == 0 {
 		return errors.New(errmsg.ErrGameNotModified)
+	}
+
+	return nil
+}
+
+func (d *DB) UpdateGameWinner(ctx context.Context, gameId primitive.ObjectID, winner entity.Player) error {
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	update := bson.M{
+		"$set": bson.M{
+			"winner_player": winner,
+		},
+	}
+	result, err := d.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": gameId},
+		update,
+	)
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+
+		return errors.New(errmsg.ErrGameNotFound)
+	}
+	if result.ModifiedCount == 0 {
+
+		return errors.New(errmsg.ErrGameNotModified)
+	}
+
+	return nil
+}
+
+func (d *DB) IncPlayerScore(ctx context.Context, gameId primitive.ObjectID, userId primitive.ObjectID, score entity.Score) error {
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	update := bson.M{
+		"$inc": bson.M{
+			fmt.Sprintf("players.%s.score", userId.Hex()): score,
+		},
+	}
+	result, err := d.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": gameId},
+		update,
+	)
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+
+		return errors.New(errmsg.ErrGameNotFound)
+	}
+	if result.ModifiedCount == 0 {
+
+		return errors.New(errmsg.ErrPlayerNotFound)
 	}
 
 	return nil

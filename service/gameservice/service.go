@@ -17,7 +17,7 @@ import (
 
 const (
 	MaxQuestionTimeout  time.Duration = time.Second * 1500
-	MaxScorePerQuestion uint8         = 5
+	MaxScorePerQuestion entity.Score  = 5
 )
 
 type Config struct {
@@ -32,6 +32,8 @@ type Repository interface {
 	CreateQuestionAnswer(ctx context.Context, userId primitive.ObjectID, gameId primitive.ObjectID, playerAnswer entity.PlayerAnswer) (entity.PlayerAnswer, error)
 	UpdateGameStatus(ctx context.Context, gameId primitive.ObjectID, status entity.GameStatus) error
 	UpdateGameEndtime(ctx context.Context, gameId primitive.ObjectID, endTime time.Time) error
+	UpdateGameWinner(ctx context.Context, gameId primitive.ObjectID, player entity.Player) error
+	IncPlayerScore(ctx context.Context, gameId primitive.ObjectID, userId primitive.ObjectID, score entity.Score) error
 }
 
 type Publisher interface {
@@ -243,4 +245,28 @@ func (s *Service) FinishGame(ctx context.Context, req param.GameFinishRequest) (
 	s.pub.Publish(ctx, string(entity.GameStatusFinishedEvent), payload)
 
 	return param.GameFinishResponse{}, nil
+}
+
+func (s *Service) UpdateWinner(ctx context.Context, req param.GameUpdateWinnerRequest) (param.GameUpdateWinnerResponse, error) {
+	op := "Game service: update winner."
+
+	if err := s.repo.UpdateGameWinner(ctx, req.GameId, req.Player); err != nil {
+		logger.L().Error(errmsg.ErrGameNotUpdated, zap.Error(err), zap.String("game_id", req.GameId.Hex()), zap.Any("player", req.Player))
+
+		return param.GameUpdateWinnerResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
+	}
+
+	return param.GameUpdateWinnerResponse{}, nil
+}
+
+func (s *Service) IncPlayerScore(ctx context.Context, req param.GamePlayerIncScoreRequest) (param.GamePlayerIncScoreResponse, error) {
+	op := "Game service: increment player score."
+
+	if err := s.repo.IncPlayerScore(ctx, req.GameId, req.UserId, req.Score); err != nil {
+		logger.L().Error(errmsg.ErrGameNotUpdated, zap.Error(err), zap.String("game_id", req.GameId.Hex()), zap.String("user_id", req.UserId.Hex()), zap.Any("score", req.Score))
+
+		return param.GamePlayerIncScoreResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
+	}
+
+	return param.GamePlayerIncScoreResponse{}, nil
 }

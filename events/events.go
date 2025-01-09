@@ -59,7 +59,7 @@ func (e EventManager) HandleHubGameStarted(ctx context.Context, topic string, pa
 		return err
 	}
 
-	// TODO - Temporary - need queue
+	// TODO - Temporary - need queue or just leave it to other processes
 	go func(ctx context.Context, gameSrv *gameservice.Service, gameId primitive.ObjectID, d time.Duration) {
 		time.Sleep(d)
 

@@ -55,12 +55,22 @@ func (m *MockRepository) CreateQuestionAnswer(ctx context.Context, userId primit
 
 func (m *MockRepository) UpdateGameStatus(ctx context.Context, gameId primitive.ObjectID, status entity.GameStatus) error {
 	args := m.Called(ctx, gameId, status)
-	return args.Error(1)
+	return args.Error(0)
 }
 
 func (m *MockRepository) UpdateGameEndtime(ctx context.Context, gameId primitive.ObjectID, endTime time.Time) error {
 	args := m.Called(ctx, gameId, endTime)
-	return args.Error(1)
+	return args.Error(0)
+}
+
+func (m *MockRepository) IncPlayerScore(ctx context.Context, gameId primitive.ObjectID, userId primitive.ObjectID, score entity.Score) error {
+	args := m.Called(ctx, gameId, userId, score)
+	return args.Error(0)
+}
+
+func (m *MockRepository) UpdateGameWinner(ctx context.Context, gameId primitive.ObjectID, player entity.Player) error {
+	args := m.Called(ctx, gameId, player)
+	return args.Error(0)
 }
 
 // Implement other methods of the Repository interface as needed

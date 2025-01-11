@@ -12,6 +12,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/backpanelhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/categoryhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/gamehandler"
+	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/leaderboardhandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/matchinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/pinghandler"
 	"mdhesari/kian-quiz-golang-game/delivery/httpserver/handler/userhandler"
@@ -28,12 +29,14 @@ import (
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongoquestion"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongorbac"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo/mongouser"
+	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redisleaderboard"
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redismatching"
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redispresence"
 	"mdhesari/kian-quiz-golang-game/scheduler"
 	"mdhesari/kian-quiz-golang-game/service/authservice"
 	"mdhesari/kian-quiz-golang-game/service/categoryservice"
 	"mdhesari/kian-quiz-golang-game/service/gameservice"
+	"mdhesari/kian-quiz-golang-game/service/leaderboardservice"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"mdhesari/kian-quiz-golang-game/service/questionservice"
@@ -57,14 +60,15 @@ var (
 )
 
 type services struct {
-	questionSrv *questionservice.Service
-	authSrv     *authservice.Service
-	userSrv     *userservice.Service
-	matchingSrv *matchingservice.Service
-	categorySrv *categoryservice.Service
-	presenceSrv *presenceservice.Service
-	rbacSrv     *rbacservice.Service
-	gameSrv     *gameservice.Service
+	questionSrv    *questionservice.Service
+	authSrv        *authservice.Service
+	userSrv        *userservice.Service
+	matchingSrv    *matchingservice.Service
+	categorySrv    *categoryservice.Service
+	presenceSrv    *presenceservice.Service
+	rbacSrv        *rbacservice.Service
+	gameSrv        *gameservice.Service
+	leaderboardSrv *leaderboardservice.Service
 
 	pubsubManager *pubsub.PubSubManager
 
@@ -101,6 +105,7 @@ func main() {
 
 	handlers := []httpserver.Handler{
 		pinghandler.New(),
+		leaderboardhandler.New(srvs.leaderboardSrv),
 		websockethandler.New(&hub, srvs.presenceSrv, srvs.authSrv, &cfg.Auth),
 		gamehandler.New(srvs.gameValidator, srvs.gameSrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, *srvs.userValidator),
@@ -177,6 +182,9 @@ func setupServices(cfg *config.Config) services {
 	gameRepo := mongogame.New(mongoCli)
 	gameSrv := gameservice.New(gameRepo, pubsubManager)
 
+	leaderboardRepo := redisleaderboard.New(&redisAdap)
+	leaderboardservice := leaderboardservice.New(&leaderboardRepo)
+
 	return services{
 		questionSrv:       &questionSrv,
 		authSrv:           &authSrv,
@@ -190,5 +198,6 @@ func setupServices(cfg *config.Config) services {
 		userValidator:     &userValidator,
 		matchingValidator: &matchingValidator,
 		gameValidator:     &gameValidator,
+		leaderboardSrv:    &leaderboardservice,
 	}
 }

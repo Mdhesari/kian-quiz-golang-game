@@ -3,10 +3,7 @@ package redisleaderboard
 import (
 	"context"
 	"mdhesari/kian-quiz-golang-game/entity"
-	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/mongoutils"
-
-	"go.uber.org/zap"
 )
 
 const (

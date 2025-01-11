@@ -37,8 +37,6 @@ func (db *DB) GetLeaderboard(ctx context.Context, limit int) ([]entity.UserScore
 		return nil, err
 	}
 
-	logger.L().Info("User data retrieved.", zap.Any("user_data", userData))
-
 	leaderboard := make([]entity.UserScore, 0)
 	var displayName string
 	var ok bool
@@ -52,8 +50,6 @@ func (db *DB) GetLeaderboard(ctx context.Context, limit int) ([]entity.UserScore
 			})
 		}
 	}
-
-	logger.L().Info("Leaderboard retrieved.", zap.Any("leaderboard", len(lb)))
 
 	return leaderboard, nil
 }

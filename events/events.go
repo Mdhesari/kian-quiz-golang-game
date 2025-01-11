@@ -10,6 +10,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"mdhesari/kian-quiz-golang-game/pubsub"
 	"mdhesari/kian-quiz-golang-game/service/gameservice"
+	"mdhesari/kian-quiz-golang-game/service/leaderboardservice"
 	"mdhesari/kian-quiz-golang-game/service/questionservice"
 	"mdhesari/kian-quiz-golang-game/service/userservice"
 	"mdhesari/kian-quiz-golang-game/websockethub"
@@ -20,22 +21,24 @@ import (
 )
 
 type EventManager struct {
-	hub           *websockethub.Hub
-	pubsubManager *pubsub.PubSubManager
-	gameSrv       *gameservice.Service
-	userSrv       *userservice.Service
-	questionSrv   *questionservice.Service
-	gameCfg       *gameservice.Config
+	hub            *websockethub.Hub
+	pubsubManager  *pubsub.PubSubManager
+	gameSrv        *gameservice.Service
+	userSrv        *userservice.Service
+	questionSrv    *questionservice.Service
+	leaderboardSrv *leaderboardservice.Service
+	gameCfg        *gameservice.Config
 }
 
-func New(hub *websockethub.Hub, pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, userSrv *userservice.Service, questionSrv *questionservice.Service, gameCfg *gameservice.Config) EventManager {
+func New(hub *websockethub.Hub, pubsubManager *pubsub.PubSubManager, gameSrv *gameservice.Service, userSrv *userservice.Service, questionSrv *questionservice.Service, leaderboardSrv *leaderboardservice.Service, gameCfg *gameservice.Config) EventManager {
 	return EventManager{
-		hub:           hub,
-		pubsubManager: pubsubManager,
-		gameSrv:       gameSrv,
-		userSrv:       userSrv,
-		questionSrv:   questionSrv,
-		gameCfg:       gameCfg,
+		hub:            hub,
+		pubsubManager:  pubsubManager,
+		gameSrv:        gameSrv,
+		userSrv:        userSrv,
+		questionSrv:    questionSrv,
+		leaderboardSrv: leaderboardSrv,
+		gameCfg:        gameCfg,
 	}
 }
 
@@ -67,11 +70,24 @@ func (e EventManager) HandleHubGameFinished(ctx context.Context, topic string, p
 	players := gameRes.Game.Players
 	var winner entity.Player = entity.Player{}
 	for userId, player := range players {
-		e.userSrv.IncScore(ctx, param.UserIncrementScoreRequest{
+		err := e.userSrv.IncScore(ctx, param.UserIncrementScoreRequest{
 			UserId: mongoutils.HexToObjectID(userId),
 			Score:  player.Score,
 		})
-		// Ignore err
+		if err != nil {
+			logger.L().Error("Handler game finished: Could not increment score.", zap.Error(err), zap.String("userId", userId), zap.Any("player", player))
+		}
+
+		if player.Score > 0 {
+			us := entity.UserScore{
+				UserId:      mongoutils.HexToObjectID(userId),
+				Score:       player.Score,
+				DisplayName: player.Name,
+			}
+			if err := e.leaderboardSrv.UpsertLeaderboardUserScore(ctx, us); err != nil {
+				logger.L().Error("Handler game finished: Could not upsert leaderboard.", zap.Error(err), zap.String("userId", userId), zap.Any("player", player))
+			}
+		}
 
 		if winner.Score < player.Score {
 			winner = player
@@ -82,8 +98,6 @@ func (e EventManager) HandleHubGameFinished(ctx context.Context, topic string, p
 		GameId: gse.GameID,
 		Player: winner,
 	})
-
-	
 
 	return nil
 }

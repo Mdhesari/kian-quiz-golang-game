@@ -153,3 +153,27 @@ func (d *DB) IncrementScore(ctx context.Context, id primitive.ObjectID, score en
 
 	return nil
 }
+
+func (d *DB) FindManyById(ctx context.Context, ids []primitive.ObjectID) ([]entity.User, error) {
+	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
+	defer cancel()
+
+	var users []entity.User
+	filter := bson.M{"_id": bson.M{"$in": ids}}
+	cur, err := d.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	for cur.Next(context.Background()) {
+		var u entity.User
+
+		if err := cur.Decode(&u); err != nil {
+			panic(err)
+		}
+
+		users = append(users, u)
+	}
+
+	return users, nil
+}

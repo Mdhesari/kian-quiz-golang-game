@@ -147,6 +147,12 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrGamePlayerNotFound).WithErr(err).WithKind(richerror.KindForbidden)
 	}
 
+	if player.LastQuestionID != req.QuestionId {
+		logger.L().Info("Player's last question ID does not match the question ID provided.", zap.String("questionId", playerAnswer.QuestionID.Hex()), zap.String("lastQuestionId", player.LastQuestionID.Hex()))
+
+		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrNotAnsweringCurrentQuestion).WithErr(err).WithKind(richerror.KindForbidden)
+	}
+
 	if player.HasAnsweredQuestion(playerAnswer.QuestionID) {
 		logger.L().Info("Player has already answered this question.", zap.String("questionId", playerAnswer.QuestionID.Hex()))
 

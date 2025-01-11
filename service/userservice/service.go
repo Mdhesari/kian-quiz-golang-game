@@ -31,6 +31,7 @@ type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*entity.User, error)
 	FindByID(id primitive.ObjectID) (*entity.User, error)
 	IncrementScore(ctx context.Context, id primitive.ObjectID, score entity.Score) error
+	FindManyById(ctx context.Context, ids []primitive.ObjectID) ([]entity.User, error)
 }
 
 type UserForm struct {
@@ -43,6 +44,20 @@ type UserForm struct {
 
 func New(authSrv *authservice.Service, repo Repository) Service {
 	return Service{authSrv: authSrv, repo: repo}
+}
+
+func (s Service) FindMany(ctx context.Context, req param.UserFindRequest) (param.UserFindResponse, error) {
+	op := "User Service: find many by ids."
+
+	users, err := s.repo.FindManyById(ctx, req.UserIds)
+	if err != nil {
+
+		return param.UserFindResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
+	}
+
+	return param.UserFindResponse{
+		Users: users,
+	}, nil
 }
 
 func (s Service) Register(uf UserForm) (*param.RegisterResponse, error) {

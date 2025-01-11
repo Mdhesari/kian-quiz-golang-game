@@ -97,7 +97,7 @@ func main() {
 	hub := websockethub.NewHub(srvs.pubsubManager)
 	go hub.Start()
 
-	mm := events.New(&hub, srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv, &cfg.Game)
+	mm := events.New(&hub, srvs.pubsubManager, srvs.gameSrv, srvs.userSrv, srvs.questionSrv, srvs.leaderboardSrv, &cfg.Game)
 	mm.SubscribeEventHandlers()
 
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, srvs.presenceSrv)
@@ -105,7 +105,7 @@ func main() {
 
 	handlers := []httpserver.Handler{
 		pinghandler.New(),
-		leaderboardhandler.New(srvs.leaderboardSrv),
+		leaderboardhandler.New(srvs.leaderboardSrv, srvs.userSrv),
 		websockethandler.New(&hub, srvs.presenceSrv, srvs.authSrv, &cfg.Auth),
 		gamehandler.New(srvs.gameValidator, srvs.gameSrv, srvs.presenceSrv, srvs.authSrv, cfg.Auth),
 		userhandler.New(srvs.userSrv, srvs.authSrv, srvs.rbacSrv, srvs.presenceSrv, cfg.Auth, *srvs.userValidator),

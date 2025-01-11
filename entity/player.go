@@ -36,5 +36,5 @@ func (p *Player) HasAnsweredQuestion(questionID primitive.ObjectID) bool {
 }
 
 func (pa *PlayerAnswer) IsTimeLimitReached(t time.Duration) bool {
-	return pa.EndTime.Sub(pa.StartTime) <= t
+	return pa.EndTime.Sub(pa.StartTime) > t
 }

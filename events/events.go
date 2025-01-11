@@ -83,6 +83,8 @@ func (e EventManager) HandleHubGameFinished(ctx context.Context, topic string, p
 		Player: winner,
 	})
 
+	
+
 	return nil
 }
 

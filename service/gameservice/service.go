@@ -8,13 +8,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const (
-	MaxQuestionTimeout  time.Duration = time.Second * 15
-	MaxScorePerQuestion entity.Score  = 5
-)
-
 type Config struct {
-	GameTimeout time.Duration `koanf:"game_timeout"`
+	GameTimeout         time.Duration `koanf:"game_timeout"`
+	MaxQuestionTimeout  time.Duration `koanf:"max_question_timeout"`
+	MaxScorePerQuestion entity.Score  `koanf:"max_score_per_question"`
 }
 
 type Repository interface {
@@ -35,12 +32,14 @@ type Publisher interface {
 }
 
 type Service struct {
+	cfg  *Config
 	repo Repository
 	pub  Publisher
 }
 
-func New(repo Repository, pub Publisher) Service {
+func New(cfg *Config, repo Repository, pub Publisher) Service {
 	return Service{
+		cfg:  cfg,
 		repo: repo,
 		pub:  pub,
 	}

@@ -140,8 +140,8 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 	if s.isCorrectAnswer(playerAnswer, correctAns) {
 		playerAnswer.Answer.IsCorrect = true
 
-		s := score.ClaculateScore(MaxScorePerQuestion, playerAnswer.GetAnswerTime(), MaxQuestionTimeout)
-		playerAnswer.Score = entity.Score(s)
+		s := score.ClaculateScore(s.cfg.MaxScorePerQuestion, playerAnswer.GetAnswerTime(), s.cfg.MaxQuestionTimeout)
+		playerAnswer.Score = s
 	}
 
 	ans, err := s.repo.CreateQuestionAnswer(ctx, req.UserId, req.GameId, playerAnswer)

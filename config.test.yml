@@ -33,6 +33,8 @@ matching:
 
 game:
   game_timeout: "15m"
+  max_question_timeout: "30s"
+  max_score_per_question: 5
 
 redis:
   host: redis

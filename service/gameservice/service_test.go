@@ -83,7 +83,8 @@ func (m *MockRepository) UpdatePlayerStatus(ctx context.Context, gameId, userId 
 func TestService_AnswerQuestion_Successful(t *testing.T) {
 	mockRepo := new(MockRepository)
 	mockPub := new(MockPub)
-	service := New(mockRepo, mockPub)
+	mockCfg := new(Config)
+	service := New(mockCfg, mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -127,7 +128,8 @@ func TestService_AnswerQuestion_Successful(t *testing.T) {
 func TestService_AnswerQuestion_GameNotFound(t *testing.T) {
 	mockRepo := new(MockRepository)
 	mockPub := new(MockPub)
-	service := New(mockRepo, mockPub)
+	mockCfg := new(Config)
+	service := New(mockCfg, mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -155,7 +157,8 @@ func TestService_AnswerQuestion_GameNotFound(t *testing.T) {
 func TestService_AnswerQuestion_GameNotInProgress(t *testing.T) {
 	mockRepo := new(MockRepository)
 	mockPub := new(MockPub)
-	service := New(mockRepo, mockPub)
+	mockCfg := new(Config)
+	service := New(mockCfg, mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -186,7 +189,8 @@ func TestService_AnswerQuestion_GameNotInProgress(t *testing.T) {
 func TestService_AnswerQuestion_PlayerNotFound(t *testing.T) {
 	mockRepo := new(MockRepository)
 	mockPub := new(MockPub)
-	service := New(mockRepo, mockPub)
+	mockCfg := new(Config)
+	service := New(mockCfg, mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -218,7 +222,8 @@ func TestService_AnswerQuestion_PlayerNotFound(t *testing.T) {
 func TestService_AnswerQuestion_AlreadyAnswered(t *testing.T) {
 	mockRepo := new(MockRepository)
 	mockPub := new(MockPub)
-	service := New(mockRepo, mockPub)
+	mockCfg := new(Config)
+	service := New(mockCfg, mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()
@@ -256,7 +261,8 @@ func TestService_AnswerQuestion_AlreadyAnswered(t *testing.T) {
 func TestService_GetNextQuestion_Successful(t *testing.T) {
 	mockRepo := new(MockRepository)
 	mockPub := new(MockPub)
-	service := New(mockRepo, mockPub)
+	mockCfg := new(Config)
+	service := New(mockCfg, mockRepo, mockPub)
 
 	ctx := context.Background()
 	gameID := primitive.NewObjectID()

@@ -1,6 +1,8 @@
 package entity
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Password []byte
 
@@ -11,6 +13,6 @@ type User struct {
 	Avatar   string              `bson:"avatar" json:"avatar"`
 	Email    string              `bson:"email" json:"email"`
 	Mobile   string              `bson:"mobile" json:"mobile"`
-	Score    int                 `bson:"score" json:"score"`
+	Score    Score               `bson:"score" json:"score"`
 	Password Password            `bson:"password" json:"-"`
 }

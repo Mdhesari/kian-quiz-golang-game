@@ -26,4 +26,5 @@ const (
 	ErrUserNotFound                string = "User not found."
 	ErrNotAnsweringCurrentQuestion string = "Player is not answering the current question."
 	ErrPlayerNotInProgress         string = "Player has already finished the game ro not in progress."
+	ErrAllQuestionsAnswered        string = "All questions have been answered."
 )

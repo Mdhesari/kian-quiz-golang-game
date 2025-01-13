@@ -111,3 +111,25 @@ func DecodeGameStatusFinishedEvent(s string) entity.GameFinished {
 		GameID: mongoutils.HexToObjectID(pbE.GameId),
 	}
 }
+
+func DecodePlayerFinishedEvent(s string) entity.PlayerFinished {
+	var pbE game.PlayerFinished
+
+	res, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		logger.L().Error("could not decode player finished payload.", zap.Error(err))
+
+		return entity.PlayerFinished{}
+	}
+
+	if err := protojson.Unmarshal(res, &pbE); err != nil {
+		logger.L().Error("could not decode protobuf to json.", zap.Error(err))
+
+		return entity.PlayerFinished{}
+	}
+
+	return entity.PlayerFinished{
+		UserId: mongoutils.HexToObjectID(pbE.UserId),
+		GameId: mongoutils.HexToObjectID(pbE.GameId),
+	}
+}

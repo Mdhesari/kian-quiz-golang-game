@@ -196,6 +196,12 @@ func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQues
 		}
 	}
 
+	if nextQuestion.ID.IsZero() {
+		logger.L().Info("No more questions available in the game.")
+
+		return param.GameGetNextQuestionResponse{}, richerror.New(op, errmsg.ErrAllQuestionsAnswered).WithKind(richerror.KindOK)
+	}
+
 	player.LastQuestionID = nextQuestion.ID
 	player.LastQuestionStartTime = time.Now()
 	s.repo.UpdatePlayer(ctx, req.GameId, req.UserId, player)

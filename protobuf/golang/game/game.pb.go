@@ -132,6 +132,58 @@ func (x *PlayerAnswered) GetAnswer() string {
 	return ""
 }
 
+type PlayerFinished struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=UserId,proto3" json:"UserId,omitempty"`
+	GameId        string                 `protobuf:"bytes,2,opt,name=GameId,proto3" json:"GameId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerFinished) Reset() {
+	*x = PlayerFinished{}
+	mi := &file_protobuf_game_game_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerFinished) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerFinished) ProtoMessage() {}
+
+func (x *PlayerFinished) ProtoReflect() protoreflect.Message {
+	mi := &file_protobuf_game_game_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerFinished.ProtoReflect.Descriptor instead.
+func (*PlayerFinished) Descriptor() ([]byte, []int) {
+	return file_protobuf_game_game_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PlayerFinished) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *PlayerFinished) GetGameId() string {
+	if x != nil {
+		return x.GameId
+	}
+	return ""
+}
+
 type GameFinished struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GameId        string                 `protobuf:"bytes,1,opt,name=GameId,proto3" json:"GameId,omitempty"`
@@ -141,7 +193,7 @@ type GameFinished struct {
 
 func (x *GameFinished) Reset() {
 	*x = GameFinished{}
-	mi := &file_protobuf_game_game_proto_msgTypes[2]
+	mi := &file_protobuf_game_game_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -153,7 +205,7 @@ func (x *GameFinished) String() string {
 func (*GameFinished) ProtoMessage() {}
 
 func (x *GameFinished) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_game_game_proto_msgTypes[2]
+	mi := &file_protobuf_game_game_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -166,7 +218,7 @@ func (x *GameFinished) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GameFinished.ProtoReflect.Descriptor instead.
 func (*GameFinished) Descriptor() ([]byte, []int) {
-	return file_protobuf_game_game_proto_rawDescGZIP(), []int{2}
+	return file_protobuf_game_game_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GameFinished) GetGameId() string {
@@ -191,11 +243,15 @@ var file_protobuf_game_game_proto_rawDesc = []byte{
 	0x73, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x51,
 	0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x41, 0x6e, 0x73,
 	0x77, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x41, 0x6e, 0x73, 0x77, 0x65,
-	0x72, 0x22, 0x26, 0x0a, 0x0c, 0x47, 0x61, 0x6d, 0x65, 0x46, 0x69, 0x6e, 0x69, 0x73, 0x68, 0x65,
-	0x64, 0x12, 0x16, 0x0a, 0x06, 0x47, 0x61, 0x6d, 0x65, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x47, 0x61, 0x6d, 0x65, 0x49, 0x64, 0x42, 0x16, 0x5a, 0x14, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x67, 0x6f, 0x6c, 0x61, 0x6e, 0x67, 0x2f, 0x67, 0x61, 0x6d,
-	0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x22, 0x40, 0x0a, 0x0e, 0x50, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x46, 0x69, 0x6e, 0x69, 0x73,
+	0x68, 0x65, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x55, 0x73, 0x65, 0x72, 0x49, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x55, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x47,
+	0x61, 0x6d, 0x65, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x47, 0x61, 0x6d,
+	0x65, 0x49, 0x64, 0x22, 0x26, 0x0a, 0x0c, 0x47, 0x61, 0x6d, 0x65, 0x46, 0x69, 0x6e, 0x69, 0x73,
+	0x68, 0x65, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x47, 0x61, 0x6d, 0x65, 0x49, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x47, 0x61, 0x6d, 0x65, 0x49, 0x64, 0x42, 0x16, 0x5a, 0x14, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x67, 0x6f, 0x6c, 0x61, 0x6e, 0x67, 0x2f, 0x67,
+	0x61, 0x6d, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -210,11 +266,12 @@ func file_protobuf_game_game_proto_rawDescGZIP() []byte {
 	return file_protobuf_game_game_proto_rawDescData
 }
 
-var file_protobuf_game_game_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_protobuf_game_game_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_protobuf_game_game_proto_goTypes = []any{
 	(*GameStarted)(nil),    // 0: game.GameStarted
 	(*PlayerAnswered)(nil), // 1: game.PlayerAnswered
-	(*GameFinished)(nil),   // 2: game.GameFinished
+	(*PlayerFinished)(nil), // 2: game.PlayerFinished
+	(*GameFinished)(nil),   // 3: game.GameFinished
 }
 var file_protobuf_game_game_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -235,7 +292,7 @@ func file_protobuf_game_game_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_protobuf_game_game_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

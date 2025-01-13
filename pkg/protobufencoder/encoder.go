@@ -68,15 +68,31 @@ func EncodeWebSocketMsg(msg entity.WebsocketMsg) string {
 
 func EncodeGameFinishedEvent(e entity.GameFinished) string {
 	pbE := game.GameFinished{
-        GameId:      e.GameID.Hex(),
-    }
+		GameId: e.GameID.Hex(),
+	}
 
-    payload, err := protojson.Marshal(&pbE)
-    if err!= nil {
-        logger.L().Error("Could not encode protobuf to json.", zap.Error(err))
+	payload, err := protojson.Marshal(&pbE)
+	if err != nil {
+		logger.L().Error("Could not encode protobuf to json.", zap.Error(err))
 
-        return ""
-    }
+		return ""
+	}
 
-    return base64.StdEncoding.EncodeToString(payload)
+	return base64.StdEncoding.EncodeToString(payload)
+}
+
+func EncodePlayerFinishedEvent(e entity.PlayerFinished) string {
+	pbE := game.PlayerFinished{
+		UserId: e.UserId.Hex(),
+		GameId: e.GameId.Hex(),
+	}
+
+	payload, err := protojson.Marshal(&pbE)
+	if err != nil {
+		logger.L().Error("Could not encode protobuf to json.", zap.Error(err))
+
+		return ""
+	}
+
+	return base64.StdEncoding.EncodeToString(payload)
 }

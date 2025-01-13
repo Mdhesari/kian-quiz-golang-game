@@ -51,7 +51,45 @@ func (e EventManager) SubscribeEventHandlers() {
 
 	go e.pubsubManager.Subscribe(string(entity.GameStatusFinishedEvent), e.HandleHubGameFinished)
 
+	go e.pubsubManager.Subscribe(string(entity.PlayerFinishedEvent), e.HandlePlayerFinished)
+
 	logger.L().Info("event listeneres are subscribed.")
+}
+
+func (e EventManager) HandlePlayerFinished(ctx context.Context, topic string, payload string) error {
+	logger.L().Info("event handler: player finished.", zap.String("topic", topic), zap.String("payload", payload))
+
+	pfe := protobufdecoder.DecodePlayerFinishedEvent(payload)
+	gameRes, err := e.gameSrv.GetGameById(ctx, param.GameGetRequest{
+		GameId: pfe.GameId,
+	})
+	if err != nil {
+		logger.L().Error("Handler player finished: Could not get game.", zap.Error(err), zap.String("gameId", pfe.GameId.Hex()))
+
+		return err
+	}
+
+	players := gameRes.Game.Players
+	finishedPlayers := 0
+	for _, p := range players {
+		if p.Status.Completed() {
+			finishedPlayers++
+		}
+	}
+
+	if len(players) == finishedPlayers {
+		_, err = e.gameSrv.FinishGame(ctx, param.GameFinishRequest{
+			GameId: pfe.GameId,
+		})
+		if err != nil {
+			// Update metrics
+			// Retry
+
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (e EventManager) HandleHubGameFinished(ctx context.Context, topic string, payload string) error {

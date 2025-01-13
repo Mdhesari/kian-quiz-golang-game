@@ -39,6 +39,8 @@ func GetHttpCodeFromKind(kind Kind) int {
 		return http.StatusUnprocessableEntity
 	case KindConflict:
 		return http.StatusConflict
+	case KindOK:
+		return http.StatusOK
 	default:
 		return http.StatusBadRequest
 	}

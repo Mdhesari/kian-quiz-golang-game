@@ -9,6 +9,7 @@ const (
 	KindNotFound
 	KindUnexpected
 	KindConflict
+	KindOK
 )
 
 type RichError struct {

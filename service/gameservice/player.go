@@ -6,6 +6,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
+	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 
 	"go.uber.org/zap"
@@ -25,8 +26,11 @@ func (s Service) UpdatePlayerStatus(ctx context.Context, req param.PlayerStatusU
 		logger.L().Info("Player status updated.", zap.String("game_id", req.GameId.Hex()), zap.String("user_id", req.UserId.Hex()), zap.String("status", req.Status.String()))
 
 		if req.Status.Completed() {
-			// TODO - Payload
-			s.pub.Publish(ctx, string(entity.PlayerFinishedEvent), "")
+			p := protobufencoder.EncodePlayerFinishedEvent(entity.PlayerFinished{
+				UserId: req.UserId,
+				GameId: req.GameId,
+			})
+			s.pub.Publish(ctx, string(entity.PlayerFinishedEvent), p)
 		}
 	}
 
@@ -44,4 +48,3 @@ func (s *Service) IncPlayerScore(ctx context.Context, req param.GamePlayerIncSco
 
 	return param.GamePlayerIncScoreResponse{}, nil
 }
-

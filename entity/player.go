@@ -6,6 +6,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type PlayerStatus uint8
+
+const (
+	PlayerStatusRejected PlayerStatus = iota
+	PlayerStatusInProgress
+	PlayerStatusCompleted
+)
+
 type PlayerAnswer struct {
 	QuestionID primitive.ObjectID `bson:"question_id" json:"question_id"`
 	Answer     Answer             `bson:"answer" json:"answer"`
@@ -23,6 +31,7 @@ type Player struct {
 	LastQuestionStartTime time.Time          `bson:"last_question_start_time,omitempty" json:"last_question_start_time,omitempty"`
 	CreatedAt             time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt             time.Time          `bson:"updated_at" json:"updated_at"`
+	Status                PlayerStatus       `bson:"status" json:"status"`
 }
 
 func (p *Player) HasAnsweredQuestion(questionID primitive.ObjectID) bool {
@@ -35,6 +44,18 @@ func (p *Player) HasAnsweredQuestion(questionID primitive.ObjectID) bool {
 	return false
 }
 
-func (pa *PlayerAnswer) IsTimeLimitReached(t time.Duration) bool {
-	return pa.EndTime.Sub(pa.StartTime) > t
+func (pa *PlayerAnswer) GetAnswerTime() time.Duration {
+	return pa.EndTime.Sub(pa.StartTime)
+}
+
+func (ps PlayerStatus) InProgress() bool {
+	return ps == PlayerStatusInProgress
+}
+
+func (ps PlayerStatus) Completed() bool {
+	return ps == PlayerStatusCompleted
+}
+
+func (ps PlayerStatus) String() string {
+	return []string{"Rejected", "In Progress", "Completed"}[ps]
 }

@@ -8,6 +8,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufencoder"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
+	"mdhesari/kian-quiz-golang-game/pkg/score"
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 )
 
 const (
-	MaxQuestionTimeout  time.Duration = time.Second * 1500
+	MaxQuestionTimeout  time.Duration = time.Second * 15
 	MaxScorePerQuestion entity.Score  = 5
 )
 
@@ -34,6 +35,7 @@ type Repository interface {
 	UpdateGameEndtime(ctx context.Context, gameId primitive.ObjectID, endTime time.Time) error
 	UpdateGameWinner(ctx context.Context, gameId primitive.ObjectID, player entity.Player) error
 	IncPlayerScore(ctx context.Context, gameId primitive.ObjectID, userId primitive.ObjectID, score entity.Score) error
+	UpdatePlayerStatus(ctx context.Context, gameId, userId primitive.ObjectID, status entity.PlayerStatus) (bool, error)
 }
 
 type Publisher interface {
@@ -132,19 +134,23 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrGameNotInProgress).WithKind(richerror.KindForbidden)
 	}
 
+	player, ok := game.Players[req.UserId.Hex()]
+	if !ok {
+		logger.L().Error("Player not found in the game.", zap.String("userId", req.UserId.Hex()))
+
+		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrGamePlayerNotFound).WithErr(err).WithKind(richerror.KindForbidden)
+	}
+	if !player.Status.InProgress() {
+
+		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrPlayerNotInProgress).WithErr(err).WithKind(richerror.KindForbidden)
+	}
+
 	playerAnswer := entity.PlayerAnswer{
 		QuestionID: req.QuestionId,
 		Answer: entity.Answer{
 			Title: req.Answer,
 		},
 		EndTime: time.Now(),
-	}
-
-	player, ok := game.Players[req.UserId.Hex()]
-	if !ok {
-		logger.L().Error("Player not found in the game.", zap.String("userId", req.UserId.Hex()))
-
-		return param.GameAnswerQuestionResponse{}, richerror.New(op, errmsg.ErrGamePlayerNotFound).WithErr(err).WithKind(richerror.KindForbidden)
 	}
 
 	if player.LastQuestionID != req.QuestionId {
@@ -172,7 +178,9 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 	var correctAns entity.Answer = question.GetCorrectAnswer()
 	if s.isCorrectAnswer(playerAnswer, correctAns) {
 		playerAnswer.Answer.IsCorrect = true
-		playerAnswer.Score = MaxScorePerQuestion
+
+		s := score.ClaculateScore(MaxScorePerQuestion, playerAnswer.GetAnswerTime(), MaxQuestionTimeout)
+		playerAnswer.Score = entity.Score(s)
 	}
 
 	ans, err := s.repo.CreateQuestionAnswer(ctx, req.UserId, req.GameId, playerAnswer)
@@ -189,9 +197,7 @@ func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestio
 }
 
 func (s *Service) isCorrectAnswer(ans entity.PlayerAnswer, correctAns entity.Answer) bool {
-	return correctAns.IsValid() &&
-		correctAns.Title == ans.Answer.Title &&
-		!ans.IsTimeLimitReached(MaxQuestionTimeout)
+	return correctAns.IsValid() && correctAns.Title == ans.Answer.Title
 }
 
 func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQuestionRequest) (param.GameGetNextQuestionResponse, error) {
@@ -215,6 +221,11 @@ func (s *Service) GetNextQuestion(ctx context.Context, req param.GameGetNextQues
 	}
 
 	player := game.Players[req.UserId.Hex()]
+	if !player.Status.InProgress() {
+
+		return param.GameGetNextQuestionResponse{}, richerror.New(op, errmsg.ErrPlayerNotInProgress).WithErr(err).WithKind(richerror.KindForbidden)
+	}
+
 	for _, q := range game.Questions {
 		if !player.HasAnsweredQuestion(q.ID) {
 			nextQuestion = q

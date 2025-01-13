@@ -1,6 +1,7 @@
 package gamehandler
 
 import (
+	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
@@ -72,6 +73,22 @@ func (h *Handler) GetNextQuestion(c echo.Context) error {
 
 		return c.JSON(code, echo.Map{
 			"Message": msg,
+		})
+	}
+
+	if res.Question.ID.IsZero() {
+		_, err := h.gameSrv.UpdatePlayerStatus(c.Request().Context(), param.PlayerStatusUpdateRequest{
+			GameId: req.GameId,
+			UserId: req.UserId,
+			Status: entity.PlayerStatusCompleted,
+		})
+		if err != nil {
+			// TODO - Update metrics
+			// TODO - Send to queue
+		}
+
+		return c.JSON(http.StatusOK, echo.Map{
+			"message": "No more questions available",
 		})
 	}
 

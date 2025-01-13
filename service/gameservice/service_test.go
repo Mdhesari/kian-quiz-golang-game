@@ -73,6 +73,11 @@ func (m *MockRepository) UpdateGameWinner(ctx context.Context, gameId primitive.
 	return args.Error(0)
 }
 
+func (m *MockRepository) UpdatePlayerStatus(ctx context.Context, gameId, userId primitive.ObjectID, status entity.PlayerStatus) (bool, error) {
+	args := m.Called(ctx, gameId, userId, status)
+	return args.Get(0).(bool), args.Error(1)
+}
+
 // Implement other methods of the Repository interface as needed
 
 func TestService_AnswerQuestion_Successful(t *testing.T) {

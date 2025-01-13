@@ -172,6 +172,8 @@ func (m EventManager) HandlePlayersMatched(ctx context.Context, topic string, pa
 			Answers:   []entity.PlayerAnswer{},
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
+			Score:     0,
+			Status:    entity.PlayerStatusInProgress,
 		}
 	}
 

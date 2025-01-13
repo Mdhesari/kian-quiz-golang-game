@@ -204,8 +204,8 @@ func (c *Client) handleWebsocketMsg(msg entity.WebsocketMsg) {
 		playersMatched := protobufdecoder.DecodeGameStartedEvent(msg.Payload)
 
 		logger.L().Info("Game started.", zap.Any("playersMatched", playersMatched))
-	case string(entity.GamePlayerAnsweredEvent):
-		c.hub.Publish(context.Background(), string(entity.GamePlayerAnsweredEvent), msg.Payload)
+	case string(entity.PlayerAnsweredEvent):
+		c.hub.Publish(context.Background(), string(entity.PlayerAnsweredEvent), msg.Payload)
 	}
 }
 

@@ -35,3 +35,13 @@ type PlayerUpdateRequest struct {
 type PlayerDeleteRequest struct {
 	ID primitive.ObjectID `json:"id"`
 }
+
+type PlayerStatusUpdateRequest struct {
+	GameId primitive.ObjectID  `json:"game_id"`
+	UserId primitive.ObjectID  `json:"user_id"`
+	Status entity.PlayerStatus `json:"status"`
+}
+
+type PlayerStatusUpdateResponse struct {
+	//
+}

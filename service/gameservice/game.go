@@ -24,10 +24,6 @@ func (s Service) GetAllGames(ctx context.Context, req param.GameGetAllRequest) (
 		return param.GameGetAllResponse{}, richerror.New(op, err.Error()).WithErr(err).WithKind(richerror.KindUnexpected)
 	}
 
-	if games == nil {
-		games = []entity.Game{}
-	}
-
 	return param.GameGetAllResponse{
 		Items: games,
 	}, nil

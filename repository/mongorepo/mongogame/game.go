@@ -97,7 +97,7 @@ func (d *DB) GetAllGames(ctx context.Context, userID primitive.ObjectID) ([]enti
 	opts := options.Find().SetSort(bson.D{{Key: "start_time", Value: -1}})
 	cursor, err := d.collection.Find(ctx, filter, opts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute aggregation: %w", err)
+		return []entity.Game{}, fmt.Errorf("failed to execute aggregation: %w", err)
 	}
 	defer cursor.Close(ctx)
 

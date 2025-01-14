@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -81,7 +80,7 @@ func (s Service) Register(uf UserForm) (*param.RegisterResponse, error) {
 
 	user, err = s.repo.Register(context.Background(), user)
 	if err != nil {
-		log.Println("Repo error: ", err)
+		logger.L().Error("Repo error: ", zap.Error(err))
 
 		return nil, richerror.New(op, errmsg.ErrInternalServer).WithKind(richerror.KindUnexpected)
 	}
@@ -112,14 +111,14 @@ func (s Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
 			}, richerror.New(op, "Credentials do not match.").WithErr(err).WithKind(richerror.KindForbidden)
 		}
 
-		log.Println("Error on finding email: ", err)
+		logger.L().Error("Error on finding email: ", zap.Error(err))
 
 		return &param.LoginResponse{}, richerror.New(op, err.Error()).WithKind(richerror.KindInvalid).WithErr(err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(req.Password)); err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
-			log.Println("Error on hashing password: ", err)
+			logger.L().Error("Error on hashing password: ", zap.Error(err))
 		}
 
 		return &param.LoginResponse{}, richerror.New(op, "Credentials do not match.").WithKind(richerror.KindForbidden)
@@ -127,9 +126,9 @@ func (s Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
 
 	token, err := s.authSrv.GenerateToken(user, "token")
 	if err != nil {
-		log.Println(err)
+		logger.L().Error("Login service: Could not generate token.", zap.Error(err))
 
-		return &param.LoginResponse{}, richerror.New(op, "Something went wrong!.").WithErr(err)
+		return &param.LoginResponse{}, richerror.New(op, errmsg.ErrLoginTokenGenerationFailed).WithErr(err)
 	}
 
 	return &param.LoginResponse{

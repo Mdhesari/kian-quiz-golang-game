@@ -2,8 +2,6 @@ package scheduler
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/service/matchingservice"
@@ -28,7 +26,7 @@ type Scheduler struct {
 func New(config Config, matchingSrv *matchingservice.Service) Scheduler {
 	sch, err := gocron.NewScheduler()
 	if err != nil {
-		log.Println("Schedule error")
+		logger.L().Error("Schedule error", zap.Error(err))
 	}
 
 	return Scheduler{
@@ -39,14 +37,12 @@ func New(config Config, matchingSrv *matchingservice.Service) Scheduler {
 }
 
 func (s Scheduler) Start() {
-	fmt.Println("started")
-
 	_, err := s.sch.NewJob(
 		gocron.DurationJob(time.Duration(s.config.MatchWaitedUsersIntervalSeconds)*time.Second),
 		gocron.NewTask(s.matchWaitedUsers),
 	)
 	if err != nil {
-		log.Fatalf("Schedule job failed: %v\n", err)
+		logger.L().Error("Schedule job failed: %v\n", zap.Error(err))
 
 		return
 	}
@@ -76,7 +72,7 @@ func (s Scheduler) Start() {
 }
 
 func (s Scheduler) matchWaitedUsers() {
-	log.Println("matching waited users...")
+	logger.L().Info("matching waited users...")
 
 	s.matchingSrv.MatchWaitedUsers(context.Background(), param.MatchingWaitedUsersRequest{})
 }

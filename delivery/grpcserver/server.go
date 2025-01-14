@@ -3,12 +3,13 @@ package grpcserver
 import (
 	"context"
 	"fmt"
-	"log"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/protobufmapper"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/presence"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 	"net"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -51,7 +52,7 @@ func (s Server) Start() {
 
 	presence.RegisterPresenceServiceServer(grpcServer, &s)
 	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatal("Could not serve gprc server.")
+		logger.L().Error("Could not serve gprc server.", zap.Error(err))
 	}
 
 }

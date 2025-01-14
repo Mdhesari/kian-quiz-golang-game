@@ -1,19 +1,20 @@
 package matchinghandler
 
 import (
-	"log"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/claim"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 func (h Handler) AddToWaitingList(c echo.Context) error {
 	var req param.MatchingAddToWaitingListRequest
 	if err := c.Bind(&req); err != nil {
-		log.Printf("Matching handler error: %v\n", err)
+		logger.L().Error("Matching handler error: %v\n", zap.Error(err))
 
 		return echo.NewHTTPError(http.StatusBadRequest)
 	}

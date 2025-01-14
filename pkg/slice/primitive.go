@@ -1,9 +1,10 @@
 package slice
 
 import (
-	"log"
+	"mdhesari/kian-quiz-golang-game/logger"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 )
 
 func MapFromPrimitiveObjectIDToHexString(ids []primitive.ObjectID) []string {
@@ -23,9 +24,9 @@ func MapFromHexIDStringToPrimitiveObject(ids []string) []primitive.ObjectID {
 		oId, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
 			// TODO - update metrics
-
-			log.Fatalf("Could convert hex to obj id {%v}\n", err)
+			logger.L().Error("Could convert hex to obj id {%v}\n", zap.Error(err))
 		}
+
 		mappedIds = append(mappedIds, oId)
 	}
 

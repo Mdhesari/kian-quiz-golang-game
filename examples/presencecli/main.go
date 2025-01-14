@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/protobuf/golang/presence"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -13,17 +13,15 @@ func main() {
 	conn, err := grpc.Dial(":8089", grpc.WithInsecure())
 	if err != nil {
 
-		log.Fatal("Could not dial grpc.")
+		logger.L().Error("Could not dial grpc.")
 	}
 	defer conn.Close()
 
 	cli := presence.NewPresenceServiceClient(conn)
-	res, err := cli.GetPresence(context.Background(), &presence.GetPresenceRequest{
-		UserId: []string{"000000000000000000000000"}	,
+	_, err = cli.GetPresence(context.Background(), &presence.GetPresenceRequest{
+		UserId: []string{"000000000000000000000000"},
 	})
 	if err != nil {
-		log.Fatalf("Clould not get presence: %v\n", err)
+		logger.L().Error("Clould not get presence: %v\n", zap.Error(err))
 	}
-
-	fmt.Println(res, "hi")
 }

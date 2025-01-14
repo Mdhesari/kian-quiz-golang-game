@@ -2,7 +2,6 @@ package protobufdecoder
 
 import (
 	"encoding/base64"
-	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/mongoutils"
@@ -35,7 +34,7 @@ func DecodePlayersMatchedEvent(s string) entity.PlayersMatched {
 	if err != nil {
 		// TODO - update metrics
 
-		log.Fatalf("could not convert category hex to obj id {%v}.\n", err)
+		logger.L().Error("could not convert category hex to obj id {%v}.\n", zap.Error(err))
 	}
 
 	return entity.PlayersMatched{

@@ -180,7 +180,6 @@ func setupServices(cfg *config.Config) services {
 
 	gameValidator := gamevalidator.New()
 	gameRepo := mongogame.New(mongoCli)
-	fmt.Println(cfg.Game)
 	gameSrv := gameservice.New(&cfg.Game, gameRepo, pubsubManager)
 
 	leaderboardRepo := redisleaderboard.New(&redisAdap)

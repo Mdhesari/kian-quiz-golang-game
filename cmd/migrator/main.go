@@ -2,14 +2,14 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"mdhesari/kian-quiz-golang-game/config"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/repository/migrator"
 	"mdhesari/kian-quiz-golang-game/repository/mongorepo"
 
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/labstack/gommon/log"
+	"go.uber.org/zap"
 )
 
 var (
@@ -41,13 +41,13 @@ func main() {
 	}
 
 	if *down {
-		fmt.Println("down")
+		logger.L().Info("down")
 		err := mgrt.Down()
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Println("Down migrations...")
+		logger.L().Info("Down migrations...")
 
 		return
 	}
@@ -57,22 +57,22 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Migrations are run successfuly.")
+	logger.L().Info("Migrations are run successfuly.")
 
 	if *seeds {
-		fmt.Println("Running seeders...")
+		logger.L().Info("Running seeders...")
 
 		mongoConf.MigrationsCollection = "seeders"
 		seeder, err := migrator.New(cli.Conn().Client(), mongoConf, cfg.Database.Seeders)
 		if err != nil {
-			log.Fatal("Seeders Error: ", err)
+			logger.L().Error("Seeders Error: ", zap.Error(err))
 		}
 
 		err = seeder.Up()
 		if err != nil {
-			log.Fatal("Seeders UP Error: ", err)
+			logger.L().Error("Seeders UP Error: ", zap.Error(err))
 		}
 
-		fmt.Println("Seeders are run successfuly.")
+		logger.L().Info("Seeders are run successfuly.")
 	}
 }

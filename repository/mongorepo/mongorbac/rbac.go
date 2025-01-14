@@ -2,7 +2,6 @@ package mongorbac
 
 import (
 	"context"
-	"fmt"
 	"mdhesari/kian-quiz-golang-game/entity"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -93,7 +92,6 @@ func (d *DB) HasPermissions(ctx context.Context, roleID primitive.ObjectID, perm
 	ctx, cancel := context.WithTimeout(ctx, d.cli.QueryTimeout)
 	defer cancel()
 
-	fmt.Println(roleID, permissionIDs)
 	cur, err := d.accessCollection.Find(ctx, bson.M{
 		"role_id":       roleID,
 		"permission_id": bson.M{"$in": permissionIDs},

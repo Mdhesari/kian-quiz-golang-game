@@ -2,7 +2,6 @@ package httpserver
 
 import (
 	"fmt"
-	"log"
 	"mdhesari/kian-quiz-golang-game/logger"
 
 	"github.com/labstack/echo-contrib/echoprometheus"
@@ -85,11 +84,9 @@ func (s Server) Serve() {
 
 	// Start server
 	address := fmt.Sprintf(":%d", s.config.Port)
-
-	fmt.Printf("start echo server on %s\n", address)
-
+	logger.L().Info(fmt.Sprintf("start echo server on %s\n", address))
 	err := s.Router.Start(address)
 	if err != nil {
-		log.Println(err)
+		logger.L().Error("Http serve failed.", zap.Error(err))
 	}
 }

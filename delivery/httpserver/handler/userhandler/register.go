@@ -1,7 +1,7 @@
 package userhandler
 
 import (
-	"log"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/constant"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
@@ -10,13 +10,14 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 )
 
 func (h Handler) Register(c echo.Context) error {
 	var req param.RegisterRequest
 
 	if err := c.Bind(&req); err != nil {
-		log.Println("Register eror: ", err)
+		logger.L().Error("Register eror: ", zap.Error(err))
 
 		return c.JSON(http.StatusBadRequest, param.RegisterResponse{})
 	}
@@ -34,7 +35,7 @@ func (h Handler) Register(c echo.Context) error {
 	if err != nil {
 		msg, code := richerror.Error(err)
 
-		log.Println(err)
+		logger.L().Error("Could not get role.", zap.Error(err))
 
 		return echo.NewHTTPError(code, msg)
 	}
@@ -52,7 +53,7 @@ func (h Handler) Register(c echo.Context) error {
 		RoleID:   roleID,
 	})
 	if err != nil {
-		log.Println(err)
+		logger.L().Error("User handler: could not register user.", zap.Error(err))
 		msg, code := richerror.Error(err)
 
 		return c.JSON(code, echo.Map{

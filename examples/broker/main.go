@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/entity"
@@ -27,7 +26,7 @@ func main() {
 	for {
 		msg, err := subscriber.ReceiveMessage(context.Background())
 		if err != nil {
-			fmt.Println(err)
+			logger.L().Error("Could not recieve pusub msg.", zap.Error(err))
 		}
 
 		playersMatched := protobufdecoder.DecodePlayersMatchedEvent(msg.Payload)

@@ -2,7 +2,6 @@ package matchingservice
 
 import (
 	"context"
-	"log"
 	"mdhesari/kian-quiz-golang-game/entity"
 	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/param"
@@ -103,7 +102,7 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 
 	waitingList, err := s.repo.GetWaitingListByCategory(ctx, category)
 	if err != nil {
-		log.Printf("Get waiting list by category error: %v\n", err)
+		logger.L().Error("Get waiting list by category error: %v\n", zap.Error(err))
 
 		return
 	}
@@ -123,7 +122,7 @@ func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.W
 
 	presenceList, err := s.presenceClient.GetPresence(ctx, presenceReq)
 	if err != nil {
-		log.Fatalf("Get presence failed: %v\n", err)
+		logger.L().Error("Get presence failed.", zap.Error(err))
 
 		return
 	}

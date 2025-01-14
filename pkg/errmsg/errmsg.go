@@ -2,6 +2,7 @@ package errmsg
 
 const (
 	ErrInternalServer              string = "Internal Server Error."
+	ErrLoginTokenGenerationFailed       string = "Could not generate login token."
 	ErrNotFound                    string = "Resource not found."
 	ErrClaimAssertion              string = "Could not assert claims."
 	ErrAuthorization               string = "Authorization required."

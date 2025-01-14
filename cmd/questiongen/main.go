@@ -97,12 +97,13 @@ func main() {
 	defer cancel()
 	rows, err := mongoCli.Conn().Collection("questions").InsertMany(ctx, qus)
 	if err != nil {
-		fmt.Println("Could not create questions", err)
+		logger.L().Error("Could not create questions", zap.Error(err))
 	}
 
 	<-ctx.Done()
 
-	fmt.Printf("\n%d questions created from %d generated questions count.", len(rows.InsertedIDs), len(qus))
+	msg := fmt.Sprintf("\n%d questions created from %d generated questions count.", len(rows.InsertedIDs), len(qus))
+	logger.L().Info(msg)
 }
 
 func findAndAddQuestions(categoryId primitive.ObjectID, opentdbId int, ques chan<- entity.Question) error {

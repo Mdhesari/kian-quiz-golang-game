@@ -2,7 +2,6 @@ package uservalidator
 
 import (
 	"errors"
-	"fmt"
 	"mdhesari/kian-quiz-golang-game/param"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
@@ -88,7 +87,6 @@ func (v Validator) ValidateRegisterRequest(req param.RegisterRequest) (Validatio
 	if err != nil {
 		errFields := v.getValidationBag(err)
 
-		fmt.Println("fields: ", errFields)
 		return errFields, richerror.New(op, errmsg.ErrInvalidInput).
 			WithKind(richerror.KindInvalid).
 			WithMeta(map[string]interface{}{

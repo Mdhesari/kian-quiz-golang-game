@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"mdhesari/kian-quiz-golang-game/adapter/redisadapter"
 	"mdhesari/kian-quiz-golang-game/config"
 	"mdhesari/kian-quiz-golang-game/delivery/grpcserver"
+	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/repository/redisrepo/redispresence"
 	"mdhesari/kian-quiz-golang-game/service/presenceservice"
 )
@@ -25,6 +25,8 @@ func main() {
 	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
 
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, &presenceSrv)
-	fmt.Println("Starting presence server...")
+
+	logger.L().Info("Starting presence server...")
+
 	presenceserver.Start()
 }

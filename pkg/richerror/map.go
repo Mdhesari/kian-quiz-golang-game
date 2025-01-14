@@ -1,14 +1,11 @@
 package richerror
 
 import (
-	"log"
 	"mdhesari/kian-quiz-golang-game/pkg/errmsg"
 	"net/http"
 )
 
 func Error(err error) (string, int) {
-	log.Println(err)
-
 	switch err.(type) {
 	case RichError:
 		re := err.(RichError)

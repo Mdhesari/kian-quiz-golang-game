@@ -23,7 +23,7 @@ server:
 
 auth:
   secret: "secret"
-  expires_in_minutes: 10080
+  expire_duration: 10080
 
 scheduler:
   match_waited_users_interval_seconds: 5

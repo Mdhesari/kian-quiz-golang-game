@@ -13,8 +13,8 @@ import (
 )
 
 type Config struct {
-	Secret           []byte        `koanf:"secret"`
-	ExpiresInMinutes time.Duration `koanf:"expires_in_minutes"`
+	Secret         []byte        `koanf:"secret"`
+	ExpireDuration time.Duration `koanf:"expire_duration"`
 }
 
 type Service struct {
@@ -37,13 +37,14 @@ func (s Service) GenerateToken(user *entity.User, iss string) (string, error) {
 
 	mySigningKey := []byte(s.config.Secret)
 
-	logger.L().Info("creating a new jwt token.", zap.Any("duration", s.config.ExpiresInMinutes))
+	logger.L().Info("creating a new jwt token.", zap.Any("duration", s.config.ExpireDuration))
 
+	expireDu := time.Now().Add(s.config.ExpireDuration)
 	// Create the Claims
 	claims := Claims{
 		user.ID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * s.config.ExpiresInMinutes)),
+			ExpiresAt: jwt.NewNumericDate(expireDu),
 			Issuer:    iss,
 		},
 	}

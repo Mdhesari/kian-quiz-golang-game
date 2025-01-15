@@ -17,7 +17,7 @@ var defaultConfig = map[string]interface{}{
 		"graceful_shutdown_timeout": 5 * time.Second,
 	},
 	"auth": map[string]interface{}{
-		"expires_in_minutes": 60,
+		"expire_duration": 60 * time.Second,
 	},
 	"game": map[string]interface{}{
 		"game_timeout":           15 * time.Minute,

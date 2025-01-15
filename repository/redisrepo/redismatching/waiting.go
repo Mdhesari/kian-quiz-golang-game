@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"mdhesari/kian-quiz-golang-game/entity"
-	"mdhesari/kian-quiz-golang-game/logger"
 	"mdhesari/kian-quiz-golang-game/pkg/timestamp"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.uber.org/zap"
 )
 
 const WaitingListPrefix = "waitinglist"

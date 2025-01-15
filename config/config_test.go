@@ -60,7 +60,7 @@ func TestConfigLoad(t *testing.T) {
 		},
 		{
 			time.Duration(10080),
-			cfg.Auth.ExpiresInMinutes,
+			cfg.Auth.ExpireDuration,
 		},
 		{
 			"presence",

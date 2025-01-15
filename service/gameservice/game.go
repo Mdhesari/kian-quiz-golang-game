@@ -15,7 +15,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/pkg/slice"
 )
 
-func (s Service) GetAllGames(ctx context.Context, req param.GameGetAllRequest) (param.GameGetAllResponse, error) {
+func (s *Service) GetAllGames(ctx context.Context, req param.GameGetAllRequest) (param.GameGetAllResponse, error) {
 	op := "Game Service: Get all games."
 
 	games, err := s.repo.GetAllGames(ctx, req.UserID)
@@ -29,7 +29,7 @@ func (s Service) GetAllGames(ctx context.Context, req param.GameGetAllRequest) (
 	}, nil
 }
 
-func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param.GameCreateResponse, error) {
+func (s *Service) Create(ctx context.Context, req param.GameCreateRequest) (param.GameCreateResponse, error) {
 	op := "Game Service: Create a new game."
 
 	game := entity.Game{
@@ -53,7 +53,7 @@ func (s Service) Create(ctx context.Context, req param.GameCreateRequest) (param
 	}, nil
 }
 
-func (s Service) GetGameById(ctx context.Context, req param.GameGetRequest) (param.GameGetResponse, error) {
+func (s *Service) GetGameById(ctx context.Context, req param.GameGetRequest) (param.GameGetResponse, error) {
 	op := "Game service: find game by id."
 
 	game, err := s.repo.GetGameById(ctx, req.GameId)
@@ -73,7 +73,7 @@ func (s Service) GetGameById(ctx context.Context, req param.GameGetRequest) (par
 	}, nil
 }
 
-func (s Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestionRequest) (param.GameAnswerQuestionResponse, error) {
+func (s *Service) AnswerQuestion(ctx context.Context, req param.GameAnswerQuestionRequest) (param.GameAnswerQuestionResponse, error) {
 	op := "Game service: answer question."
 
 	gameRes, err := s.GetGameById(ctx, param.GameGetRequest{

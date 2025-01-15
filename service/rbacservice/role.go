@@ -6,7 +6,7 @@ import (
 	"mdhesari/kian-quiz-golang-game/pkg/richerror"
 )
 
-func (s Service) GetRole(name string) (*entity.Role, error) {
+func (s *Service) GetRole(name string) (*entity.Role, error) {
 	op := "RBAC Service: Get Role"
 
 	role, err := s.accessRepo.GetRole(context.TODO(), name)

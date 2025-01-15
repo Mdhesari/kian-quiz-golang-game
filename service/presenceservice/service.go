@@ -32,7 +32,7 @@ func New(cfg Config, repo Repo) Service {
 	}
 }
 
-func (s Service) GetPresence(ctx context.Context, req param.PresenceRequest) (*param.PresenceResponse, error) {
+func (s *Service) GetPresence(ctx context.Context, req param.PresenceRequest) (*param.PresenceResponse, error) {
 	res := param.PresenceResponse{}
 	op := "Presence service:get"
 
@@ -52,7 +52,7 @@ func (s Service) GetPresence(ctx context.Context, req param.PresenceRequest) (*p
 	return &res, nil
 }
 
-func (s Service) Upsert(ctx context.Context, req param.PresenceUpsertRequest) (*param.PrescenceUpsertResponse, error) {
+func (s *Service) Upsert(ctx context.Context, req param.PresenceUpsertRequest) (*param.PrescenceUpsertResponse, error) {
 	op := "Presence service:upsert"
 
 	key := fmt.Sprintf("%s:%s", s.config.Prefix, req.UserId.Hex())

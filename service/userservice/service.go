@@ -45,7 +45,7 @@ func New(authSrv *authservice.Service, repo Repository) Service {
 	return Service{authSrv: authSrv, repo: repo}
 }
 
-func (s Service) FindMany(ctx context.Context, req param.UserFindRequest) (param.UserFindResponse, error) {
+func (s *Service) FindMany(ctx context.Context, req param.UserFindRequest) (param.UserFindResponse, error) {
 	op := "User Service: find many by ids."
 
 	users, err := s.repo.FindManyById(ctx, req.UserIds)
@@ -59,7 +59,7 @@ func (s Service) FindMany(ctx context.Context, req param.UserFindRequest) (param
 	}, nil
 }
 
-func (s Service) Register(uf UserForm) (*param.RegisterResponse, error) {
+func (s *Service) Register(uf UserForm) (*param.RegisterResponse, error) {
 	op := "User Register"
 
 	password, err := bcrypt.GenerateFromPassword([]byte(uf.Password), bcrypt.DefaultCost)
@@ -90,7 +90,7 @@ func (s Service) Register(uf UserForm) (*param.RegisterResponse, error) {
 	}, nil
 }
 
-func (s Service) List() ([]entity.User, error) {
+func (s *Service) List() ([]entity.User, error) {
 	users, err := s.repo.GetAll(context.Background())
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (s Service) List() ([]entity.User, error) {
 	return users, nil
 }
 
-func (s Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
+func (s *Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
 	op := "User Service Login"
 
 	user, err := s.repo.FindByEmail(context.Background(), req.Email)
@@ -137,7 +137,7 @@ func (s Service) Login(req param.LoginRequest) (*param.LoginResponse, error) {
 	}, nil
 }
 
-func (s Service) IncScore(ctx context.Context, req param.UserIncrementScoreRequest) error {
+func (s *Service) IncScore(ctx context.Context, req param.UserIncrementScoreRequest) error {
 	op := "User Service Increment Score"
 
 	if err := s.repo.IncrementScore(ctx, req.UserId, req.Score); err != nil {
@@ -149,11 +149,7 @@ func (s Service) IncScore(ctx context.Context, req param.UserIncrementScoreReque
 	return nil
 }
 
-func (s Service) Update() {
-	// TODO
-}
-
-func (s Service) GetByID(id primitive.ObjectID) (param.ProfileResponse, error) {
+func (s *Service) GetByID(id primitive.ObjectID) (param.ProfileResponse, error) {
 	user, err := s.repo.FindByID(id)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

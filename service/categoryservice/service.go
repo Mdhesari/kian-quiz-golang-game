@@ -22,7 +22,7 @@ func New(repo Repistory) Service {
 }
 
 // TODO - Query param filters
-func (s Service) GetAll(ctx context.Context, _ param.CategoryParam) (param.CategoryResponse, error) {
+func (s *Service) GetAll(ctx context.Context, _ param.CategoryParam) (param.CategoryResponse, error) {
 	op := "Category service get:all"
 
 	categories, err := s.repo.GetAll(ctx)

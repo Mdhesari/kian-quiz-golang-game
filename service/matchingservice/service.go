@@ -57,7 +57,7 @@ func New(cfg Config, repo Repo, categoryRepo CategoryRepo, presenceCli PresenceC
 	}
 }
 
-func (s Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*param.MatchingAddToWaitingListResponse, error) {
+func (s *Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*param.MatchingAddToWaitingListResponse, error) {
 	op := "Matching Service: Add to waiting list."
 
 	ctx := context.Background()
@@ -78,7 +78,7 @@ func (s Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*p
 	}, nil
 }
 
-func (s Service) MatchWaitedUsers(ctx context.Context, req param.MatchingWaitedUsersRequest) (*param.MatchingWaitedUsersResponse, error) {
+func (s *Service) MatchWaitedUsers(ctx context.Context, req param.MatchingWaitedUsersRequest) (*param.MatchingWaitedUsersResponse, error) {
 	op := "Match waited users."
 
 	categories, err := s.categoryRepo.GetAll(ctx)
@@ -97,7 +97,7 @@ func (s Service) MatchWaitedUsers(ctx context.Context, req param.MatchingWaitedU
 	return &param.MatchingWaitedUsersResponse{}, nil
 }
 
-func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.WaitGroup) {
+func (s *Service) Match(ctx context.Context, category entity.Category, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	waitingList, err := s.repo.GetWaitingListByCategory(ctx, category, s.cfg.MatchingTimeout)
@@ -169,7 +169,7 @@ func getPresenceItem(presenceList param.PresenceResponse, userId primitive.Objec
 	return 0, false
 }
 
-func (s Service) removeUsersFromWaitingList(category entity.Category, userIds []string) {
+func (s *Service) removeUsersFromWaitingList(category entity.Category, userIds []string) {
 	removeUsersCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

@@ -32,7 +32,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (s Service) GenerateToken(user *entity.User, iss string) (string, error) {
+func (s *Service) GenerateToken(user *entity.User, iss string) (string, error) {
 	op := "Generate token"
 
 	mySigningKey := []byte(s.config.Secret)
@@ -59,7 +59,7 @@ func (s Service) GenerateToken(user *entity.User, iss string) (string, error) {
 	return ss, nil
 }
 
-func (s Service) VerifyToken(tokenString string) (*Claims, error) {
+func (s *Service) VerifyToken(tokenString string) (*Claims, error) {
 	op := "User verify token"
 
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {

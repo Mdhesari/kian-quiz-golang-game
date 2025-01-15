@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s Service) UpdatePlayerStatus(ctx context.Context, req param.PlayerStatusUpdateRequest) (param.PlayerStatusUpdateResponse, error) {
+func (s *Service) UpdatePlayerStatus(ctx context.Context, req param.PlayerStatusUpdateRequest) (param.PlayerStatusUpdateResponse, error) {
 	op := "Game Service: Update player status."
 
 	modified, err := s.repo.UpdatePlayerStatus(ctx, req.GameId, req.UserId, req.Status)

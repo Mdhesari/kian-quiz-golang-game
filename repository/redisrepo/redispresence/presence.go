@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (db DB) GetPresence(ctx context.Context, prefix string, userIds []primitive.ObjectID) (map[primitive.ObjectID]int64, error) {
+func (db *DB) GetPresence(ctx context.Context, prefix string, userIds []primitive.ObjectID) (map[primitive.ObjectID]int64, error) {
 	var keys []string
 	presenceList := make(map[primitive.ObjectID]int64, len(userIds))
 
@@ -36,7 +36,7 @@ func (db DB) GetPresence(ctx context.Context, prefix string, userIds []primitive
 	return presenceList, nil
 }
 
-func (db DB) Upsert(ctx context.Context, key string, timestamp int64, exp time.Duration) error {
+func (db *DB) Upsert(ctx context.Context, key string, timestamp int64, exp time.Duration) error {
 	_, err := db.adapter.Cli().Set(ctx, key, timestamp, exp).Result()
 	if err != nil {
 

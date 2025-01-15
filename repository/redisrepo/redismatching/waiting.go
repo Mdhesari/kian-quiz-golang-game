@@ -13,7 +13,7 @@ import (
 
 const WaitingListPrefix = "waitinglist"
 
-func (db DB) AddToWaitingList(ctx context.Context, userId primitive.ObjectID, category entity.Category) error {
+func (db *DB) AddToWaitingList(ctx context.Context, userId primitive.ObjectID, category entity.Category) error {
 	categoryKey := getCategoryKey(category)
 	_, err := db.adapter.Cli().ZAdd(ctx, categoryKey, redis.Z{
 		Score:  float64(timestamp.Now()),
@@ -27,7 +27,7 @@ func (db DB) AddToWaitingList(ctx context.Context, userId primitive.ObjectID, ca
 	return nil
 }
 
-func (db DB) GetWaitingListByCategory(ctx context.Context, category entity.Category, maxWaitingTime time.Duration) ([]entity.WaitingMember, error) {
+func (db *DB) GetWaitingListByCategory(ctx context.Context, category entity.Category, maxWaitingTime time.Duration) ([]entity.WaitingMember, error) {
 	waitingMembers := []entity.WaitingMember{}
 
 	min := timestamp.Add(-1 * maxWaitingTime)
@@ -61,7 +61,7 @@ func (db DB) GetWaitingListByCategory(ctx context.Context, category entity.Categ
 	return waitingMembers, nil
 }
 
-func (db DB) RemoveUsersFromWaitingList(ctx context.Context, category entity.Category, userIds []string) error {
+func (db *DB) RemoveUsersFromWaitingList(ctx context.Context, category entity.Category, userIds []string) error {
 	categoryKey := getCategoryKey(category)
 	// TODO - do we need to check deleted count?
 	_, err := db.adapter.Cli().ZRem(ctx, categoryKey, userIds).Result()

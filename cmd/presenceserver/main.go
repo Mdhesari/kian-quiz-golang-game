@@ -21,8 +21,8 @@ func init() {
 
 func main() {
 	redisAdap := redisadapter.New(cfg.Redis)
-	presenceRepo := redispresence.New(redisAdap)
-	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
+	presenceRepo := redispresence.New(&redisAdap)
+	presenceSrv := presenceservice.New(cfg.Presence, &presenceRepo)
 
 	presenceserver := grpcserver.New(cfg.Server.GrpcServer, &presenceSrv)
 

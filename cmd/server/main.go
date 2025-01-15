@@ -165,13 +165,13 @@ func setupServices(cfg *config.Config) services {
 
 	pubsubManager := pubsub.NewPubSubManager(redisAdap)
 
-	presenceRepo := redispresence.New(redisAdap)
-	presenceSrv := presenceservice.New(cfg.Presence, presenceRepo)
+	presenceRepo := redispresence.New(&redisAdap)
+	presenceSrv := presenceservice.New(cfg.Presence, &presenceRepo)
 
 	address := fmt.Sprintf(":%d", cfg.Server.GrpcServer.Port)
 	presenceCli := presenceadapter.New(address)
-	matchingRepo := redismatching.New(redisAdap)
-	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, categoryRepo, presenceCli, pubsubManager)
+	matchingRepo := redismatching.New(&redisAdap)
+	matchingSrv := matchingservice.New(cfg.Matching, &matchingRepo, categoryRepo, presenceCli, pubsubManager)
 
 	userValidator := uservalidator.New(userRepo)
 	matchingValidator := matchingvalidator.New(categoryRepo)

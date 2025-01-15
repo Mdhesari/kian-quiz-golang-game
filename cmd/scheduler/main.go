@@ -27,14 +27,14 @@ func main() {
 	var wg sync.WaitGroup
 
 	redisAdap := redisadapter.New(cfg.Redis)
-	matchingRepo := redismatching.New(redisAdap)
+	matchingRepo := redismatching.New(&redisAdap)
 
 	cli := mongorepo.New(cfg.Database.MongoDB)
 	mongocategory := mongocategory.New(cli)
 
 	address := fmt.Sprintf(":%d", cfg.Server.GrpcServer.Port)
 	presenceCli := presenceadapter.New(address)
-	matchingSrv := matchingservice.New(cfg.Matching, matchingRepo, mongocategory, presenceCli, redisAdap)
+	matchingSrv := matchingservice.New(cfg.Matching, &matchingRepo, mongocategory, presenceCli, redisAdap)
 
 	scheduler := scheduler.New(cfg.Scheduler, &matchingSrv)
 

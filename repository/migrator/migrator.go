@@ -26,10 +26,10 @@ func New(client *mongo.Client, dbConfig *mongodb.Config, msource string) (*Migra
 	}, nil
 }
 
-func (m Migrator) Up() error {
+func (m *Migrator) Up() error {
 	return m.migrate.Up()
 }
 
-func (m Migrator) Down() error {
+func (m *Migrator) Down() error {
 	return m.migrate.Down()
 }

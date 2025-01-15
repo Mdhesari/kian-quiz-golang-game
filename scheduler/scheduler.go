@@ -36,7 +36,7 @@ func New(config Config, matchingSrv *matchingservice.Service) Scheduler {
 	}
 }
 
-func (s Scheduler) Start() {
+func (s *Scheduler) Start() {
 	_, err := s.sch.NewJob(
 		gocron.DurationJob(time.Duration(s.config.MatchWaitedUsersIntervalSeconds)*time.Second),
 		gocron.NewTask(s.matchWaitedUsers),
@@ -71,7 +71,7 @@ func (s Scheduler) Start() {
 	}
 }
 
-func (s Scheduler) matchWaitedUsers() {
+func (s *Scheduler) matchWaitedUsers() {
 	logger.L().Info("matching waited users...")
 
 	s.matchingSrv.MatchWaitedUsers(context.Background(), param.MatchingWaitedUsersRequest{})

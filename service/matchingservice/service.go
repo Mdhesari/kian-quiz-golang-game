@@ -17,7 +17,7 @@ import (
 )
 
 type Config struct {
-	MatchingTimeoutSeconds uint `koanf:"matching_timeout_seconds"`
+	MatchingTimeout time.Duration `koanf:"matching_timeout"`
 }
 
 type Service struct {
@@ -38,7 +38,7 @@ type PresenceClient interface {
 
 type Repo interface {
 	AddToWaitingList(ctx context.Context, userId primitive.ObjectID, category entity.Category) error
-	GetWaitingListByCategory(ctx context.Context, category entity.Category) ([]entity.WaitingMember, error)
+	GetWaitingListByCategory(ctx context.Context, category entity.Category, maxWaitingTime time.Duration) ([]entity.WaitingMember, error)
 	RemoveUsersFromWaitingList(ctx context.Context, categroy entity.Category, userIds []string) error
 }
 
@@ -74,7 +74,7 @@ func (s Service) AddToWaitingList(req param.MatchingAddToWaitingListRequest) (*p
 	}
 
 	return &param.MatchingAddToWaitingListResponse{
-		Timeout: s.cfg.MatchingTimeoutSeconds,
+		Timeout: uint(s.cfg.MatchingTimeout.Seconds()),
 	}, nil
 }
 
@@ -100,7 +100,7 @@ func (s Service) MatchWaitedUsers(ctx context.Context, req param.MatchingWaitedU
 func (s Service) Match(ctx context.Context, category entity.Category, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	waitingList, err := s.repo.GetWaitingListByCategory(ctx, category)
+	waitingList, err := s.repo.GetWaitingListByCategory(ctx, category, s.cfg.MatchingTimeout)
 	if err != nil {
 		logger.L().Error("Get waiting list by category error: %v\n", zap.Error(err))
 

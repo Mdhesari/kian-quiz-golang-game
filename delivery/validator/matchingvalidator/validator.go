@@ -44,7 +44,6 @@ func (v Validator) getValidationBag(err error) ValidationBag {
 func (v Validator) ValidateAddToWaitingListRequest(req param.MatchingAddToWaitingListRequest) (ValidationBag, error) {
 	const op = "matchingvalidator.ValidateAddToWaitingListRequest"
 
-	// TODO - Category is not mapped correctly with koanf
 	err := validation.ValidateStruct(
 		&req,
 		validation.Field(&req.CategoryID, validation.Required, validation.By(v.isPrimitiveValid), validation.By(v.isCategoryIdValid)),

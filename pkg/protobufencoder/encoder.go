@@ -26,7 +26,7 @@ func EncodePlayersMatchedEvent(e entity.PlayersMatched) string {
 	payload, err := protojson.Marshal(&pbE)
 	if err != nil {
 		// TODO - update metrics
-		// TODO - log error
+		logger.L().Error("Could not encode player matched event.", zap.Error(err))
 
 		return ""
 	}

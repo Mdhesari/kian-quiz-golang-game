@@ -29,7 +29,7 @@ scheduler:
   match_waited_users_interval_seconds: 5
 
 matching:
-  matching_timeout_seconds: 300
+  matching_timeout: "5m"
 
 game:
   game_timeout: "15m"

@@ -11,10 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const WaitingListPrefix = "waitinglist"
-
 func (db *DB) AddToWaitingList(ctx context.Context, userId primitive.ObjectID, category entity.Category) error {
-	categoryKey := getCategoryKey(category)
+	categoryKey := db.getCategoryKey(category)
 	_, err := db.adapter.Cli().ZAdd(ctx, categoryKey, redis.Z{
 		Score:  float64(timestamp.Now()),
 		Member: userId.Hex(),
@@ -32,8 +30,8 @@ func (db *DB) GetWaitingListByCategory(ctx context.Context, category entity.Cate
 
 	min := timestamp.Add(-1 * maxWaitingTime)
 	max := timestamp.Now()
-	
-	categoryKey := getCategoryKey(category)
+
+	categoryKey := db.getCategoryKey(category)
 	list, err := db.adapter.Cli().ZRangeByScoreWithScores(ctx, categoryKey, &redis.ZRangeBy{
 		Min: fmt.Sprintf("%d", min),
 		Max: fmt.Sprintf("%d", max),
@@ -62,7 +60,7 @@ func (db *DB) GetWaitingListByCategory(ctx context.Context, category entity.Cate
 }
 
 func (db *DB) RemoveUsersFromWaitingList(ctx context.Context, category entity.Category, userIds []string) error {
-	categoryKey := getCategoryKey(category)
+	categoryKey := db.getCategoryKey(category)
 	// TODO - do we need to check deleted count?
 	_, err := db.adapter.Cli().ZRem(ctx, categoryKey, userIds).Result()
 	if err != nil {
@@ -73,6 +71,6 @@ func (db *DB) RemoveUsersFromWaitingList(ctx context.Context, category entity.Ca
 	return nil
 }
 
-func getCategoryKey(category entity.Category) string {
-	return fmt.Sprintf("%s:%s", WaitingListPrefix, category.ID.Hex())
+func (db *DB) getCategoryKey(category entity.Category) string {
+	return fmt.Sprintf("%s:%s", db.waitingListPrefix, category.ID.Hex())
 }

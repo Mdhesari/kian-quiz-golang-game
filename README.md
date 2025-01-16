@@ -4,8 +4,6 @@
 
 KianQuiz is a quiz game designed for 1v1 player interactions. Players compete through rounds, and a winner is determined based on scores. The system leverages modern technologies such as Golang for backend services, Redis for message brokering, and MongoDB for database storage.
 
-![alt text](./ui.png)
-
 ## Key Features
 
 - **User Management:** Registration, login, JWT-based authentication, and profile management.
